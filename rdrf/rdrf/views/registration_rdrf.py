@@ -56,9 +56,6 @@ class RdrfRegistrationView(RegistrationView):
             {"code": lang.code, "name": lang.name} for lang in languages_dict
         ]
         context["is_mobile"] = self.request.user_agent.is_mobile
-        context["all_language_codes"] = [
-            language.code for language in languages_dict
-        ]
 
         return context
 
