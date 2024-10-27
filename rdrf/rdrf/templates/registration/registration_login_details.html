@@ -4,25 +4,24 @@
 {% get_user_requested_language as USER_REQUESTED_LANGUAGE %}
 {% get_current_language as CURRENT_LANGUAGE %}
 
-<link rel="stylesheet" href="{% static 'vendor/bootstrap-select-1.14.0-beta3/css/bootstrap-select.min.css' %}">
-
 <script type="text/javascript" src="{% static 'js/show_password.js' %}"></script>
-<script type="text/javascript" src="{% static 'vendor/bootstrap-select-1.14.0-beta3/js/bootstrap-select.min.js' %}"></script>
-<script type="text/javascript" src="/static/vendor/bootstrap-select-1.14.0-beta3/js/i18n/defaults-{{ CURRENT_LANGUAGE|get_locale }}.js"></script>
 
 <script>
     function constructPreferredLanguages() {
-        const preferred_language = "{{ USER_REQUESTED_LANGUAGE }}";
-        const not_in_languages_array = !{{ all_language_codes|safe }}.map(language => language.toLowerCase()).includes(preferred_language);
+        const isMatchingLanguage = (code1, code2) => code1.toLowerCase() === code2.toLowerCase();
         const getPureLanguageCode = (language) => language.split('-')[0];
-        const pure_language_code = getPureLanguageCode(preferred_language);
-        const preferred_languages = {{ preferred_languages|safe }};
-        const selected_preferred_language = preferred_languages.find(
-            (language) => (language.code.toLowerCase() === preferred_language) || (not_in_languages_array && getPureLanguageCode(language.code) === pure_language_code)
+
+        const preferredLanguages = {{ preferred_languages|safe }};
+        const userLanguageCode = "{{ USER_REQUESTED_LANGUAGE }}";
+        const isUserLanguageInList = {{ preferred_languages|safe }}.find(language => isMatchingLanguage(language.code, userLanguageCode));
+        const pureUserLanguageCode = getPureLanguageCode(userLanguageCode);
+        const selectedPreferredLanguage = preferredLanguages.find(
+            (language) => isMatchingLanguage(language.code, userLanguageCode)
+                || (!isUserLanguageInList && isMatchingLanguage(getPureLanguageCode(language.code), pureUserLanguageCode))
         ) ?? { code: "{{ CURRENT_LANGUAGE }}" };
-        const options = preferred_languages.map((language) => `
+        const options = preferredLanguages.map((language) => `
             <option value="${language.code}" data-tokens="${language.code}"
-                ${language.code.toLowerCase() === selected_preferred_language.code.toLowerCase() ? 'selected' : ''}
+                ${isMatchingLanguage(language.code, selectedPreferredLanguage.code) ? 'selected' : ''}
             >${language.name}</option>
         `);
 
