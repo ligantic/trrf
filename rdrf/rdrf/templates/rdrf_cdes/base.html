@@ -61,10 +61,6 @@
     <script type="text/javascript">var django = { $: $.noConflict() }; if (!$) $ = django.$; </script>
     {% block extrastyle %}
     <style>
-        body {
-            padding-top: 60px;
-        }
-
         .popover {
             max-width: 40%;
         }
@@ -75,7 +71,7 @@
     <script>
         $(document).ready(function () {
             addExtraValidationMethods();
-
+            adjustContentTopPadding();
             hide_empty_menu(); // Hide the menu dropdown option if there are no elements
 
             $('[data-bs-toggle="popover"]').popover({
@@ -88,14 +84,17 @@
 
 <body>
     <div id="wrap">
-        {% include "rdrf_cdes/navbar.html" %}
+        <div class="fixed-top">
+            {% include "rdrf_cdes/banner/_show_banner.html" %}
+            {% include "rdrf_cdes/navbar.html" %}
+        </div>
 
         {% block sidebar %}
         {% endblock %}
 
         {% block content_wrapper %}
 
-        <div class="container">
+        <div id="content" class="container">
             {% include "rdrf_cdes/alert_language_is_not_supported.html" %}
             {% if messages %}
             {% for message in messages %}

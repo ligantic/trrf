@@ -27,6 +27,7 @@
     <script src="{% static 'js/vendor/jquery-validation-1.19.5.min.js' %}"></script>
     <script src="https://www.google.com/recaptcha/api.js?hl={{ LANGUAGE_CODE }}"></script>
     <script type="text/javascript" src="{% url 'javascript-catalog' %}"></script>
+    <script type="text/javascript" src="{% static 'js/rdrf.js' %}"></script>
 
     <style>
         body {
@@ -50,6 +51,7 @@
 
     <script type="text/javascript">
         $(document).ready(function() {
+            adjustContentTopPadding("registration-form");
             var registry_code = "{{registry_code}}";
 
             var dateOptions = {
@@ -127,15 +129,17 @@
 </head>
 
 <body>
-    {% if not embedded_view %}
-        {% include "rdrf_cdes/navbar.html" %}
-    {% endif %}
+    <div class="fixed-top">
+        {% include "rdrf_cdes/banner/_show_banner.html" %}
+        {% if not embedded_view %}
+            {% include "rdrf_cdes/navbar.html" %}
+        {% endif %}
+    </div>
 
     <div
         id="registration_base_container"
         {% if not embedded_view %}
          class="container"
-         style="padding-top: 75px"
         {% endif %}
     >
 
