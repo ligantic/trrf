@@ -783,7 +783,7 @@ class PatientForm(forms.ModelForm):
                     working_groups = WorkingGroup.objects.filter(
                         id__in=selected_working_group_ids
                     ).exclude(id=unallocated_working_group.id)
-                elif self.instance.working_groups.exists():
+                elif self.instance.id and self.instance.working_groups.exists():
                     # No working groups have been selected, (assume all working groups controls are disabled)
                     # so keep existing working groups
                     working_groups = self.instance.working_groups.all()
