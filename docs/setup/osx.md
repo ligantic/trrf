@@ -14,16 +14,7 @@ A guide to setting up your OSX environment for developing on the Mac
 ### Dependencies
 
     brew install postgresql
-    brew services start postgresql
-    brew link postgresql --force
-    brew install libpq
-    brew install openssl
     brew install unixodbc
-    brew install zlib
-    brew install libtiff libjpeg webp little-cms2
-    brew install freetype harfbuzz fribidi
-    brew install libmagic
-    brew install pyenv
 
 
 ### Python
@@ -39,6 +30,6 @@ A guide to setting up your OSX environment for developing on the Mac
 
 ### Installing modules for local development
 
-    env LDFLAGS="-I/usr/local/opt/openssl/include -L/usr/local/opt/openssl/lib" pip install -r requirements/requirements.txt
+    pip install -r requirements/requirements.txt
     pip install -r requirements/dev-requirements.txt
     pip install -r requirements/test-requirements.txt
