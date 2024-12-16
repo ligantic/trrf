@@ -109,7 +109,19 @@ $(document).ready(function (){
 
       {% block login_footer %}
       <div class="card-footer">
-          <a href="{% url 'login_assistance' %}">{% trans "Trouble signing in?" %}</a>
+          <a class="float-sm-start" href="{% url 'login_assistance' %}">{% trans "Trouble signing in?" %}</a>
+
+          {% if registries_with_registration %}
+              <ul class="float-sm-end list-unstyled">
+              {% for registry in registries_with_registration %}
+                  <li>
+                      <a href="{% url 'registration_register' registry.code %}">
+                        {% trans "Patient registration" %}{% if registries_with_registration|length > 1 %}({{ registry.name }}){% endif %}
+                      </a>
+                  </li>
+              {% endfor  %}
+              </ul>
+          {% endif %}
           <div class="clearfix"></div>
       </div>
       {% endblock %}
