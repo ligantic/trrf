@@ -116,7 +116,7 @@ $(document).ready(function (){
               {% for registry in registries_with_registration %}
                   <li>
                       <a href="{% url 'registration_register' registry.code %}">
-                        {% trans "Patient registration" %}{% if registries_with_registration|length > 1 %}({{ registry.name }}){% endif %}
+                        {% trans "Register here" %}{% if registries_with_registration|length > 1 %}({{ registry.name }}){% endif %}
                       </a>
                   </li>
               {% endfor  %}
