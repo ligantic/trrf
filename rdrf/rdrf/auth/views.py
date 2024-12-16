@@ -25,6 +25,7 @@ from useraudit.models import UserDeactivation
 from useraudit.password_expiry import is_password_expired
 
 from rdrf.auth import can_user_self_unlock, is_user_privileged
+from rdrf.models.definition.models import Registry
 
 from .forms import (
     LoginAuthenticationForm,
@@ -43,6 +44,15 @@ class LoginView(tfv.LoginView):
         ("token", tff.AuthenticationTokenForm),
         ("backup", tff.BackupTokenForm),
     )
+
+    def get_context_data(self, form, **kwargs):
+        context = super().get_context_data(form, **kwargs)
+        context["registries_with_registration"] = [
+            registry
+            for registry in Registry.objects.all()
+            if registry.registration_allowed()
+        ]
+        return context
 
 
 @receiver(user_logged_in)
