@@ -685,8 +685,7 @@ REGISTRATION_FORM = "rdrf.forms.registration_forms.PatientRegistrationForm"
 REGISTRATION_CLASS = "registry.groups.registration.patient.PatientRegistration"
 
 # Parent Registration (also adding a patient at registration time)
-# REGISTRATION_FORM = "rdrf.forms.registration_forms.ParentWithPatientRegistrationForm"
-# REGISTRATION_CLASS = "registry.groups.registration.parent_with_patient.ParentWithPatientRegistration"
+# [ERP-533] Deleted these forms and classes as they are unused across all currently hosted registries.
 
 # In case you set up customised email templates for the "new-patient" notification, you should
 # set this to False, otherwise the default registration email will also be sent to the user.
