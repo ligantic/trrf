@@ -163,7 +163,7 @@ class UserChangeForm(UserMixin, forms.ModelForm):
             "user_email_change", kwargs={"user_id": self.instance.id}
         )
         sync_email_help_text = (
-            f'{_("Synchronised email address changes can be made using")}: '
+            f"{_('Synchronised email address changes can be made using')}: "
             f'<a href="{change_email_url}">{_("Change email address form")}</a>.'
         )
         self.fields["username"].help_text += mark_safe(

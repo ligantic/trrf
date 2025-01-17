@@ -42,7 +42,7 @@ class LinkDefs:
         "admin:patients_patientstagerule_changelist", _("Patient Stages Rules")
     )
     PatientUser = QuickLink(
-        f'{reverse("admin:patients_patientuser_changelist")}?{urlencode({"linked": "N"})}',
+        f"{reverse('admin:patients_patientuser_changelist')}?{urlencode({'linked': 'N'})}",
         _("Patient Users"),
     )
     Reports = make_link("report:reports_list", _("Reports"))

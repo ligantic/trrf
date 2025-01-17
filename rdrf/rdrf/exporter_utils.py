@@ -103,9 +103,9 @@ def _export_cascading_form_definition(
     non_null_args = [
         arg for arg in [context_form_groups, forms, sections, cdes] if arg
     ]
-    assert (
-        len(non_null_args) == 1
-    ), f"Expected 1 form definition part to be provided, got {len(non_null_args)}"
+    assert len(non_null_args) == 1, (
+        f"Expected 1 form definition part to be provided, got {len(non_null_args)}"
+    )
 
     export_definition = {}
 

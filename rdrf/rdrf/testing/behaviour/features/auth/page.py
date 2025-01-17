@@ -214,7 +214,7 @@ class ChangeEmailAddressPage(BasePage):
 
 def get_site_links(site_url, registry_code):
     def _make_url(resource):
-        return f'{"/".join([site_url, resource])}'
+        return f"{'/'.join([site_url, resource])}"
 
     return {
         key: _make_url(resource)

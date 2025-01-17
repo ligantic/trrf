@@ -151,7 +151,7 @@ class CodeEvaluator:
         cde_validation = target.invalid_cdes()
         if cde_validation:
             logger.error(
-                f'Invalid CDEs specified: {" ".join([str(cde) for cde in cde_validation])}'
+                f"Invalid CDEs specified: {' '.join([str(cde) for cde in cde_validation])}"
             )
             return []
 

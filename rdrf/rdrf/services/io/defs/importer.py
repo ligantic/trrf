@@ -474,7 +474,7 @@ class Importer(object):
                     ]
                     if import_value not in valid_types:
                         raise ValidationError(
-                            f'Invalid data type {import_value} for CDE: {cde_map["code"]}'
+                            f"Invalid data type {import_value} for CDE: {cde_map['code']}"
                         )
                 elif field == "widget_name":
                     import_value = CdeMappings.fix_widget_name(
@@ -486,7 +486,7 @@ class Importer(object):
                     valid_widgets = get_widgets_for_data_type(data_type) + [""]
                     if import_value not in valid_widgets:
                         raise ValidationError(
-                            f'Invalid widget_name {cde_map[field]} for datatype {data_type} and CDE: {cde_map["code"]}'
+                            f"Invalid widget_name {cde_map[field]} for datatype {data_type} and CDE: {cde_map['code']}"
                         )
 
                 if not created:
