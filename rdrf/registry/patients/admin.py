@@ -652,7 +652,7 @@ class PatientUserAdmin(admin.ModelAdmin):
         if patient_model.guid:
             patient_attrs.append(f"GUID: {patient_model.guid}")
 
-        return f'{patient_model.display_name} ({", ".join(patient_attrs)})'
+        return f"{patient_model.display_name} ({', '.join(patient_attrs)})"
 
     def get_list_display(self, request):
         supports_guid = any(

@@ -275,23 +275,23 @@ class MigrateCDESTestCase(TestCase):
                     if cde_dict_item["code"] == cde_code:
                         return True
 
-        assert not check_cde_in_section(
-            "CDE00016", s_section
-        ), "CDE00016 is still in source section"
-        assert check_cde_in_section(
-            "CDE00016", t_section
-        ), "CDE00016 is not in target section found"
+        assert not check_cde_in_section("CDE00016", s_section), (
+            "CDE00016 is still in source section"
+        )
+        assert check_cde_in_section("CDE00016", t_section), (
+            "CDE00016 is not in target section found"
+        )
 
-        assert not check_cde_in_section(
-            "FHCRP", s_section
-        ), "FHCRP is still in source section"
-        assert check_cde_in_section(
-            "FHCRP", t_section
-        ), "FHCRP is not in target section found"
+        assert not check_cde_in_section("FHCRP", s_section), (
+            "FHCRP is still in source section"
+        )
+        assert check_cde_in_section("FHCRP", t_section), (
+            "FHCRP is not in target section found"
+        )
 
-        assert check_cde_in_section(
-            "FHCompliance", s_section
-        ), "FHCompliance has been moved."
+        assert check_cde_in_section("FHCompliance", s_section), (
+            "FHCompliance has been moved."
+        )
 
 
 def mock_messages():
@@ -388,9 +388,9 @@ class TestFormPermissions(RDRFTestCase):
 def export_yaml_file_test(registry):
     exporter = Exporter(registry)
     yaml_data, errors = exporter.export_yaml()
-    assert isinstance(
-        errors, list
-    ), "Expected errors list in exporter export_yaml"
+    assert isinstance(errors, list), (
+        "Expected errors list in exporter export_yaml"
+    )
     assert len(errors) == 0, "Expected zero errors instead got:%s" % errors
     assert isinstance(yaml_data, str), (
         "Expected yaml_data is  string:%s" % type(yaml_data)
@@ -808,22 +808,22 @@ class FormTestCase(RDRFTestCase):
         the_form = mongo_record["forms"][0]
         assert isinstance(the_form, dict), "form data should be a dictionary"
         assert "sections" in the_form, "A form should have a sections key"
-        assert isinstance(
-            the_form["sections"], list
-        ), "Sections should be in a list"
+        assert isinstance(the_form["sections"], list), (
+            "Sections should be in a list"
+        )
         # we've only written data for 2 sections
         assert len(the_form["sections"]) == 2, (
             "expected 2 sections got %s" % len(the_form["sections"])
         )
 
         for section_dict in the_form["sections"]:
-            assert isinstance(
-                section_dict, dict
-            ), "sections should be dictioanaries"
+            assert isinstance(section_dict, dict), (
+                "sections should be dictioanaries"
+            )
             assert "cdes" in section_dict, "sections should have a cdes key"
-            assert isinstance(
-                section_dict["cdes"], list
-            ), "sections cdes key should be a list"
+            assert isinstance(section_dict["cdes"], list), (
+                "sections cdes key should be a list"
+            )
             for cde in section_dict["cdes"]:
                 assert isinstance(cde, dict), "cde should be a dict"
                 assert "code" in cde, "cde dictionary should have a code key"
@@ -1527,9 +1527,9 @@ class StructureChecker(TestCase):
         m = self.make_modjgo("cdes", good)
         output = self._run_command(registry_code="foobar", collection="cdes")
         print("output = [%s]" % output)
-        assert (
-            output == ""
-        ), "check_structure test of good data should output nothing"
+        assert output == "", (
+            "check_structure test of good data should output nothing"
+        )
 
     def test_history(self):
         foobar = Registry()
@@ -1712,9 +1712,9 @@ class RemindersTestCase(TestCase):
 
         lines = result.split("\n")
 
-        assert (
-            "dummy send reg_code=foobar description=reminder" in lines[0]
-        ), "send-reminders failed?"
+        assert "dummy send reg_code=foobar description=reminder" in lines[0], (
+            "send-reminders failed?"
+        )
 
         # create some dummy email notification history models to simulate previous
         # reminders being sent
@@ -1731,9 +1731,9 @@ class RemindersTestCase(TestCase):
 
         lines = result.split("\n")
 
-        assert (
-            "not sent" in lines
-        ), "Expected reminder NOT to be sent if one already sent"
+        assert "not sent" in lines, (
+            "Expected reminder NOT to be sent if one already sent"
+        )
 
         # 2nd one allowed
         self._clear_notifications()
@@ -1750,9 +1750,9 @@ class RemindersTestCase(TestCase):
 
         lines = result.split("\n")
         print(lines)
-        assert (
-            "dummy send reg_code=foobar description=reminder" in lines[0]
-        ), "send-reminders failed?"
+        assert "dummy send reg_code=foobar description=reminder" in lines[0], (
+            "send-reminders failed?"
+        )
 
         self._clear_notifications()
         self._setup_user("testuser", Time.LONG_AGO)
@@ -1768,9 +1768,9 @@ class RemindersTestCase(TestCase):
 
         lines = result.split("\n")
         print(lines)
-        assert (
-            "not sent" in lines
-        ), "Expected reminder NOT to be sent if two or more already sent"
+        assert "not sent" in lines, (
+            "Expected reminder NOT to be sent if two or more already sent"
+        )
 
 
 class ClinicalDataTestCase(RDRFTestCase):

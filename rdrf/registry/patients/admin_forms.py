@@ -1111,7 +1111,7 @@ class PatientUserForm(forms.ModelForm):
                         " "
                         + _("User's missing registries")
                         + ": "
-                        + f'{", ".join(r.name for r in missing_registries)}.'
+                        + f"{', '.join(r.name for r in missing_registries)}."
                     )
 
                 if extra_registries:
@@ -1119,7 +1119,7 @@ class PatientUserForm(forms.ModelForm):
                         " "
                         + _("User's extra registries")
                         + ": "
-                        + f'{", ".join(r.name for r in extra_registries)}.'
+                        + f"{', '.join(r.name for r in extra_registries)}."
                     )
 
                 raise ValidationError(registry_diff_error)

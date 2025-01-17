@@ -19,9 +19,9 @@ class ExtraAssertionsMixin:
 
     def assertContainsNoneOf(self, values_dict, container):
         for value in values_dict.values():
-            assert (
-                value not in container
-            ), f"{value} found unexpectedly in {container}"
+            assert value not in container, (
+                f"{value} found unexpectedly in {container}"
+            )
 
 
 class NormalQuickLinksTests(ExtraAssertionsMixin, RDRFTestCase):

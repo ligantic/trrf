@@ -43,7 +43,7 @@ class PwnedPasswordsApi:
             return response.content
 
     def _url(self, endpoint, *components):
-        return f'{self.base_url}/{endpoint}/{"/".join(components)}'
+        return f"{self.base_url}/{endpoint}/{'/'.join(components)}"
 
     def _request_headers(self):
         return {"Add-Padding": f"{str(self.add_padding).lower()}"}

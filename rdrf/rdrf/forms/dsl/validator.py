@@ -395,7 +395,7 @@ class DSLValidator:
             errors.extend(self.handle_instruction(inst, idx + 1, checker))
 
         if errors:
-            logger.info(f'DSL validation errors: {", ".join(errors)}')
+            logger.info(f"DSL validation errors: {', '.join(errors)}")
             raise ValidationError(
                 {"conditional_rendering_rules": "\n".join(errors)}
             )

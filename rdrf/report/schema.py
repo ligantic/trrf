@@ -425,9 +425,9 @@ class FormMetaType(ObjectType):
 def get_schema_field_name(s):
     if not _graphql_field_pattern.match(s):
         new_str = f"field{s}"
-        assert _graphql_field_pattern.match(
-            new_str
-        ), f"Cannot use field '{s}' in graphql schema"
+        assert _graphql_field_pattern.match(new_str), (
+            f"Cannot use field '{s}' in graphql schema"
+        )
         return new_str
     return s
 
@@ -496,9 +496,9 @@ def get_cfg_forms(cfg_key, cfg_model):
 
             def form_resolver(parent, _info, form_model):
                 _patient, _contexts, clinical_data = parent
-                assert (
-                    len(clinical_data) <= 1
-                ), "Too many clinical data records to resolve form"
+                assert len(clinical_data) <= 1, (
+                    "Too many clinical data records to resolve form"
+                )
 
                 if len(clinical_data) == 0:
                     return None

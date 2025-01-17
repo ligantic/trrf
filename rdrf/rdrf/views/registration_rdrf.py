@@ -182,7 +182,7 @@ class PatientActivationView(ActivationView):
             login(
                 self.request, user, "django.contrib.auth.backends.ModelBackend"
             )
-        return f'{reverse("two_factor:login")}?next={reverse("login_router")}?new_activation=True'
+        return f"{reverse('two_factor:login')}?next={reverse('login_router')}?new_activation=True"
 
 
 def validate_recaptcha(response_value):

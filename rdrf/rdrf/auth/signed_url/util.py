@@ -21,9 +21,9 @@ def check_token(username_b64, token, max_token_age):
 
 def make_token(username):
     token_username, token = TimestampSigner().sign(username).split(":", 1)
-    assert (
-        username == token_username
-    ), "Something went wrong with token generation"
+    assert username == token_username, (
+        "Something went wrong with token generation"
+    )
     return token
 
 

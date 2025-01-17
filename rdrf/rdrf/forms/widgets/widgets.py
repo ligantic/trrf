@@ -648,25 +648,25 @@ class SliderWidget(widgets.TextInput):
             <div class="rdrf-cde-slider">
                 <div style="float:left; margin-right:20px;"><b>{_(left_label)}</b></div>
                 <div style="float:left">
-                    <input type="hidden" id="{attrs['id']}" name="{name}" value="{value}"/>
+                    <input type="hidden" id="{attrs["id"]}" name="{name}" value="{value}"/>
                 </div>
                 <div style="float:left;margin-left:20px;"><b>{_(right_label)}</b></div>
             </div>
             <br/>
             <script>
                 $(function() {{
-                    $( "#{attrs['id']}" ).bootstrapSlider({{
+                    $( "#{attrs["id"]}" ).bootstrapSlider({{
                         tooltip: 'always',
-                        id: '{attrs['id']}-slider',
+                        id: '{attrs["id"]}-slider',
                         value: '{value}',
                         {widget_attrs}
                     }});
 
                     // Set the uninitialised / null value to ""
-                    $( "#{attrs['id']}" ).val("{value}");
+                    $( "#{attrs["id"]}" ).val("{value}");
                     // Set the uninitialised / null value to "-" in the tooltip
                     if ("{value}" === "") {{
-                        $("#{attrs['id']}-slider .tooltip-inner").html("-");
+                        $("#{attrs["id"]}-slider .tooltip-inner").html("-");
                     }};
 
                      // Set z-index to 0 for slider tooltip so it's not displayed through
@@ -955,9 +955,9 @@ class XnatWidget(LookupWidget):
     def extract_lookup_values(raw_value):
         if raw_value:
             values = raw_value.split(XnatWidget.SEPARATOR)
-            assert (
-                len(values) == 2
-            ), f"Invalid split result. Expected 2, got {len(values)}"
+            assert len(values) == 2, (
+                f"Invalid split result. Expected 2, got {len(values)}"
+            )
             return values
 
         return None, None

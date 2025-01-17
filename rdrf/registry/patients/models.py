@@ -602,7 +602,7 @@ class Patient(models.Model):
 
     @property
     def display_age(self):
-        return f'{self.age} {_("years")}'
+        return f"{self.age} {_('years')}"
 
     @property
     def guid(self):
@@ -1368,9 +1368,9 @@ class Patient(models.Model):
         to existing forms "of type" (ie being in a context with a link to)  context_form_group
 
         """
-        assert (
-            context_form_group.supports_direct_linking
-        ), "Context Form group must only contain one form"
+        assert context_form_group.supports_direct_linking, (
+            "Context Form group must only contain one form"
+        )
         form_model = context_form_group.forms[0]
         if user and not user.can_view(form_model):
             return []
