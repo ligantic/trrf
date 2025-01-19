@@ -357,7 +357,6 @@ SECURITY_WHITELISTED_URLS = (
     "import_registry",
     "javascript-catalog",
     "landing",
-    "login_assistance",
     "login_router",
     "logout",
     "mailbox",
