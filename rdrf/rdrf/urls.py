@@ -4,7 +4,6 @@ from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import include, path, re_path
-from django.utils.translation import gettext as _
 from django.views.generic.base import TemplateView
 from django.views.i18n import JavaScriptCatalog
 from report.schema import create_dynamic_schema
@@ -24,7 +23,6 @@ from rdrf.auth.views import (
     LoginView,
     QRGeneratorView,
     SetupView,
-    login_assistance_confirm,
 )
 from rdrf.forms.password_change import PasswordChangeForm
 from rdrf.users.views import (
@@ -206,31 +204,10 @@ patterns += [
         auth_views.PasswordResetCompleteView.as_view(),
         name="password_reset_complete",
     ),
-    # Login trouble self assistance URLs
     re_path(
         r"^login_assistance/?$",
         auth_views.PasswordResetView.as_view(form_class=RDRFPasswordResetForm),
         name="login_assistance",
-    ),
-    re_path(
-        r"^login_assistance/sent/?$",
-        auth_views.PasswordResetDoneView.as_view(),
-        kwargs={
-            "template_name": "registration/login_assistance_sent.html",
-            "extra_context": {"title": _("Login Assistance Email Sent")},
-        },
-        name="login_assistance_email_sent",
-    ),
-    re_path(
-        r"^login_assistance_confirm/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]+-[0-9A-Za-z]+)/?$",
-        login_assistance_confirm,
-        name="login_assistance_confirm",
-    ),
-    re_path(
-        r"^login_assistance/complete/?$",
-        auth_views.PasswordResetCompleteView.as_view(),
-        kwargs={"template_name": "registration/login_assistance_complete.html"},
-        name="login_assistance_complete",
     ),
     re_path(
         r"^email_address/?$",

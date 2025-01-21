@@ -8,14 +8,8 @@ from django.contrib.auth.forms import (
     PasswordResetForm,
     SetPasswordForm,
 )
-from django.contrib.auth.tokens import default_token_generator
-from django.contrib.sites.shortcuts import get_current_site
 from django.forms import ValidationError
-from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
-
-from rdrf.auth import can_user_self_unlock
 
 logger = logging.getLogger(__name__)
 
@@ -35,91 +29,6 @@ class RDRFPasswordResetForm(PasswordResetForm):
             )
 
         return (u for u in users if u.has_usable_password())
-
-
-# Similar to django.contrib.auth.forms.PasswordResetForm but sends account unlock email link to the user.
-# Also, sends a different email if the user tried to unlock their account
-# but the account isn't locked.
-class RDRFLoginAssistanceForm(PasswordResetForm):
-    def get_users(self, email):
-        return get_user_model()._default_manager.filter(email__iexact=email)
-
-    def _common_context(
-        self,
-        domain_override=None,
-        request=None,
-        use_https=False,
-        extra_email_context=None,
-    ):
-        if not domain_override:
-            current_site = get_current_site(request)
-            site_name = current_site.name
-            domain = current_site.domain
-        else:
-            site_name = domain = domain_override
-        context = {
-            "domain": domain,
-            "site_name": site_name,
-            "protocol": "https" if use_https else "http",
-        }
-        if extra_email_context is not None:
-            context.update(extra_email_context)
-        return context
-
-    def save(
-        self,
-        domain_override=None,
-        subject_template_name="registration/login_assistance_subject.txt",
-        email_template_name="registration/login_assistance_email.html",
-        account_unlocked_email_template_name="registration/login_assistance_account_not_locked_email.html",
-        can_not_self_unlock_email_template_name="registration/login_assistance_can_not_self_unlock_email.html",
-        use_https=False,
-        token_generator=default_token_generator,
-        from_email=None,
-        request=None,
-        html_email_template_name=None,
-        extra_email_context=None,
-    ):
-        email = self.cleaned_data["email"]
-        context = self._common_context(
-            request=request,
-            domain_override=domain_override,
-            use_https=use_https,
-            extra_email_context=extra_email_context,
-        )
-
-        def _choose_template(user):
-            if user.is_active:
-                return (
-                    subject_template_name,
-                    account_unlocked_email_template_name,
-                )
-            if not can_user_self_unlock(user):
-                return (
-                    subject_template_name,
-                    can_not_self_unlock_email_template_name,
-                )
-
-            return subject_template_name, email_template_name
-
-        for user in self.get_users(email):
-            context.update(
-                {
-                    "email": user.email,
-                    "user": user,
-                    "uid": urlsafe_base64_encode(force_bytes(user.pk)),
-                    "token": token_generator.make_token(user),
-                }
-            )
-
-            subject_template_name, template_name = _choose_template(user)
-            self.send_mail(
-                subject_template_name,
-                template_name,
-                context,
-                from_email,
-                user.email,
-            )
 
 
 # Same as django.contrib.auth.forms.SetPasswordForm but also reactivates the user if it is inactive
