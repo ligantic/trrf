@@ -17,14 +17,13 @@ import rdrf.views.import_registry_view as import_registry_view
 import rdrf.views.landing_view as landing_view
 import rdrf.views.patient_view as patient_view
 import rdrf.views.registry_view as registry_view
-from rdrf.auth.forms import RDRFPasswordResetForm, RDRFSetPasswordForm
+from rdrf.auth.forms import RDRFSetPasswordForm
 from rdrf.auth.views import (
     DisableView,
     LoginView,
     QRGeneratorView,
     SetupView,
 )
-from rdrf.forms.password_change import PasswordChangeForm
 from rdrf.users.views import (
     ActivateEmailChangeRequestView,
     PatientEmailChangeRequestView,
@@ -173,7 +172,7 @@ patterns += [
     re_path(r"^logout/?$", auth_views.LogoutView.as_view(), name="logout"),
     re_path(
         r"^password_change/?$",
-        auth_views.PasswordChangeView.as_view(form_class=PasswordChangeForm),
+        auth_views.PasswordChangeView.as_view(),
         name="password_change",
     ),
     re_path(
@@ -184,7 +183,6 @@ patterns += [
     re_path(
         r"^password_reset/?$",
         auth_views.PasswordResetView.as_view(),
-        kwargs={"password_reset_form": RDRFPasswordResetForm},
         name="password_reset",
     ),
     re_path(
@@ -203,11 +201,6 @@ patterns += [
         r"^reset/done/?$",
         auth_views.PasswordResetCompleteView.as_view(),
         name="password_reset_complete",
-    ),
-    re_path(
-        r"^login_assistance/?$",
-        auth_views.PasswordResetView.as_view(form_class=RDRFPasswordResetForm),
-        name="login_assistance",
     ),
     re_path(
         r"^email_address/?$",

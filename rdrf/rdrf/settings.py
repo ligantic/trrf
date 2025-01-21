@@ -725,12 +725,12 @@ if DEBUG:
 STRONGHOLD_PUBLIC_NAMED_URLS = (
     "health_check",
     "landing",
-    "login_assistance",
     "registration_complete",
     "registration_failed",
     "registration_disallowed",
     "registration_activation_complete",
     "registration_activate_complete",
+    "password_reset",
     "password_reset_done",
     "password_reset_complete",
     "favicon",
