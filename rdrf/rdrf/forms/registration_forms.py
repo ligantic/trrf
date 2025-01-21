@@ -81,28 +81,3 @@ class PatientRegistrationForm(RegistrationFormCaseInsensitiveCheck):
         choices=Patient.SEX_CHOICES, widget=RadioSelect, required=True
     )
     preferred_languages = ChoiceField(required=False, choices=language_choices)
-
-
-class ParentWithPatientRegistrationForm(PatientRegistrationForm):
-    PatientRegistrationForm.labels.update(
-        {
-            "parent_guardian_first_name": _("Parent/Guardian Given Names"),
-            "parent_guardian_last_name": _("Parent/Guardian Surname"),
-            "parent_guardian_date_of_birth": _("Parent/Guardian Date of Birth"),
-            "parent_guardian_gender": _("Parent/Guardian gender"),
-        }
-    )
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field, tooltip in self.tooltip_info.items():
-            self.fields[field].widget.attrs["data-bs-toggle"] = "tooltip"
-            self.fields[field].widget.attrs["data-bs-placement"] = "left"
-            self.fields[field].widget.attrs["title"] = tooltip
-
-    parent_guardian_first_name = CharField(required=True)
-    parent_guardian_last_name = CharField(required=True)
-    parent_guardian_date_of_birth = DateField(required=True)
-    parent_guardian_gender = ChoiceField(
-        choices=Patient.SEX_CHOICES, widget=RadioSelect, required=True
-    )
