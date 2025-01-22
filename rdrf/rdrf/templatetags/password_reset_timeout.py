@@ -17,7 +17,7 @@ def now():
     return datetime.now(timezone.utc)
 
 
-@register.filter
+@register.simple_tag
 def timeuntil_expiry(from_datetime, expiry_timedelta):
     expiry_datetime = from_datetime + expiry_timedelta
     return timeuntil(expiry_datetime, from_datetime)
