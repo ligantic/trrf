@@ -90,7 +90,10 @@ class BaseEmailChangeRequest(View):
             messages.add_message(
                 request,
                 messages.SUCCESS,
-                f"{_('An Email address change request has been created for user: %s') % self.user.get_full_name()}",
+                _(
+                    "An Email address change request has been created for user: %s"
+                )
+                % self.user.get_full_name(),
             )
 
             return self._redirect_response()
@@ -98,7 +101,8 @@ class BaseEmailChangeRequest(View):
             form.add_error(
                 NON_FIELD_ERRORS,
                 ValidationError(
-                    f"{_('Email address change request has failed for user')}: {self.user.get_full_name()}"
+                    _("Email address change request has failed for user: %s")
+                    % self.user.get_full_name()
                 ),
             )
 
