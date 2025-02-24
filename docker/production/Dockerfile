@@ -37,6 +37,7 @@ COPY requirements/* ./
 
 COPY clients ./clients
 
+RUN pip install --upgrade setuptools pip
 RUN pip install -r requirements.txt
 
 # Actual image we are building
