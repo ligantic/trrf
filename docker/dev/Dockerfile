@@ -37,6 +37,7 @@ COPY requirements/* ./
 COPY clients ./clients
 
 RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --upgrade pip setuptools && \
     pip install -r requirements.txt && \
     pip install -r dev-requirements.txt && \
     pip install -r test-requirements.txt
