@@ -27,8 +27,6 @@ class CDETests(TestCase):
             if not key.startswith("__")
         ]
 
-        # If this test fails here, it means that a new data type has been added to CommonDataElement but not wired into this test.
-        # Update the test to ensure the new data type is tested with it's expected display_value
         self.assertEqual(
             cde_datatypes,
             [
@@ -45,6 +43,9 @@ class CDETests(TestCase):
                 "Lookup",
                 "Time",
             ],
+            "A new data type has been added to CommonDataElement that hasn't been accounted for. "
+            "Add the new data type and its expected display_value to this assertion and in the tests for display_value "
+            "below.",
         )
 
         # Test each data type
@@ -129,10 +130,15 @@ class CDETests(TestCase):
             display_value = get_cde_display_value(cde)
             self.assertEqual(display_value, cde["display_value"])
 
-            # Check allowable return types, as expected by graphql schema.
+            # Allowable return types, as expected by graphql schema.
             # More info: https://docs.graphene-python.org/en/latest/types/scalars/
             # More info: https://graphql.org/learn/schema/#scalar-types
-            self.assertIsInstance(display_value, (bool, str, int, float))
+            self.assertIsInstance(
+                display_value,
+                (bool, str, int, float),
+                "display_value is required to be a "
+                "scalar type for compatibility with graphql",
+            )
 
             # Check multi value
             self.assertEqual(
