@@ -17,7 +17,7 @@ import rdrf.views.import_registry_view as import_registry_view
 import rdrf.views.landing_view as landing_view
 import rdrf.views.patient_view as patient_view
 import rdrf.views.registry_view as registry_view
-from rdrf.auth.forms import RDRFSetPasswordForm
+from rdrf.auth.forms import RDRFPasswordResetForm, RDRFSetPasswordForm
 from rdrf.auth.views import (
     DisableView,
     LoginView,
@@ -182,7 +182,9 @@ patterns += [
     ),
     re_path(
         r"^password_reset/?$",
-        auth_views.PasswordResetView.as_view(),
+        auth_views.PasswordResetView.as_view(
+            form_class=RDRFPasswordResetForm,
+        ),
         name="password_reset",
     ),
     re_path(
