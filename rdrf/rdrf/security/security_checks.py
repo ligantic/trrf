@@ -36,7 +36,8 @@ def _patient_checks(user, patient_model):
 def security_check_user_patient(user, patient_model):
     # either user is allowed to act on this record ( return True)
     # or not ( raise PermissionDenied error)
-    if not (user.is_authenticated and user.is_active):
+    logger.info("security_check_user_patient")
+    if not (user.is_authenticated and user.is_active and not user.is_locked):
         _security_violation(user, patient_model)
 
     registry = patient_model.rdrf_registry.first()

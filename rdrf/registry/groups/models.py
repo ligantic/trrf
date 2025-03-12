@@ -211,11 +211,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
             "Force this user to change their password to access the system."
         ),
     )
-    prevent_self_unlock = models.BooleanField(
-        _("prevent self unlock"),
+    is_locked = models.BooleanField(
+        _("locked"),
         default=False,
         help_text=_(
-            "Explicitly prevent this user to unlock their account using the Unlock Account functionality."
+            "The user is locked from the system but may unlock it via password reset."
         ),
     )
 

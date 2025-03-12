@@ -133,7 +133,10 @@ def user_pre_save(sender, instance=None, raw=False, **kwargs):
     # User has been re-activated. Ensure the last_login is set to None so
     # that the user isn't inactivated on next login by the AccountExpiryBackend
     current_user = sender.objects.get(pk=user.pk)
-    if not current_user.is_active and user.is_active:
+    logger.info(
+        f"user_pre_save, current_user.is_locked: {current_user.is_locked}, user.is_locked: {user.is_locked}"
+    )
+    if current_user.is_locked and not user.is_locked:
         user.last_login = None
 
 
@@ -277,14 +280,14 @@ class AccountExpiryBackend(object):
                 logger.info(
                     "Password expired! Disabling user account: %s" % user
                 )
-                user.is_active = False
+                user.is_locked = True
                 user.save()
                 password_has_expired.send(sender=user.__class__, user=user)
                 self._prevent_login(username, "Password has expired")
 
             if is_account_expired(user):
                 logger.info("Disabling stale user account: %s" % user)
-                user.is_active = False
+                user.is_locked = True
                 user.save()
                 account_has_expired.send(sender=user.__class__, user=user)
                 self._prevent_login(username, "Account has expired")

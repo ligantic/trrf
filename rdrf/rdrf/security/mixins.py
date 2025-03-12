@@ -31,8 +31,12 @@ class TokenAuthenticatedMixin(AccessMixin):
         is_valid_token, username = check_token(
             self.username_b64, self.token, self.max_age
         )
+        import logging
+
+        logger = logging.getLogger(__name__)
+        logger.info("TODO - token authentication mixin")
         self.user = get_object_or_404(
-            CustomUser, username=username, is_active=True
+            CustomUser, username=username, is_active=True, is_locked=False
         )
 
         if not is_valid_token:

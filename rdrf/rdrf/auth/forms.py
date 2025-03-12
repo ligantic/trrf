@@ -8,6 +8,7 @@ from django.contrib.auth.forms import (
     PasswordResetForm,
     SetPasswordForm,
 )
+from django.db.models import Q
 from django.forms import ValidationError
 from django.utils.translation import gettext as _
 
@@ -19,15 +20,12 @@ logger = logging.getLogger(__name__)
 # to unlock their account
 class RDRFPasswordResetForm(PasswordResetForm):
     def get_users(self, email):
-        if getattr(settings, "ACCOUNT_SELF_UNLOCK_ENABLED", False):
-            users = get_user_model()._default_manager.filter(
-                prevent_self_unlock=False, email__iexact=email
-            )
-        else:
-            users = get_user_model()._default_manager.filter(
-                email__iexact=email, is_active=True
-            )
+        users_query = Q(email__iexact=email, is_active=True)
 
+        if not getattr(settings, "ACCOUNT_SELF_UNLOCK_ENABLED", False):
+            users_query &= Q(is_locked=False)
+
+        users = get_user_model()._default_manager.filter(users_query)
         return (u for u in users if u.has_usable_password())
 
 
@@ -36,18 +34,22 @@ class RDRFPasswordResetForm(PasswordResetForm):
 class RDRFSetPasswordForm(SetPasswordForm):
     def save(self, commit=True):
         super().save(commit=False)
+
         if not self.user.is_active:
+            logger.warning(
+                'User "%s" reset their password but their account is disabled ',
+                self.user,
+            )
+        elif self.user.is_locked:
             if getattr(settings, "ACCOUNT_SELF_UNLOCK_ENABLED", False):
-                if not self.user.prevent_self_unlock:
-                    self.user.is_active = True
+                self.user.is_locked = False
+                if commit:
+                    self.user.save()
             else:
                 logger.warning(
-                    'User "%s" resetted their password but their account is inactive '
-                    "and settings.ACCOUNT_SELF_UNLOCK_ENABLED is NOT set.",
-                    self.user,
+                    'User "%s" resetted their password but their account is locked and self unlock is disabled.',
                 )
-        if commit:
-            self.user.save()
+
         return self.user
 
 
