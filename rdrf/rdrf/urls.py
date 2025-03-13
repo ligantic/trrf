@@ -24,6 +24,7 @@ from rdrf.auth.views import (
     QRGeneratorView,
     SetupView,
 )
+from rdrf.forms.password_change import PasswordChangeForm
 from rdrf.users.views import (
     ActivateEmailChangeRequestView,
     PatientEmailChangeRequestView,
@@ -172,7 +173,7 @@ patterns += [
     re_path(r"^logout/?$", auth_views.LogoutView.as_view(), name="logout"),
     re_path(
         r"^password_change/?$",
-        auth_views.PasswordChangeView.as_view(),
+        auth_views.PasswordChangeView.as_view(form_class=PasswordChangeForm),
         name="password_change",
     ),
     re_path(
