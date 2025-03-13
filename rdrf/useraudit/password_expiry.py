@@ -276,6 +276,9 @@ class AccountExpiryBackend(object):
             if hasattr(user, "is_active") and not user.is_active:
                 self._prevent_login(username, "Account is not active")
 
+            if hasattr(user, "is_locked") and user.is_locked:
+                self._prevent_login(username, "Account is locked")
+
             if is_password_expired(user):
                 logger.info(
                     "Password expired! Disabling user account: %s" % user
