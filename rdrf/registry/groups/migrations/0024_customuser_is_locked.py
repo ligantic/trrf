@@ -34,7 +34,7 @@ class Migration(migrations.Migration):
             name="is_locked",
             field=models.BooleanField(
                 default=False,
-                help_text="The user is locked from the system but may unlock it via password reset.",
+                help_text="The user is locked from accessing the system but may unlock it via password reset.",
                 verbose_name="locked",
             ),
         ),

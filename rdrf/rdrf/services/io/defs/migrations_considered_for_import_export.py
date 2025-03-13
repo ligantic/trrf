@@ -39,6 +39,7 @@ MIGRATIONS_CONSIDERED_FOR_IMPORT_EXPORT = {
         "0021_emailchangerequest_historicalemailchangerequest",
         "0022_alter_workinggroup_options",
         "0023_alter_workinggroup_unique_together",
+        "0024_customuser_is_locked",
     },
     "patients": {
         "0001_initial",

@@ -215,7 +215,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         _("locked"),
         default=False,
         help_text=_(
-            "The user is locked from the system but may unlock it via password reset."
+            "The user is locked from accessing the system but may unlock it via password reset."
         ),
     )
 

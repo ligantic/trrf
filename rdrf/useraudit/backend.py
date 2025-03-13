@@ -40,8 +40,7 @@ class AuthFailedLoggerBackend(object):
         UserModel = get_user_model()
         self.username = credentials.get(UserModel.USERNAME_FIELD)
         self.login_logger.log_failed_login(self.username, request)
-        user = self._get_user()
-        if user is not None and user.is_active:
+        if self._get_user() is not None:
             self.login_attempt_logger.increment(self.username)
             self.block_user_if_needed()
 
