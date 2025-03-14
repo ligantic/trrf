@@ -43,12 +43,13 @@ class RDRFSetPasswordForm(SetPasswordForm):
         elif self.user.is_locked:
             if getattr(settings, "ACCOUNT_SELF_UNLOCK_ENABLED", False):
                 self.user.is_locked = False
-                if commit:
-                    self.user.save()
             else:
                 logger.warning(
                     'User "%s" resetted their password but their account is locked and self unlock is disabled.',
                 )
+
+        if commit:
+            self.user.save()
 
         return self.user
 
