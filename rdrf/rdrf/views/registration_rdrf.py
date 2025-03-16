@@ -19,10 +19,10 @@ from rdrf.models.definition.models import Registry
 logger = logging.getLogger(__name__)
 
 registration_csp_script_src = [
-    "https://www.google.com/recaptcha/",
+    "https://www.recaptcha.net/recaptcha/",
     "https://www.gstatic.com/recaptcha/",
 ]
-registration_csp_frame_src = ["https://www.google.com/recaptcha/"]
+registration_csp_frame_src = ["https://www.recaptcha.net/recaptcha/"]
 
 
 class RdrfRegistrationView(RegistrationView):
@@ -191,7 +191,7 @@ def validate_recaptcha(response_value):
         "response": response_value,
     }
     response = requests.post(
-        "https://www.google.com/recaptcha/api/siteverify", data=payload
+        "https://www.recaptcha.net/recaptcha/api/siteverify", data=payload
     )
     try:
         response.raise_for_status()
