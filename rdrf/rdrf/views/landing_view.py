@@ -8,7 +8,7 @@ from rdrf.models.definition.models import Registry
 class LandingView(View):
     @csp_update(
         STYLE_SRC=["https://fonts.googleapis.com"],
-        FONT_SRC=["https://fonts.gstatic.com"],
+        FONT_SRC=["https://fonts.gstatic.com", "https://fonts.gstatic.cn"],
     )
     def get(self, request):
         return render(
