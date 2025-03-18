@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 registration_csp_script_src = [
     "https://www.recaptcha.net/recaptcha/",
     "https://www.gstatic.com/recaptcha/",
+    "https://www.gstatic.cn/recaptcha/",
 ]
 registration_csp_frame_src = ["https://www.recaptcha.net/recaptcha/"]
 

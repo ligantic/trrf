@@ -781,7 +781,7 @@ CROWDIN_IN_CONTEXT_DOMAIN = env.get("crowdin_in_context_domain", "eresearchqut")
 if ENABLE_CROWDIN_IN_CONTEXT_TRANSLATION:
     CSP_SCRIPT_SRC += ["https://cdn.crowdin.com"]
     CSP_STYLE_SRC += ["https://cdn.crowdin.com", "https://fonts.googleapis.com"]
-    CSP_FONT_SRC += ["https://fonts.gstatic.com"]
+    CSP_FONT_SRC += ["https://fonts.gstatic.com", "https://fonts.gstatic.cn"]
     CSP_IMG_SRC += [
         "https://cdn.crowdin.com",
         "https://*.downloads.crowdin.com",
