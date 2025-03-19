@@ -24,6 +24,7 @@ registration_csp_script_src = [
     "https://www.gstatic.cn/recaptcha/",
 ]
 registration_csp_frame_src = ["https://www.recaptcha.net/recaptcha/"]
+registration_csp_connect_src = ["https://www.recaptcha.net/recaptcha/"]
 
 
 class RdrfRegistrationView(RegistrationView):
@@ -38,6 +39,7 @@ class RdrfRegistrationView(RegistrationView):
     @csp_update(
         SCRIPT_SRC=registration_csp_script_src,
         FRAME_SRC=registration_csp_frame_src,
+        CONNECT_SRC=registration_csp_connect_src,
     )
     def dispatch(self, request, *args, **kwargs):
         self.registry_code = kwargs["registry_code"]
