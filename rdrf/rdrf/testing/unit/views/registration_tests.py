@@ -92,13 +92,13 @@ class RegistrationTest(TestCase):
         )
 
         self.consent_section = ConsentSection.objects.create(
-            code="r4_cs",
+            code="csR4",
             registry=self.registry,
             section_label="Consent Section",
-            validation_rule="r4_cq",
+            validation_rule="cqR4",
         )
         self.consent_question = ConsentQuestion.objects.create(
-            code="r4_cq", position=1, section=self.consent_section
+            code="cqR4", position=1, section=self.consent_section
         )
 
     def register_patient(self):

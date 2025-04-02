@@ -427,7 +427,7 @@ class SchemaTest(TestCase):
             patient.rdrf_registry.set([self.registry])
 
         cs1 = ConsentSection.objects.create(
-            code="consent_section_1",
+            code="consentSection1",
             section_label="CS1",
             registry=self.registry,
         )
@@ -551,10 +551,10 @@ class SchemaTest(TestCase):
         clinician.groups.add(group)
 
         consent_section = ConsentSection.objects.create(
-            code="consent_section", section_label="CS", registry=self.registry
+            code="consentSection", section_label="CS", registry=self.registry
         )
         consent_question = ConsentQuestion.objects.create(
-            code="consent_question", section=consent_section
+            code="consentQuestion", section=consent_section
         )
         ConsentRule.objects.create(
             registry=self.registry,
