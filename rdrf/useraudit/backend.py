@@ -50,7 +50,7 @@ class AuthFailedLoggerBackend(object):
         if not self.is_login_failure_limit_enabled():
             return
         if self.is_attempts_exceeded():
-            self._deactivate_user()
+            self._lock_user_account()
             user = self._get_user()
             login_failure_limit_reached.send(sender=user.__class__, user=user)
             logger.info(
@@ -90,11 +90,11 @@ class AuthFailedLoggerBackend(object):
             )
             return None
 
-    def _deactivate_user(self):
+    def _lock_user_account(self):
         user = self._get_user()
         if user:
-            user.is_active = False
-            user.save(update_fields=["is_active"])
-            logger.warning("Username '%s' has been blocked" % self.username)
+            user.is_locked = True
+            user.save(update_fields=["is_locked"])
+            logger.warning("Username '%s' has been locked" % self.username)
             return True
         return False

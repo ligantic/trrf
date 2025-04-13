@@ -32,7 +32,7 @@ class TokenAuthenticatedMixin(AccessMixin):
             self.username_b64, self.token, self.max_age
         )
         self.user = get_object_or_404(
-            CustomUser, username=username, is_active=True
+            CustomUser, username=username, is_active=True, is_locked=False
         )
 
         if not is_valid_token:

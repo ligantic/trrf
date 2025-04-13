@@ -46,7 +46,7 @@ class UserSentryMiddleware(MiddlewareMixin):
     """
 
     whitelisted_views = [
-        "login",
+        "favicon",
         "setup",
         "qr",
         "password_change",

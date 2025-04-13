@@ -58,6 +58,7 @@ class ExpiryTestCase(TestCase):
             password_change_date=timezone.now(),
             email="testuser@localhost",
             is_active=True,
+            is_locked=False,
         )
         self.user.set_password(self.password)
         self.user.save()
@@ -90,13 +91,15 @@ class ExpiryTestCase(TestCase):
         u = self.authenticate()
         self.assertIsNotNone(u)
         self.assertTrue(u.is_active)
+        self.assertFalse(u.is_locked)
 
     @override_settings(ACCOUNT_EXPIRY_DAYS=5)
     def test_expired(self):
         self.setuser(last_login=timezone.now() - timedelta(days=6))
         u = self.authenticate()
         self.assertIsNone(u)
-        self.assertFalse(self.user2.is_active)
+        self.assertTrue(self.user2.is_active)
+        self.assertTrue(self.user2.is_locked)
 
     @override_settings(ACCOUNT_EXPIRY_DAYS=5)
     def test_user_deactivation_saved_on_expiration(self):
@@ -114,7 +117,7 @@ class ExpiryTestCase(TestCase):
         count_before = UserDeactivation.objects.filter(
             username=self.username
         ).count()
-        self.setuser(is_active=True)
+        self.setuser(is_active=True, is_locked=False)
         c = Client()
         c.login(username=self.username, password=self.password)
         count_after = UserDeactivation.objects.filter(
@@ -129,6 +132,7 @@ class ExpiryTestCase(TestCase):
         u = self.authenticate()
         self.assertIsNotNone(u)
         self.assertTrue(u.is_active)
+        self.assertFalse(u.is_locked)
 
     @override_settings(ACCOUNT_EXPIRY_DAYS=5)
     def test_fresh_user(self):
@@ -136,6 +140,7 @@ class ExpiryTestCase(TestCase):
         u = self.authenticate()
         self.assertIsNotNone(u)
         self.assertTrue(u.is_active)
+        self.assertFalse(u.is_locked)
 
     @override_settings(ACCOUNT_EXPIRY_DAYS=5)
     def test_authentication_works_if_reactivated(self):
@@ -144,13 +149,14 @@ class ExpiryTestCase(TestCase):
         # User is inactive now
 
         # Reactivate user
-        self.user.is_active = True
+        self.user.is_locked = False
         self.user.save()
         u = self.authenticate()
         self.assertIsNotNone(
             u, "Should be able to log in again if it has been activated"
         )
         self.assertTrue(self.user2.is_active)
+        self.assertFalse(self.user2.is_locked)
 
     ###########################################################################
     # password expiry test cases
@@ -168,6 +174,7 @@ class ExpiryTestCase(TestCase):
         u = self.authenticate()
         self.assertIsNotNone(u)
         self.assertTrue(u.is_active)
+        self.assertFalse(u.is_locked)
 
     @override_settings(PASSWORD_EXPIRY_DAYS=1, PASSWORD_EXPIRY_WARNING_DAYS=1)
     def test_no_warning_if_password_already_expired(self):
@@ -179,6 +186,7 @@ class ExpiryTestCase(TestCase):
     def test_password_needs_to_be_changed_today(self):
         u = self.authenticate()
         self.assertTrue(self.user2.is_active)
+        self.assertFalse(self.user2.is_locked)
         self.assertIsNotNone(self.password_will_expire_warning_signal)
         self.assertEqual(
             self.password_will_expire_warning_signal["sender"], type(self.user)
@@ -210,6 +218,7 @@ class ExpiryTestCase(TestCase):
         self.setuser(password_change_date=timezone.now() - timedelta(days=4))
         u = self.authenticate()
         self.assertTrue(self.user2.is_active)
+        self.assertFalse(self.user2.is_locked)
         self.assertIsNotNone(self.password_will_expire_warning_signal)
         self.assertEqual(
             self.password_will_expire_warning_signal["sender"], type(self.user)
@@ -226,7 +235,8 @@ class ExpiryTestCase(TestCase):
         self.setuser(password_change_date=timezone.now() - timedelta(days=6))
         u = self.authenticate()
         self.assertIsNone(u)
-        self.assertFalse(self.user2.is_active)
+        self.assertTrue(self.user2.is_active)
+        self.assertTrue(self.user2.is_locked)
 
     @override_settings(PASSWORD_EXPIRY_DAYS=5)
     def test_user_deactivation_saved_on_password_expired(self):
@@ -235,7 +245,8 @@ class ExpiryTestCase(TestCase):
         ud = UserDeactivation.objects.get(username=self.username)
         self.assertIsNone(u)
         self.assertIsNotNone(ud)
-        self.assertFalse(self.user2.is_active)
+        self.assertTrue(self.user2.is_active)
+        self.assertTrue(self.user2.is_locked)
         self.assertEqual(ud.reason, UserDeactivation.PASSWORD_EXPIRED)
 
     @override_settings(PASSWORD_EXPIRY_DAYS=-5)
@@ -246,6 +257,7 @@ class ExpiryTestCase(TestCase):
         u = self.authenticate()
         self.assertIsNotNone(u)
         self.assertTrue(u.is_active)
+        self.assertFalse(u.is_locked)
 
     @override_settings(PASSWORD_EXPIRY_DAYS=5)
     def test_fresh_user_password(self):
@@ -253,6 +265,7 @@ class ExpiryTestCase(TestCase):
         u = self.authenticate()
         self.assertIsNotNone(u)
         self.assertTrue(u.is_active)
+        self.assertFalse(u.is_locked)
 
     @override_settings(PASSWORD_EXPIRY_DAYS=5)
     def test_password_expired_signal(self):
@@ -280,7 +293,12 @@ class ExpiryTestCase(TestCase):
     # inactive account test cases
 
     def test_user_is_active(self):
-        self.setuser(is_active=False)
+        self.setuser(is_active=False, is_locked=False)
+        user = self.authenticate()
+        self.assertIsNone(user)
+
+    def test_user_is_locked(self):
+        self.setuser(is_active=True, is_locked=True)
         user = self.authenticate()
         self.assertIsNone(user)
 
@@ -313,6 +331,7 @@ class ProfileExpiryTestCase(TestCase):
             last_login=timezone.now(),
             email="testuser@localhost",
             is_active=True,
+            is_locked=False,
         )
         self.user.set_password(self.password)
         self.user.save()
@@ -345,6 +364,7 @@ class ProfileExpiryTestCase(TestCase):
         u = self.authenticate()
         self.assertIsNotNone(u)
         self.assertTrue(u.is_active)
+        self.assertFalse(u.is_locked)
 
     @override_settings(PASSWORD_EXPIRY_DAYS=5)
     def test_password_expired(self):
@@ -352,7 +372,8 @@ class ProfileExpiryTestCase(TestCase):
         self.user.save()
         u = self.authenticate()
         self.assertIsNone(u)
-        self.assertFalse(self.user2.is_active)
+        self.assertTrue(self.user2.is_active)
+        self.assertTrue(self.user2.is_locked)
 
     @override_settings(
         AUTH_USER_MODEL_PASSWORD_CHANGE_DATE_ATTR="asdfgh",
@@ -371,7 +392,8 @@ class ProfileExpiryTestCase(TestCase):
         self.user.save()
         u = self.authenticate()
         self.assertIsNone(u)
-        self.assertFalse(self.user2.is_active)
+        self.assertTrue(self.user2.is_active)
+        self.assertTrue(self.user2.is_locked)
 
 
 @override_settings(LOGIN_FAILURE_LIMIT=2)
@@ -400,6 +422,7 @@ class FailedLoginAttemtpsTestCase(TestCase):
         u = authenticate(username=self.username, password=self.password)
         self.assertIsNotNone(u)
         self.assertTrue(u.is_active)
+        self.assertFalse(u.is_locked)
 
     @override_settings(LOGIN_FAILURE_LIMIT=None)
     def test_login_failure_limit_not_enabled_None(self):
@@ -408,6 +431,7 @@ class FailedLoginAttemtpsTestCase(TestCase):
         u = authenticate(username=self.username, password=self.password)
         self.assertIsNotNone(u)
         self.assertTrue(self.user2.is_active)
+        self.assertFalse(self.user2.is_locked)
 
     @override_settings(LOGIN_FAILURE_LIMIT=0)
     def test_login_failure_limit_not_enabled_zero(self):
@@ -416,13 +440,15 @@ class FailedLoginAttemtpsTestCase(TestCase):
         u = authenticate(username=self.username, password=self.password)
         self.assertIsNotNone(u)
         self.assertTrue(self.user2.is_active)
+        self.assertFalse(self.user2.is_locked)
 
     def test_login_failure_limit_reached(self):
         _ = authenticate(username=self.username, password="INCORRECT")
         _ = authenticate(username=self.username, password="INCORRECT")
         u = authenticate(username=self.username, password=self.password)
         self.assertIsNone(u)
-        self.assertFalse(self.user2.is_active)
+        self.assertTrue(self.user2.is_active)
+        self.assertTrue(self.user2.is_locked)
 
     def test_user_deactivation_saved_when_login_failure_limit_reached(self):
         _ = authenticate(username=self.username, password="INCORRECT")
@@ -444,23 +470,22 @@ class FailedLoginAttemtpsTestCase(TestCase):
         self.assertIsNone(u)
         self.assertEqual(uds, 0)
 
-    def test_failure_counter_reset_when_reactivated(self):
+    def test_failure_counter_not_reset_when_locked(self):
         _ = authenticate(username=self.username, password="INCORRECT")
         _ = authenticate(username=self.username, password="INCORRECT")
         _ = authenticate(username=self.username, password="INCORRECT")
-        # User is inactive now
+        # User is locked now
         # Reactivate user
-        self.user.is_active = True
+        self.user.is_locked = False
         self.user.save()
 
         # IF the counter wasn't reset to 0, the first failed login attempt
-        # would inactivate the user again.
+        # would lock the user again.
         _ = authenticate(username=self.username, password="INCORRECT")
         u = authenticate(username=self.username, password=self.password)
-        self.assertIsNotNone(
-            u, "Should be able to log after just 1 failed login attempt"
-        )
+        self.assertIsNone(u, "Exceeded login attempts, user should be locked.")
         self.assertTrue(self.user2.is_active)
+        self.assertTrue(self.user2.is_locked)
 
     def test_signal(self):
         def handler(sender, user=None, **kwargs):

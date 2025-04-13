@@ -118,9 +118,9 @@ class CustomUserAdmin(UserAdmin):
             {
                 "fields": (
                     "is_active",
-                    "require_2_fact_auth",
+                    "is_locked",
                     "force_password_change",
-                    "prevent_self_unlock",
+                    "require_2_fact_auth",
                     "is_staff",
                     "groups",
                     "registry",
@@ -152,9 +152,9 @@ class CustomUserAdmin(UserAdmin):
                 {
                     "fields": (
                         "is_active",
-                        "require_2_fact_auth",
+                        "is_locked",
                         "force_password_change",
-                        "prevent_self_unlock",
+                        "require_2_fact_auth",
                         "is_staff",
                         "is_superuser",
                         "groups",
@@ -174,8 +174,12 @@ class CustomUserAdmin(UserAdmin):
     filter_horizontal = ()
 
     def status(self, user):
-        if user.is_active:
+        if not user.is_active:
+            return "Disabled"
+
+        if user.is_active and not user.is_locked:
             return "Active"
+
         choices = dict(UserDeactivation.DEACTIVATION_REASON_CHOICES)
         last_deactivation = (
             UserDeactivation.objects.filter(username=user.username)
@@ -183,11 +187,11 @@ class CustomUserAdmin(UserAdmin):
             .first()
         )
         if last_deactivation is None or last_deactivation.reason not in choices:
-            return "Inactive"
+            return "Locked"
 
         reason = choices[last_deactivation.reason]
 
-        return "Inactive (%s)" % reason
+        return "Locked (%s)" % reason
 
 
 class CustomLoginLogFilter(admin.SimpleListFilter):
