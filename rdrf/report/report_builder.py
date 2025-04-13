@@ -20,7 +20,10 @@ from rdrf.patients.query_data import (
 )
 from report.clinical_data_csv_util import ClinicalDataCsvUtil
 from report.models import ReportCdeHeadingFormat
-from report.schema import codify, create_dynamic_schema, get_schema_field_name
+from report.schema import (
+    create_dynamic_schema,
+    get_schema_field_name,
+)
 from report.utils import (
     get_flattened_json_path,
     get_graphql_result_value,
@@ -89,7 +92,10 @@ class ReportBuilder:
         # e.g. variants=["itemCode1", "itemCode2"]
         if any(isinstance(item, str) for item in variants):
             return [
-                GqlQuery().fields(fields).query(codify(header)).generate()
+                GqlQuery()
+                .fields(fields)
+                .query(get_schema_field_name(header))
+                .generate()
                 for header in variants
             ]
 
@@ -255,7 +261,7 @@ class ReportBuilder:
                     field_section = (
                         GqlQuery()
                         .fields(
-                            map(get_schema_field_name, section["cdes"]),
+                            list(map(get_schema_field_name, section["cdes"])),
                             name=get_schema_field_name(section_code),
                         )
                         .generate()
@@ -400,7 +406,7 @@ class ReportBuilder:
                                     )
                                     item_pointer = "_".join(
                                         [
-                                            get_schema_field_name(codify(field))
+                                            get_schema_field_name(field)
                                             for field in items
                                         ]
                                     )

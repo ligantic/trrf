@@ -1205,6 +1205,13 @@ class ConsentSection(models.Model):
                     % (self.registry.code, self.code)
                 )
 
+    def clean(self):
+        if not is_alphanumeric(self.code):
+            raise ValidationError(
+                "Consent Section [%s] code - only letters and numbers are allowed !"
+                % self.code
+            )
+
     @property
     def latest_update(self):
         updates = [self.last_updated_at] + [
@@ -1379,6 +1386,13 @@ class ConsentQuestion(models.Model):
             consent_section_model.pk,
             self.pk,
         )
+
+    def clean(self):
+        if not is_alphanumeric(self.code):
+            raise ValidationError(
+                "Consent Question [%s] code - only letters and numbers are allowed !"
+                % self.code
+            )
 
     def __str__(self):
         return "%s" % self.question_label

@@ -86,10 +86,6 @@ def to_camel_case(name):
     return lower_dot_case_name
 
 
-def codify(str):
-    return re.sub(r"[^a-zA-Z0-9]+", "", str)
-
-
 def validate_fields(fields, valid_fields, label):
     invalid_fields = list(set(fields).difference(valid_fields))
     if len(invalid_fields) > 0:
@@ -186,7 +182,7 @@ def create_dynamic_data_summary_type(registry):
             "resolve_values": resolve_values,
         }
         for wg_type in registry.working_group_types.all():
-            field_name = get_schema_field_name(codify(wg_type.name))
+            field_name = get_schema_field_name(wg_type.name)
             wg_type_fields.update(
                 {
                     field_name: graphene.Field(DataSummaryItemSummaryType),
@@ -422,14 +418,20 @@ class FormMetaType(ObjectType):
             return datetime.fromisoformat(form_timestamp)
 
 
-def get_schema_field_name(s):
-    if not _graphql_field_pattern.match(s):
-        new_str = f"field{s}"
-        assert _graphql_field_pattern.match(new_str), (
-            f"Cannot use field '{s}' in graphql schema"
-        )
-        return new_str
-    return s
+def get_schema_field_name(raw):
+    def _codify(name):
+        return re.sub(r"[^a-zA-Z0-9]+", "", name)
+
+    def _safe_field_name(name):
+        if not _graphql_field_pattern.match(name):
+            new_str = f"field{name}"
+            assert _graphql_field_pattern.match(new_str), (
+                f"Cannot use field '{name}' in graphql schema"
+            )
+            return new_str
+        return name
+
+    return _safe_field_name(_codify(to_camel_case(raw)))
 
 
 def get_section_fields(_section_key, section_cdes):
@@ -744,7 +746,7 @@ def create_working_group_types_fields(registry):
 
     fields = {}
     for working_group_type in registry.working_group_types.all():
-        field_name = get_schema_field_name(codify(working_group_type.name))
+        field_name = get_schema_field_name(working_group_type.name)
         fields[field_name] = graphene.List(WorkingGroupSchemaType)
         fields[f"resolve_{field_name}"] = partial(
             working_groups_resolver, working_group_type=working_group_type
