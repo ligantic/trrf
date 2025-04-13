@@ -761,14 +761,17 @@ def create_dynamic_facet_type(registry):
             .annotate(total=Count("id"))
             .order_by()
         )
-        return [
-            {
-                "label": get_label_fn(item[facet_field]),
-                "value": item[facet_field],
-                "total": item["total"],
-            }
-            for item in results
-        ]
+        return sorted(
+            [
+                {
+                    "label": get_label_fn(item[facet_field]),
+                    "value": item[facet_field],
+                    "total": item["total"],
+                }
+                for item in results
+            ],
+            key=lambda item: item["label"],
+        )
 
     def get_living_status_label(status_id):
         living_states_dict = {
