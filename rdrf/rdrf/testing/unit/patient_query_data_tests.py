@@ -131,9 +131,13 @@ class PatientQueryDataTest(RDRFTestCase):
         self.assertEqual(
             {
                 "workingGroups": [
-                    {"label": "QLD", "total": 2, "value": str(qld.id)},
-                    {"label": "VIC", "total": 1, "value": str(vic.id)},
-                    {"label": "NSW", "total": 4, "value": str(nsw.id)},
+                    {"label": "NSW", "value": str(nsw.id), "total": 4},
+                    {"label": "QLD", "value": str(qld.id), "total": 2},
+                    {
+                        "label": "VIC",
+                        "value": str(vic.id),
+                        "total": 1,
+                    },
                 ]
             },
             facets,
