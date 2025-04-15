@@ -470,11 +470,15 @@ class FailedLoginAttemtpsTestCase(TestCase):
         self.assertIsNone(u)
         self.assertEqual(uds, 0)
 
-    def test_failure_counter_not_reset_when_locked(self):
+    def test_failure_counter_reset_when_locked(self):
         _ = authenticate(username=self.username, password="INCORRECT")
         _ = authenticate(username=self.username, password="INCORRECT")
         _ = authenticate(username=self.username, password="INCORRECT")
+
         # User is locked now
+        self.assertTrue(self.user2.is_active)
+        self.assertTrue(self.user2.is_locked)
+
         # Reactivate user
         self.user.is_locked = False
         self.user.save()
@@ -483,9 +487,36 @@ class FailedLoginAttemtpsTestCase(TestCase):
         # would lock the user again.
         _ = authenticate(username=self.username, password="INCORRECT")
         u = authenticate(username=self.username, password=self.password)
-        self.assertIsNone(u, "Exceeded login attempts, user should be locked.")
+        self.assertIsNotNone(
+            u, "Should be able to log after just 1 failed login attempt"
+        )
         self.assertTrue(self.user2.is_active)
-        self.assertTrue(self.user2.is_locked)
+        self.assertFalse(self.user2.is_locked)
+
+    def test_failure_counter_not_reset_when_user_inactive(self):
+        self.user.is_active = False
+        self.user.save()
+
+        _ = authenticate(username=self.username, password="INCORRECT")
+        _ = authenticate(username=self.username, password="INCORRECT")
+        _ = authenticate(username=self.username, password="INCORRECT")
+
+        # User is not locked as they weren't active while incorrectly authenticating
+        self.assertFalse(self.user2.is_active)
+        self.assertFalse(self.user2.is_locked)
+
+        # Reactivate user
+        self.user.is_active = True
+        self.user.save()
+
+        # This next failed attempt only counts as 1 failed attempt, the previous ones were ignored
+        _ = authenticate(username=self.username, password="INCORRECT")
+        u = authenticate(username=self.username, password=self.password)
+        self.assertIsNotNone(
+            u, "Should be able to log after just 1 failed login attempt"
+        )
+        self.assertTrue(self.user2.is_active)
+        self.assertFalse(self.user2.is_locked)
 
     def test_signal(self):
         def handler(sender, user=None, **kwargs):

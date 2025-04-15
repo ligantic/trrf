@@ -23,7 +23,7 @@ def user_pre_save(sender, instance=None, raw=False, **kwargs):
     # User has been re-activated. Ensure the failed login counter is set to 0 so
     # that the user isn't inactivated on next login by the AuthFailedLoggerBackend
     current_user = sender.objects.get(pk=user.pk)
-    if not current_user.is_active and user.is_active:
+    if current_user.is_locked and not user.is_locked:
         LoginAttemptLogger().reset(user.username)
 
 
@@ -40,7 +40,8 @@ class AuthFailedLoggerBackend(object):
         UserModel = get_user_model()
         self.username = credentials.get(UserModel.USERNAME_FIELD)
         self.login_logger.log_failed_login(self.username, request)
-        if self._get_user() is not None:
+        user = self._get_user()
+        if user is not None and hasattr(user, "is_active") and user.is_active:
             self.login_attempt_logger.increment(self.username)
             self.block_user_if_needed()
 
