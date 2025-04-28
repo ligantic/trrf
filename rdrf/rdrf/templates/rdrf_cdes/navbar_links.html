@@ -9,8 +9,6 @@
 {% get_current_language as CURRENT_LANGUAGE %}
 {% get_language_settings as LANGUAGES %}
 
-{% include "localisation/language_picker_form.html" %}
-
 <link rel="stylesheet" href="{% static 'vendor/bootstrap-select-1.14.0-beta3/css/bootstrap-select.min.css' %}">
 
 <script type="text/javascript" src="{% static 'js/show_password.js' %}"></script>
@@ -29,8 +27,8 @@
         noneResultsText: gettext("No results matched {0}")
     });
 
-    $language.on("change", (e) => {
-        setLanguage(e.target.value);
+    $language.on("change", () => {
+        $languageForm.submit();
     });
 
     // focus on the live search as soon as the user triggers the selectpicker to be shown
@@ -53,9 +51,10 @@
               <span class="fa fa-globe"></span> {% trans 'Language' %}<span class="caret"></span>
             </a>
             <div id="languageDropdownMenu" class="dropdown-menu dropdown-menu-end">
-              <form id="languageForm" class="px-3 py-2">
+              <form id="languageForm" class="px-3 py-2" method="post" action="{% url 'django_conf_urls:set_language' %}">
+              {% csrf_token %}
                 <div>
-                  <select id="language" aria-labelledby="languageDropdownToggle">
+                  <select id="language" name="language" aria-labelledby="languageDropdownToggle">
                     {% for language_code, language_name in LANGUAGES %}
                       <option value="{{ language_code }}"
                               {% if language_code|lower == CURRENT_LANGUAGE %}selected{% endif %}>
