@@ -264,7 +264,10 @@ class RDRFContextLauncherComponent(RDRFComponent):
 
             link_pair = context_form_group.get_add_action(self.patient_model)
             can_view = self.user.can_view(context_form_group.forms[0])
-            if link_pair and can_view:
+            applicable = context_form_group.forms[0].applicable_to(
+                self.patient_model
+            )
+            if link_pair and can_view and applicable:
                 add_link_url, add_link_text = link_pair
                 form = _MultiContextForm(
                     name, add_link_url=add_link_url, add_link_text=add_link_text
