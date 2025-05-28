@@ -75,6 +75,7 @@ class ParentDashboard(object):
         if context_form_group.is_multiple:
             link, title = context_form_group.get_add_action(self.patient)
             return link
+        return None
 
     def _patient_consent_summary(self):
         registry_consent_questions = ConsentQuestion.objects.filter(
@@ -106,7 +107,10 @@ class ParentDashboard(object):
             forms_progress = {}
             key = None
             for form in cfg.forms:
-                if not (self._request.user.can_view(form)):
+                if not (
+                    self._request.user.can_view(form)
+                    and form.applicable_to(self.patient)
+                ):
                     continue
 
                 progress_dict = {}
@@ -315,6 +319,7 @@ class ParentDashboardView(BaseDashboardView):
 
         if len(patients) > 0:
             return patients[0]
+        return None
 
     def get(self, request, registry_code):
         dashboard = get_object_or_404(RegistryDashboard, registry=self.registry)
