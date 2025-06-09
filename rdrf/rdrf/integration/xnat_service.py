@@ -2,7 +2,6 @@ import openapi_client
 from django.conf import settings
 from django.utils.translation import gettext as _
 from openapi_client import ApiException
-from openapi_client.apis.tags import default_api
 
 
 def xnat_api_client():
@@ -33,54 +32,51 @@ class XnatApi:
     def get_experiments(self, project_id, subject_id):
         try:
             api_response = self._api_instance.data_projects_project_id_subjects_subject_id_experiments_get(
-                path_params={
-                    "project_id": project_id,
-                    "subject_id": subject_id,
-                },
-                query_params={"format": "json"},
+                project_id=project_id,
+                subject_id=subject_id,
+                format="json",
             )
+
         except ApiException as e:
             if e.status == 404:
                 raise XnatApiException(
                     e.status, reason=_("Invalid Project or Subject ID.")
                 )
 
-        result_set = api_response.body.get_item_oapg("ResultSet")
+        result_set = api_response.result_set
 
         return [
             {
-                "date": result.get_item_oapg("insert_date"),
-                "id": result.get_item_oapg("ID"),
-                "label": result.get_item_oapg("label"),
-                "URI": result.get_item_oapg("URI"),
+                "date": result.insert_date,
+                "id": result.id,
+                "label": result.label,
+                "URI": result.uri,
             }
-            for result in result_set.get_item_oapg("Result")
+            for result in result_set.result
         ]
 
     def get_scans(self, experiment_id):
         api_response = (
             self._api_instance.data_experiments_experiment_id_scans_get(
-                path_params={"experiment_id": experiment_id},
-                query_params={"format": "json"},
+                experiment_id=experiment_id,
+                format="json",
             )
         )
-        result_set = api_response.body.get_item_oapg("ResultSet")
+        result_set = api_response.result_set
         return [
             {
-                "id": result.get_item_oapg("ID"),
-                "type": result.get_item_oapg("type"),
-                "series_description": result.get_item_oapg(
-                    "series_description"
-                ),
-                "URI": result.get_item_oapg("URI"),
+                "id": result.id,
+                "type": result.type,
+                "series_description": result.series_description,
+                "URI": result.uri,
             }
-            for result in result_set.get_item_oapg("Result")
+            for result in result_set.result
         ]
 
 
 def xnat_experiments_scans(project_id, subject_id):
     with xnat_api_client() as api_client:
-        api_instance = default_api.DefaultApi(api_client)
+        api_instance = openapi_client.DefaultApi(api_client)
 
         xnat_api = XnatApi(api_instance)
         api_client.cookie = xnat_api.authenticate()
