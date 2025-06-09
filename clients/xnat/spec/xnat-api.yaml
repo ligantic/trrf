@@ -70,7 +70,7 @@ paths:
                         items:
                           type: object
                           properties:
-                            id:
+                            ID:
                               type: string
                               description: experiment id
                             label:
@@ -110,7 +110,7 @@ paths:
                         items:
                           type: object
                           properties:
-                            id:
+                            ID:
                               type: string
                               description: scan id
                             type:
