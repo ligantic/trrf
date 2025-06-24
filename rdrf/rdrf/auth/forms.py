@@ -10,7 +10,7 @@ from django.contrib.auth.forms import (
 )
 from django.db.models import Q
 from django.forms import ValidationError
-from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy as _
 
 logger = logging.getLogger(__name__)
 
