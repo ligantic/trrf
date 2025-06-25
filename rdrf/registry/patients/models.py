@@ -1704,24 +1704,38 @@ def selected_clinician_notification(sender, instance, **kwargs):
 
 
 class ParentGuardian(models.Model):
-    GENDER_CHOICES = (("1", "Male"), ("2", "Female"), ("3", "Indeterminate"))
+    GENDER_CHOICES = (
+        ("1", _("Male")),
+        ("2", _("Female")),
+        ("3", _("Indeterminate")),
+    )
 
-    first_name = models.CharField(max_length=30)
-    last_name = models.CharField(max_length=50)
-    date_of_birth = models.DateField(blank=True, null=True)
+    first_name = models.CharField(max_length=30, verbose_name=_("First Name"))
+    last_name = models.CharField(max_length=50, verbose_name=_("Family Name"))
+    date_of_birth = models.DateField(
+        blank=True, null=True, verbose_name=_("Date of birth")
+    )
     place_of_birth = models.CharField(
         max_length=100, null=True, blank=True, verbose_name="Place of birth"
     )
-    date_of_migration = models.DateField(blank=True, null=True)
-    gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
-    address = models.TextField()
-    suburb = models.CharField(max_length=50, verbose_name="Suburb/Town")
-    state = models.CharField(
-        max_length=20, verbose_name="State/Province/Territory"
+    date_of_migration = models.DateField(
+        blank=True, null=True, verbose_name=_("Date of migration")
     )
-    postcode = models.CharField(max_length=20, blank=True)
-    country = models.CharField(max_length=20)
-    phone = models.CharField(max_length=20, blank=True)
+    gender = models.CharField(
+        max_length=1, choices=GENDER_CHOICES, verbose_name=_("Gender")
+    )
+    address = models.TextField(verbose_name=_("Address"))
+    suburb = models.CharField(max_length=50, verbose_name=_("Suburb/Town"))
+    state = models.CharField(
+        max_length=20, verbose_name=_("State/Province/Territory")
+    )
+    postcode = models.CharField(
+        max_length=20, blank=True, verbose_name=_("Postcode")
+    )
+    country = models.CharField(max_length=20, verbose_name=_("Country"))
+    phone = models.CharField(
+        max_length=20, blank=True, verbose_name=_("Phone Number")
+    )
     patient = models.ManyToManyField(Patient)
     self_patient = models.ForeignKey(
         Patient,
