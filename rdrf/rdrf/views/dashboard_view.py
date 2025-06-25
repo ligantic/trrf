@@ -336,6 +336,7 @@ class ParentDashboardView(BaseDashboardView):
         context = {
             "parent": self.parent,
             "patients": patients,
+            "registry_code": self.registry.code,
             "dashboard": ParentDashboard(
                 request, dashboard, patient
             ).template(),
