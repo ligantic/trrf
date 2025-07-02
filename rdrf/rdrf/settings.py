@@ -630,7 +630,7 @@ MAX_BREACHED_PASSWORD_THRESHOLD = int(
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "NAME": "rdrf.auth.password_validation.MinimumLengthValidator",
         "OPTIONS": {
             "min_length": 8,
         },
@@ -659,9 +659,7 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "rdrf.auth.password_validation.ConsecutivelyDecreasingNumberValidator",
         "OPTIONS": {"length": 3},
     },
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
-    },
+    {"NAME": "rdrf.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "rdrf.auth.password_validation.DifferentToPrevious"},
     {
         "NAME": "rdrf.auth.password_validation.EnhancedCommonPasswordValidator",

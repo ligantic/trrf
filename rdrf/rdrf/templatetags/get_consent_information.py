@@ -21,7 +21,7 @@ def get_consent_information(fields):
             )
             return {
                 "link": consent_section_model.information_link,
-                "text": _(consent_section_model.information_text or ""),
+                "text": _(consent_section_model.information_text) or "",
                 "media": consent_section_model.information_media,
             }
         except BaseException:

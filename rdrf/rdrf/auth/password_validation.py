@@ -2,7 +2,15 @@ import logging
 import re
 from abc import ABC, abstractmethod
 
-from django.contrib.auth.password_validation import CommonPasswordValidator
+from django.contrib.auth.password_validation import (
+    CommonPasswordValidator,
+)
+from django.contrib.auth.password_validation import (
+    MinimumLengthValidator as BaseMinimumLengthValidator,
+)
+from django.contrib.auth.password_validation import (
+    UserAttributeSimilarityValidator as BaseUserAttributeSimilarityValidator,
+)
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
@@ -214,3 +222,46 @@ class EnhancedCommonPasswordValidator:
 
     def get_help_text(self):
         return _("Your password can't be a commonly used password.")
+
+
+class MinimumLengthValidator(BaseMinimumLengthValidator):
+    def validate(self, password, user=None):
+        try:
+            super().validate(password, user)
+        except ValidationError:
+            raise ValidationError(
+                ngettext(
+                    "This password is too short. It must contain at least "
+                    "%(min_length)d character.",
+                    "This password is too short. It must contain at least "
+                    "%(min_length)d characters.",
+                    self.min_length,
+                ),
+                code="password_too_short",
+                params={"min_length": self.min_length},
+            )
+
+    def get_help_text(self):
+        return ngettext(
+            "Your password must contain at least %(min_length)d character.",
+            "Your password must contain at least %(min_length)d characters.",
+            self.min_length,
+        ) % {"min_length": self.min_length}
+
+
+class UserAttributeSimilarityValidator(BaseUserAttributeSimilarityValidator):
+    def validate(self, password, user=None):
+        try:
+            super().validate(password, user)
+        except ValidationError as e:
+            verbose_name = e.params.get("verbose_name", "")
+            raise ValidationError(
+                _("The password is too similar to the %(verbose_name)s."),
+                code="password_too_similar",
+                params={"verbose_name": verbose_name},
+            )
+
+    def get_help_text(self):
+        return _(
+            "Your password can’t be too similar to your other personal information."
+        )
