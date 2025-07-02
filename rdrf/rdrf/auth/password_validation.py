@@ -99,9 +99,9 @@ class HasSpecialCharacterValidator(BaseHasCharacterValidator):
 class ConsecutivelyRepeatingCharacterValidator:
     def __init__(self, length=3):
         self.length = length
-        assert (
-            self.length > 1
-        ), "Length should be at least 2 for consecutively repeating character validators!"
+        assert self.length > 1, (
+            "Length should be at least 2 for consecutively repeating character validators!"
+        )
         self.repeating_char = re.compile(
             r"""
             (.)   # any character, in a group so we can backreference
@@ -125,9 +125,9 @@ class ConsecutivelyRepeatingCharacterValidator:
 class NumberRuleValidator(ABC):
     def __init__(self, length=3):
         self.length = length
-        assert (
-            self.length > 1
-        ), "Length should be at least 2 for numbers related password validators!"
+        assert self.length > 1, (
+            "Length should be at least 2 for numbers related password validators!"
+        )
 
     @staticmethod
     @abstractmethod
