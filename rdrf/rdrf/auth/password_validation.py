@@ -3,7 +3,7 @@ import re
 from abc import ABC, abstractmethod
 
 from django.contrib.auth.password_validation import (
-    CommonPasswordValidator,
+    CommonPasswordValidator as BaseCommonPasswordValidator,
 )
 from django.contrib.auth.password_validation import (
     MinimumLengthValidator as BaseMinimumLengthValidator,
@@ -191,6 +191,20 @@ class DifferentToPrevious:
         return _(
             "You must change the password to something other than your current password."
         )
+
+
+class CommonPasswordValidator(BaseCommonPasswordValidator):
+    def validate(self, password, user=None):
+        try:
+            super().validate(password, user)
+        except ValidationError:
+            raise ValidationError(
+                _("This password is too common."),
+                code="password_too_common",
+            )
+
+    def get_help_text(self):
+        return _("Your password can’t be a commonly used password.")
 
 
 class EnhancedCommonPasswordValidator:
