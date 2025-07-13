@@ -1,4 +1,10 @@
-from django.forms import CharField, ChoiceField, DateField, ValidationError
+from django.core.validators import EmailValidator
+from django.forms import (
+    CharField,
+    ChoiceField,
+    DateField,
+    ValidationError,
+)
 from django.forms.widgets import EmailInput, RadioSelect
 from django.utils.translation import gettext_lazy as _
 from registration.forms import RegistrationForm
@@ -36,6 +42,13 @@ class RegistrationFormCaseInsensitiveCheck(RegistrationForm):
             raise ValidationError(_("User with this email already exists"))
 
         return username
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["email"].label = _("Email Address")
+        self.fields["email"].validators = [
+            EmailValidator(message=_("Enter a valid email address."))
+        ]
 
 
 class PatientRegistrationForm(RegistrationFormCaseInsensitiveCheck):
