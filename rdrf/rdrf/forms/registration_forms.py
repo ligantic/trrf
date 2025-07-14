@@ -49,6 +49,9 @@ class RegistrationFormCaseInsensitiveCheck(RegistrationForm):
         self.fields["email"].validators = [
             EmailValidator(message=_("Enter a valid email address."))
         ]
+        self.error_messages["password_mismatch"] = _(
+            "The two password fields didn’t match."
+        )
 
 
 class PatientRegistrationForm(RegistrationFormCaseInsensitiveCheck):
