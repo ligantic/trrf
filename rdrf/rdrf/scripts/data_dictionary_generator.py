@@ -4,7 +4,6 @@ import sys
 from string import strip
 
 import yaml
-
 from rdrf.helpers.cde_data_types import CDEDataTypes
 
 

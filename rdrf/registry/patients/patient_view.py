@@ -1,7 +1,6 @@
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.views.generic.base import View
-
 from rdrf.models.definition.models import Registry
 
 

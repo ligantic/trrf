@@ -1,6 +1,6 @@
 from django import template
-
 from rdrf.helpers.utils import mongo_key
+
 from report.forms import get_cde_field_value
 
 register = template.Library()

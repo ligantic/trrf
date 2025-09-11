@@ -2,9 +2,8 @@
 import sys
 
 import django
-from registry.patients.models import Patient
-
 from rdrf.models.definition.models import Registry
+from registry.patients.models import Patient
 
 django.setup()
 

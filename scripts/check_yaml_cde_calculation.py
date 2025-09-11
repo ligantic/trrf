@@ -9,7 +9,6 @@ import io
 import sys
 
 import yaml
-
 from rdrf.helpers.utils import check_calculation
 
 yaml.add_constructor(

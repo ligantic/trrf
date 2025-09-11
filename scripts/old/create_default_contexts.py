@@ -1,10 +1,9 @@
 import sys
 
 import django
-from registry.patients.models import Patient
-
 from rdrf.db.contexts_api import RDRFContextManager
 from rdrf.models.definition.models import Registry
+from registry.patients.models import Patient
 
 django.setup()
 

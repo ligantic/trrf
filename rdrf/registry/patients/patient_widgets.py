@@ -2,7 +2,6 @@ import logging
 
 from django.forms import widgets
 from django.urls import reverse
-
 from rdrf.helpers.registry_features import RegistryFeatures
 
 logger = logging.getLogger(__name__)
@@ -52,6 +51,7 @@ class PatientRelativeLinkWidget(widgets.Widget):
 
     def _get_default_context(self, reg_code, patient_id):
         from rdrf.models.definition.models import Registry
+
         from registry.patients.models import Patient
 
         patient_model = Patient.objects.get(pk=int(patient_id))

@@ -3,7 +3,6 @@ import sys
 
 import django
 from django.db import transaction
-
 from rdrf.models.definition.models import Registry
 from rdrf.reports import generator
 
