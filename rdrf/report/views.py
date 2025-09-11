@@ -6,9 +6,9 @@ from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views import View
-
 from rdrf.models.definition.models import ContextFormGroup, Registry
 from rdrf.security.mixins import SuperuserRequiredMixin
+
 from report.forms import ReportDesignerForm
 from report.models import ReportDesign
 from report.report_builder import ReportBuilder

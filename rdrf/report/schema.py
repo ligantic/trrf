@@ -13,6 +13,17 @@ from django.db.models.functions import Replace
 from django.utils.translation import gettext as _
 from graphene import InputObjectType, ObjectType
 from graphene_django import DjangoObjectType
+from rdrf.forms.dsl.parse_utils import prefetch_form_data
+from rdrf.helpers.registry_features import RegistryFeatures
+from rdrf.models.definition.models import (
+    ClinicalData,
+    ConsentQuestion,
+    ConsentRule,
+    ContextFormGroup,
+    EmailPreference,
+    RDRFContext,
+    Registry,
+)
 from registry.groups.models import CustomUser, WorkingGroup, WorkingGroupType
 from registry.patients.models import (
     AddressType,
@@ -27,17 +38,6 @@ from registry.patients.models import (
 )
 from useraudit.models import LoginLog
 
-from rdrf.forms.dsl.parse_utils import prefetch_form_data
-from rdrf.helpers.registry_features import RegistryFeatures
-from rdrf.models.definition.models import (
-    ClinicalData,
-    ConsentQuestion,
-    ConsentRule,
-    ContextFormGroup,
-    EmailPreference,
-    RDRFContext,
-    Registry,
-)
 from report.TrrfGraphQLView import PublicGraphQLError
 
 logger = logging.getLogger(__name__)

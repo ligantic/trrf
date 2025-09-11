@@ -5,7 +5,6 @@ from collections import OrderedDict
 from django.conf import settings
 from django.db import connections
 from django.db.models import Count
-
 from rdrf.helpers.utils import get_form_section_code
 from rdrf.models.definition.models import (
     CommonDataElement,
@@ -14,6 +13,7 @@ from rdrf.models.definition.models import (
     RegistryForm,
     Section,
 )
+
 from report.models import ReportCdeHeadingFormat
 from report.schema import (
     PatientFilterType,

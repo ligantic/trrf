@@ -8,7 +8,6 @@ from collections import OrderedDict
 
 from flatten_json import flatten
 from gql_query_builder import GqlQuery
-
 from rdrf.forms.dsl.parse_utils import prefetch_form_data
 from rdrf.helpers.utils import BadKeyError, models_from_mongo_key
 from rdrf.patients.query_data import (
@@ -18,6 +17,7 @@ from rdrf.patients.query_data import (
     build_patients_query,
     get_all_patients,
 )
+
 from report.clinical_data_csv_util import ClinicalDataCsvUtil
 from report.models import ReportCdeHeadingFormat
 from report.schema import codify, create_dynamic_schema, get_schema_field_name

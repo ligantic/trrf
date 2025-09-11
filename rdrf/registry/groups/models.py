@@ -19,12 +19,12 @@ from django.utils import timezone
 from django.utils.module_loading import import_string
 from django.utils.translation import get_language
 from django.utils.translation import gettext_lazy as _
-from registration.signals import user_activated
-from simple_history.models import HistoricalRecords
-
 from rdrf.helpers.registry_features import RegistryFeatures
 from rdrf.helpers.utils import consent_check
 from rdrf.models.definition.models import Registry, RegistryDashboard
+from registration.signals import user_activated
+from simple_history.models import HistoricalRecords
+
 from registry.groups import GROUPS as RDRF_GROUPS
 
 logger = logging.getLogger(__name__)
@@ -514,6 +514,7 @@ def user_activated_callback(sender, user, request, **kwargs):
     from rdrf.services.io.notifications.email_notification import (
         process_notification,
     )
+
     from registry.patients.models import ParentGuardian, Patient
 
     parent = patient = None

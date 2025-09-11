@@ -24,9 +24,6 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext
 from django.utils.translation import gettext_lazy as _
-from simple_history.models import HistoricalRecords
-
-import registry.groups.models
 from rdrf.db.dynamic_data import DynamicDataWrapper
 from rdrf.events.events import EventType
 from rdrf.helpers.registry_features import RegistryFeatures
@@ -45,6 +42,9 @@ from rdrf.services.io.notifications.email_notification import (
 from rdrf.services.io.notifications.file_notifications import (
     handle_file_notifications,
 )
+from simple_history.models import HistoricalRecords
+
+import registry.groups.models
 from registry.groups.models import CustomUser
 from registry.utils import get_registries, get_working_groups, stripspaces
 
@@ -1294,7 +1294,6 @@ class Patient(models.Model):
     @property
     def context_models(self):
         from django.contrib.contenttypes.models import ContentType
-
         from rdrf.models.definition.models import RDRFContext
 
         contexts = []

@@ -1,8 +1,6 @@
 import logging
 
 from django.utils.translation import gettext_lazy as _
-from report.schema import to_camel_case
-
 from rdrf.helpers.registry_features import RegistryFeatures
 from rdrf.patients.patient_columns import (
     ColumnActionsMenu,
@@ -16,6 +14,7 @@ from rdrf.patients.patient_columns import (
     ColumnPatientStage,
     ColumnWorkingGroups,
 )
+from report.schema import to_camel_case
 
 logger = logging.getLogger(__name__)
 

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import django
 from django.db import transaction
-
 from rdrf.helpers.utils import HistoryTimeStripper, TimeStripper
 from rdrf.models.definition.models import ClinicalData
 

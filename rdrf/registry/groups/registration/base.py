@@ -3,9 +3,9 @@ import logging
 
 from django.contrib.auth.models import Group
 from django.urls import reverse
-
 from rdrf.helpers.utils import make_full_url
 from rdrf.models.definition.models import Registry
+
 from registry.groups.models import WorkingGroup
 from registry.patients.models import Patient
 from registry.patients.patient_stage_flows import get_registry_stage_flow
