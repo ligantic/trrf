@@ -3,7 +3,6 @@ import logging
 from django.template import Context, loader
 from django.urls import reverse
 from django.utils.formats import date_format
-
 from rdrf.forms.components import FormGroupButton
 from rdrf.helpers.registry_features import RegistryFeatures
 

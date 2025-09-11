@@ -9,10 +9,10 @@ from django.db.models import Q
 from django.http import HttpResponse
 from django.urls import re_path, reverse
 from django.utils.translation import gettext as _
-
 from rdrf.db.dynamic_data import DynamicDataWrapper
 from rdrf.helpers.registry_features import RegistryFeatures
 from rdrf.models.definition.models import ClinicalData, Registry
+
 from registry.patients.models import ConsentValue
 from registry.utils import get_static_url, get_working_groups
 

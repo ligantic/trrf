@@ -1,11 +1,11 @@
 import logging
 
-from registration.models import RegistrationProfile
-
 from rdrf.events.events import EventType
 from rdrf.services.io.notifications.email_notification import (
     process_notification,
 )
+from registration.models import RegistrationProfile
+
 from registry.groups import GROUPS
 
 from .base import BaseRegistration

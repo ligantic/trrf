@@ -14,9 +14,6 @@ from django.forms import (
     SelectMultiple,
 )
 from django.utils.translation import gettext_lazy as _
-from registry.groups.forms import working_group_optgroup_choices
-from registry.groups.models import WorkingGroup
-
 from rdrf.helpers.utils import mongo_key
 from rdrf.models.definition.models import (
     ConsentQuestion,
@@ -24,6 +21,9 @@ from rdrf.models.definition.models import (
     Registry,
     RegistryForm,
 )
+from registry.groups.forms import working_group_optgroup_choices
+from registry.groups.models import WorkingGroup
+
 from report.models import (
     ReportClinicalDataField,
     ReportDemographicField,

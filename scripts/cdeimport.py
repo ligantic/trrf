@@ -3,10 +3,9 @@ import sys
 
 import django
 from django.db import transaction
-from registry.patients.models import Patient
-
 from rdrf.helpers.cde_data_types import CDEDataTypes
 from rdrf.models.definition.models import Registry, RegistryForm
+from registry.patients.models import Patient
 
 django.setup()
 

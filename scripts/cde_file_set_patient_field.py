@@ -7,10 +7,9 @@ from django.apps import apps
 if not apps.ready:
     django.setup()
 
-from registry.patients.models import Patient
-
 from rdrf.db import filestorage
 from rdrf.models.definition.models import CDEFile, ClinicalData
+from registry.patients.models import Patient
 
 logger = logging.getLogger(__name__)
 
