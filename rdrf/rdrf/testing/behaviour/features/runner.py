@@ -5,6 +5,8 @@ from aloe.runner import Runner
 from django_nose.plugin import ResultPlugin, TestReorderer
 from django_nose.runner import NoseTestSuiteRunner, _get_plugins_from_settings
 
+from . import aloe_monkeypatch  # noqa: F401
+
 
 class GherkinNoDjangoTestDBTestRunner(NoseTestSuiteRunner):
     """

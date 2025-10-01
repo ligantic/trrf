@@ -36,6 +36,9 @@ class ReportGeneratorTestCase(TestCase):
     def test_graphql_query_minimal_data(self):
         reg_ang = Registry.objects.create(code="ang")
         report_design = ReportDesign.objects.create(registry=reg_ang)
+        report_design.reportdemographicfield_set.create(
+            model="patient", field="id", sort_order=0
+        )
         report = ReportBuilder(report_design)
 
         variables, actual_query = report._get_graphql_query(self._request())
@@ -44,6 +47,7 @@ class ReportGeneratorTestCase(TestCase):
                 ang {
                     allPatients(filterArgs: $filterArgs) {
                         patients(sort: ["id"]) {
+                            id
                         }
                     }
                 }
@@ -59,6 +63,9 @@ class ReportGeneratorTestCase(TestCase):
     def test_graphql_query_pagination(self):
         reg_ang = Registry.objects.create(code="ang")
         report_design = ReportDesign.objects.create(registry=reg_ang)
+        report_design.reportdemographicfield_set.create(
+            model="patient", field="id", sort_order=0
+        )
         report = ReportBuilder(report_design)
 
         variables, actual_query = report._get_graphql_query(
@@ -69,6 +76,7 @@ class ReportGeneratorTestCase(TestCase):
                 ang {
                     allPatients(filterArgs: $filterArgs) {
                         patients(sort: ["id"], offset: 30, limit: 15) {
+                            id
                         }
                     }
                 }
