@@ -69,6 +69,7 @@ RUN addgroup --gid 1000 django \
 RUN apt-get update && apt-get install -y --no-install-recommends \
   # Base
   # TODO check if requirements are needed
+  git \
   gettext \
   libpq5 \
   media-types \
