@@ -9,6 +9,7 @@ import magic
 from django.conf import settings
 from django.core.files.storage import default_storage
 from storages.backends.s3boto3 import S3Boto3Storage
+from storages.utils import clean_name
 
 from rdrf.helpers.utils import models_from_mongo_key
 from rdrf.models.definition.models import CDEFile, Registry
@@ -208,7 +209,7 @@ class CustomS3Storage(S3Boto3Storage):
         This method isn't part of the Storage API, it is an extra method added by us.
         """
         try:
-            name = self._normalize_name(self._clean_name(name))
+            name = self._normalize_name(clean_name(name))
             response = self.connection.meta.client.get_object_tagging(
                 Bucket=settings.AWS_STORAGE_BUCKET_NAME, Key=name
             )
@@ -230,7 +231,7 @@ class CustomS3Storage(S3Boto3Storage):
         files can be overwritten if a second file with the same name is uploaded.
         """
 
-        name = self._normalize_name(self._clean_name(name))
+        name = self._normalize_name(clean_name(name))
         try:
             self.connection.meta.client.head_object(
                 Bucket=self.bucket_name, Key=name
