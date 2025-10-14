@@ -69,6 +69,17 @@ Running Launch from the Microsoft Store once it has downloaded will install it.
     sudo apt install postgresql-client libpq-dev unixodbc-dev
      ```
 11. Install project dependencies
+    
+    Using uv (recommended for faster installs with lock file support):
+    ```shell
+    cd /path/to/trrf
+    # Install uv if not already installed
+    pip install uv
+    # Install all dependencies including dev and test
+    uv sync --all-extras
+    ```
+    
+    Alternatively, using pip:
     ```shell
     cd /path/to/trrf
     pip install -r requirements/requirements.txt
@@ -138,6 +149,17 @@ Running Launch from the Microsoft Store once it has downloaded will install it.
    pyenv shell mnd
    ```
 3. Install the python lib dependencies
+   
+   Using uv (recommended):
+   ```
+   cd path/to/mnd
+   # Install uv if not already installed
+   pip install uv
+   # Install all dependencies
+   uv sync --all-extras
+   ```
+   
+   Alternatively, using pip:
    ```
    cd path/to/mnd/rdrf/requirements
    

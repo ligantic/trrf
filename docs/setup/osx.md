@@ -30,6 +30,16 @@ A guide to setting up your OSX environment for developing on the Mac
 
 ### Installing modules for local development
 
+Using uv (recommended for faster installs with lock file support):
+
+    # Install uv if not already installed
+    pip install uv
+    
+    # Install all dependencies including dev and test
+    uv sync --all-extras
+
+Alternatively, using pip:
+
     pip install -r requirements/requirements.txt
     pip install -r requirements/dev-requirements.txt
     pip install -r requirements/test-requirements.txt

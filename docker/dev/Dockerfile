@@ -22,23 +22,24 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   zlib1g-dev \
   && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN mkdir -p /requirements
-WORKDIR /requirements
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-# RUN env | sort
+# Enable bytecode compilation
+ENV UV_COMPILE_BYTECODE=1
 
-# Add our python deps in multiple docker layers
-# hgvs was failing due to lack of nose, hence the order
+# Copy from the cache instead of linking since it's a mounted volume
+ENV UV_LINK_MODE=copy
 
-COPY requirements/* ./
+WORKDIR /app
 
+# Copy dependency files
+COPY pyproject.toml uv.lock ./
 COPY clients ./clients
 
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --upgrade pip setuptools && \
-    pip install -r requirements.txt && \
-    pip install -r dev-requirements.txt && \
-    pip install -r test-requirements.txt
+# Install dependencies
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-install-project --all-extras
 
 VOLUME ["/data"]
 
@@ -71,17 +72,27 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   git \
   && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN mkdir /requirements
-WORKDIR /requirements
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-COPY --from=builder /requirements/ .
+# Enable bytecode compilation
+ENV UV_COMPILE_BYTECODE=1
 
-RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install -r requirements.txt && \
-    pip install -r dev-requirements.txt && \
-    pip install -r test-requirements.txt
+# Copy from the cache instead of linking since it's a mounted volume
+ENV UV_LINK_MODE=copy
 
-RUN rm -Rf /root/.cache
+WORKDIR /app
+
+# Copy dependency files and clients
+COPY pyproject.toml uv.lock ./
+COPY clients ./clients
+
+# Install dependencies
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-install-project --all-extras
+
+# Place executables in the environment at the front of the path
+ENV PATH="/app/.venv/bin:$PATH"
 
 COPY docker/dev/docker-entrypoint.sh /
 RUN chmod +x /docker-entrypoint.sh
