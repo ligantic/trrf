@@ -20,7 +20,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   libyaml-dev \
   unixodbc-dev \
   zlib1g-dev \
+  ca-certificates \
   && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Update CA certificates
+RUN update-ca-certificates
 
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
@@ -70,7 +74,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   build-essential \
   libmagic1 \
   git \
+  ca-certificates \
   && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Update CA certificates
+RUN update-ca-certificates
 
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
@@ -89,7 +97,7 @@ COPY clients ./clients
 
 # Install dependencies
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-install-project --all-extras
+    GIT_SSL_NO_VERIFY=1 UV_INSECURE_HOST="pypi.org files.pythonhosted.org" uv sync --frozen --no-install-project --all-extras
 
 # Place executables in the environment at the front of the path
 ENV PATH="/app/.venv/bin:$PATH"

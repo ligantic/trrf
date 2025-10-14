@@ -21,7 +21,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   unixodbc-dev \
   zlib1g-dev \
   unixodbc-dev \
+  ca-certificates \
   && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Update CA certificates
+RUN update-ca-certificates
 
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
@@ -40,7 +44,7 @@ COPY clients ./clients
 
 # Install dependencies (only main dependencies for production)
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-install-project --no-dev
+    GIT_SSL_NO_VERIFY=1 UV_INSECURE_HOST="pypi.org files.pythonhosted.org" uv sync --frozen --no-install-project --no-dev
 
 # Actual image we are building
 FROM python:3.13-slim
@@ -82,7 +86,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   ssl-cert \
   libmagic1 \
   curl \
+  ca-certificates \
   && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Update CA certificates
+RUN update-ca-certificates
 
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
@@ -101,7 +109,7 @@ COPY clients ./clients
 
 # Install dependencies (only main dependencies for production)
 RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-install-project --no-dev
+    GIT_SSL_NO_VERIFY=1 UV_INSECURE_HOST="pypi.org files.pythonhosted.org" uv sync --frozen --no-install-project --no-dev
 
 # Place executables in the environment at the front of the path
 ENV PATH="/app/.venv/bin:$PATH"
