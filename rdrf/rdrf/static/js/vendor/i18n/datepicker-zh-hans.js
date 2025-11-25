@@ -15,7 +15,7 @@
 } )( function( datepicker ) {
 "use strict";
 
-datepicker.regional[ "zh-CN" ] = {
+datepicker.regional[ "zh-hans" ] = {
 	closeText: "关闭",
 	prevText: "&#x3C;上月",
 	nextText: "下月&#x3E;",
@@ -33,8 +33,8 @@ datepicker.regional[ "zh-CN" ] = {
 	isRTL: false,
 	showMonthAfterYear: true,
 	yearSuffix: "年" };
-datepicker.setDefaults( datepicker.regional[ "zh-CN" ] );
+datepicker.setDefaults( datepicker.regional[ "zh-hans" ] );
 
-return datepicker.regional[ "zh-CN" ];
+return datepicker.regional[ "zh-hans" ];
 
 } );

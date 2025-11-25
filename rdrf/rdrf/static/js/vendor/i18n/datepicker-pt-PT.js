@@ -14,7 +14,7 @@
 } )( function( datepicker ) {
 "use strict";
 
-datepicker.regional.pt = {
+datepicker.regional["pt-PT"] = {
 	closeText: "Fechar",
 	prevText: "Anterior",
 	nextText: "Seguinte",
@@ -40,8 +40,8 @@ datepicker.regional.pt = {
 	isRTL: false,
 	showMonthAfterYear: false,
 	yearSuffix: "" };
-datepicker.setDefaults( datepicker.regional.pt );
+datepicker.setDefaults( datepicker.regional["pt-PT"] );
 
-return datepicker.regional.pt;
+return datepicker.regional["pt-PT"];
 
 } );
