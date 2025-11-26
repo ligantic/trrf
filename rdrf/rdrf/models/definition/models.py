@@ -1069,7 +1069,7 @@ class RegistryForm(models.Model):
         return (
             language_code == settings.LANGUAGE_CODE
             or self.registryformtranslation_set.filter(
-                language__language_code=language_code
+                language__language_code__iexact=language_code
             ).exists()
         )
 
