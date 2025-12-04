@@ -1,4 +1,4 @@
-# Django settings for rdrf project.
+﻿# Django settings for rdrf project.
 import os
 
 # A wrapper around environment which has been populated from
@@ -86,8 +86,8 @@ ALL_LANGUAGES = (
     ("tr", "Türkçe"),
     ("ur", "اردو"),
     ("vi", "Tiếng Việt"),
-("zh_Hans", "简体中文"),
-    ("zh_Hant", "繁體中文"),
+    ("zh-hans", "简体中文"),
+    ("zh-hant", "繁體中文"),
 )
 
 # This must be a subset of ALL_LANGUAGES
