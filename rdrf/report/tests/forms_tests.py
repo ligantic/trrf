@@ -209,9 +209,9 @@ class WorkingGroupTestCase(TestCase):
                     [
                         (
                             '{"registry": "reg1", "wg": 1}',
-                            "reg1 Working Group 1",
+                            "Working Group 1",
                         ),
-                        ('{"registry": "reg2", "wg": 2}', "reg2 Uncategorised"),
+                        ('{"registry": "reg2", "wg": 2}', "Uncategorised"),
                     ],
                 )
             ],
