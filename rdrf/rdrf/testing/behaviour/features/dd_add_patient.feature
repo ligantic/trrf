@@ -12,7 +12,7 @@ Feature: Add a patient
     And I click "Menu"
     And I click "Patient List (Demyelinating Diseases Registry)"
     And I click "Add Patient"
-    And I select "dd WA" from "Working Group"
+    And I select "WA" from "Working Group"
     And I fill in "Family Name" with "Taylor"
     And I fill in "Given Names" with "Tom"
     And I fill in "Date of birth" with "28-02-1999"
@@ -21,7 +21,7 @@ Feature: Add a patient
     Then I should see "Patient added successfully"
     And I should see "TAYLOR Tom"
     And option "Demyelinating Diseases Registry" from "Registry" should be selected
-    And option "dd WA" from "Working Group" should be selected
+    And option "WA" from "Working Group" should be selected
     And value of "Family Name" should be "TAYLOR"
     And value of "Given Names" should be "Tom"
     And value of "Date of birth" should be "28-02-1999"

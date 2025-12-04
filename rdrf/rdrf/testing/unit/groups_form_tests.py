@@ -45,12 +45,12 @@ class GroupFormTest(TestCase):
                 (
                     None,
                     [
-                        (1, "arrk Hospital A"),
-                        (2, "arrk Hospital B"),
-                        (4, "arrk Kidney condition A"),
-                        (5, "arrk Kidney condition B"),
-                        (3, "other Hospital C"),
-                        (6, "other Sunshine Clinic"),
+                        (1, "Hospital A"),
+                        (2, "Hospital B"),
+                        (4, "Kidney condition A"),
+                        (5, "Kidney condition B"),
+                        (3, "Hospital C"),
+                        (6, "Sunshine Clinic"),
                     ],
                 )
             ],
@@ -110,15 +110,15 @@ class GroupFormTest(TestCase):
         self.assertEqual(
             choices,
             [
-                ("Hospital", [(1, "arrk Hospital A"), (2, "arrk Hospital B")]),
+                ("Hospital", [(1, "Hospital A"), (2, "Hospital B")]),
                 (
                     "Specific Condition Group",
                     [
-                        (4, "arrk Kidney condition A"),
-                        (5, "arrk Kidney condition B"),
+                        (4, "Kidney condition A"),
+                        (5, "Kidney condition B"),
                     ],
                 ),
-                (None, [(9, "arrk Teaching"), (7, "arrk Unallocated")]),
+                (None, [(9, "Teaching"), (7, "Unallocated")]),
             ],
         )
 

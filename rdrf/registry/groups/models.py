@@ -104,10 +104,7 @@ class WorkingGroup(models.Model):
 
     @property
     def display_name(self):
-        if self.registry:
-            return "%s %s" % (self.registry.code, self.name)
-        else:
-            return self.name
+        return self.name
 
 
 class CustomUserManager(UserManager):
