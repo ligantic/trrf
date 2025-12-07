@@ -506,6 +506,8 @@ class PatientForm(forms.ModelForm):
             registries = registries.filter(id=self.registry_model.id)
         self.fields["rdrf_registry"].queryset = registries
         self.fields["rdrf_registry"].initial = [registries.first()]
+        if registries.count() == 1:
+            self.fields["rdrf_registry"].widget = forms.MultipleHiddenInput()
 
         if hasattr(self, "user"):
             user = self.user

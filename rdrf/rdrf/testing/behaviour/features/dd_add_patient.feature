@@ -20,7 +20,6 @@ Feature: Add a patient
     And I press the "Save" button
     Then I should see "Patient added successfully"
     And I should see "TAYLOR Tom"
-    And option "Demyelinating Diseases Registry" from "Registry" should be selected
     And option "WA" from "Working Group" should be selected
     And value of "Family Name" should be "TAYLOR"
     And value of "Given Names" should be "Tom"
