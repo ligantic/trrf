@@ -32,6 +32,8 @@ logger = logging.getLogger(__name__)
 
 class WorkingGroupType(models.Model):
     name = models.CharField(max_length=100)
+    required = models.BooleanField(default=False, help_text=_("Indicates whether the patient is required to select a working group from this type"))
+    help_text = models.TextField(blank=True, help_text=_("Help text to display to users when selecting a working group from this type"))
 
     def __str__(self):
         return self.name
