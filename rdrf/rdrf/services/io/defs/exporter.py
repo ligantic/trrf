@@ -592,6 +592,8 @@ class Exporter:
         return [
             {
                 "name": wg_type.name,
+                "required": wg_type.required,
+                "help_text": wg_type.help_text,
                 "rules": [
                     {
                         "user_group": rule.user_group.name,
