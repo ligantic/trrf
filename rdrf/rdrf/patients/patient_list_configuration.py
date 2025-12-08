@@ -11,6 +11,7 @@ from rdrf.patients.patient_columns import (
     ColumnDiagnosisCurrency,
     ColumnDiagnosisProgress,
     ColumnFullName,
+    ColumnPatientGuid,
     ColumnPatientStage,
     ColumnWorkingGroups,
 )
@@ -71,6 +72,11 @@ class PatientListConfiguration:
             "label": "Actions",
             "permission": "patients.delete_patient",
             "class": ColumnActionsMenu,
+        },
+        "patient_guid": {
+            "label": "GUID",
+            "permission": "patients.can_view_patient_guid",
+            "class": ColumnPatientGuid,
         },
     }
 

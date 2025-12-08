@@ -144,6 +144,18 @@ class ColumnWorkingGroups(Column):
     sort_fields = ["working_groups__name"]
 
 
+class ColumnPatientGuid(Column):
+    field = "patientguid__guid"
+    sort_fields = ["patientguid__guid"]
+
+    def fmt(self, val):
+        if self.registry and self.registry.has_feature(
+            RegistryFeatures.PATIENT_GUID
+        ):
+            return str(val)
+        return "N/A"
+
+
 class ColumnDiagnosisProgress(ColumnOptionalContext):
     field = "diagnosis_progress"
 
