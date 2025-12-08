@@ -104,7 +104,8 @@ class UserMixin:
                 self.fields["working_groups"].required = True
 
         self.fields["working_groups"].choices = working_group_optgroup_choices(
-            wg_queryset
+            wg_queryset,
+            make_option_fn=lambda wg: (wg.id, wg.display_name_with_registry),
         )
 
 

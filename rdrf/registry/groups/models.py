@@ -106,6 +106,10 @@ class WorkingGroup(models.Model):
     def display_name(self):
         return self.name
 
+    @property
+    def display_name_with_registry(self):
+        return f"{self.registry.code} {self.name}"
+
 
 class CustomUserManager(UserManager):
     def get_by_natural_key(self, username):
