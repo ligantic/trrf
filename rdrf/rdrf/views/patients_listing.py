@@ -241,6 +241,7 @@ class PatientsListingView(View):
         )
 
         operation_input, query_input, variables = build_patient_filters(filters)
+
         all_patients_query = build_all_patients_query(
             registry, ["total", patient_query], query_input, operation_input
         )
@@ -268,7 +269,8 @@ class PatientsListingView(View):
 
         if self.search_term:
             patient_search = build_search_item(
-                self.search_term, ["givenNames", "familyName"]
+                self.search_term,
+                ["givenNames", "familyName", "patientguid.guid"],
             )
             filters.update({"search": [patient_search]})
 

@@ -56,7 +56,7 @@ _valid_sort_fields = [
     "stage.id",
     "livingStatus",
 ]
-_valid_search_fields = ["givenNames", "familyName", "stage"]
+_valid_search_fields = ["givenNames", "familyName", "stage", "patientguid.guid"]
 
 
 def to_snake_case(name):
@@ -663,7 +663,6 @@ def get_patient_fields():
                     "active",
                     "inactive_reason",
                     "patient_type",
-                    "stage",
                     "created_at",
                     "last_updated_at",
                     "last_updated_overall_at",
