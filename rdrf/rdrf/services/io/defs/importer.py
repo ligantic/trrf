@@ -1148,8 +1148,12 @@ class Importer(object):
         working_group_types = self.data["working_group_types"]
 
         for type_dict in working_group_types:
-            type_model, _ = WorkingGroupType.objects.get_or_create(
-                name=type_dict.get("name")
+            type_model, _ = WorkingGroupType.objects.update_or_create(
+                name=type_dict.get("name"),
+                defaults={
+                    "required": type_dict.get("required"),
+                    "help_text": type_dict.get("help_text"),
+                },
             )
 
             existing_rules = set(type_model.rules.all())

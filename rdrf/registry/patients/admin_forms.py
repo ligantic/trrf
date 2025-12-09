@@ -534,6 +534,9 @@ class PatientForm(forms.ModelForm):
                 )
                 self.fields.update(additional_working_group_fields)
                 self.fields["working_groups"].choices = working_groups_choices
+                self.fields["working_groups"].widget.attrs["size"] = len(
+                    working_groups_choices
+                )
                 if not has_displayable_working_groups(working_groups_choices):
                     self.fields["working_groups"].disabled = True
                     self.fields["working_groups"].required = False

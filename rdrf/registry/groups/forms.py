@@ -9,7 +9,12 @@ logger = logging.getLogger(__name__)
 def _working_group_types(wg_queryset):
     return (
         wg_queryset.values("type")
-        .annotate(name=F("type__name"), aggregate_by_count=Count("type"))
+        .annotate(
+            name=F("type__name"),
+            required=F("type__required"),
+            help_text=F("type__help_text"),
+            aggregate_by_count=Count("type"),
+        )
         .order_by("type__name")
     )
 
@@ -37,10 +42,15 @@ def working_group_fields(wg_queryset, initial):
                     initial, working_group_type["type"]
                 )
             ],
+            required=working_group_type["required"],
+            help_text=working_group_type["help_text"],
         )
         for working_group_type in _working_group_types(wg_queryset)
         if working_group_type["type"]
     }
+
+    for id, field in additional_fields.items():
+        additional_fields[id].widget.attrs["size"] = len(field.choices)
 
     return base_choices, additional_fields
 
