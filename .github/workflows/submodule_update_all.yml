@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        registry: [ 'angelman', 'arrk', 'mnd' ]
+        registry: [ 'arrk', 'mnd' ]
     steps:
       - name: Send repository_dispatch event
         uses: peter-evans/repository-dispatch@v2
