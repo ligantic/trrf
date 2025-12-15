@@ -11,7 +11,6 @@ from django.forms.utils import ErrorDict
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
-
 from rdrf.db.dynamic_data import DynamicDataWrapper
 from rdrf.forms.dynamic.fields import FileTypeRestrictedFileField
 from rdrf.forms.widgets.widgets import (
@@ -26,6 +25,7 @@ from rdrf.models.definition.models import (
     ConsentSection,
     DemographicFields,
 )
+
 from registry.groups import GROUPS
 from registry.groups.forms import working_group_fields
 from registry.groups.models import CustomUser, WorkingGroup
@@ -562,6 +562,9 @@ class PatientForm(forms.ModelForm):
                 ]
 
                 def apply_field_config(target_field, target_field_config):
+                    if self.fields[target_field].widget.input_type == "hidden":
+                        return
+
                     if getattr(
                         self.fields[target_field].widget,
                         "allow_multiple_selected",
