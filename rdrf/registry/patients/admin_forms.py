@@ -11,6 +11,7 @@ from django.forms.utils import ErrorDict
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
+
 from rdrf.db.dynamic_data import DynamicDataWrapper
 from rdrf.forms.dynamic.fields import FileTypeRestrictedFileField
 from rdrf.forms.widgets.widgets import (
@@ -25,7 +26,6 @@ from rdrf.models.definition.models import (
     ConsentSection,
     DemographicFields,
 )
-
 from registry.groups import GROUPS
 from registry.groups.forms import working_group_fields
 from registry.groups.models import CustomUser, WorkingGroup
@@ -762,17 +762,22 @@ class PatientForm(forms.ModelForm):
         )
         base_working_group_choices = self.fields["working_groups"].choices
         selected_working_group_ids = self.data.getlist("working_groups")
-
-        additional_working_group_fields = [
-            field_name
-            for field_name in self.data.keys()
-            if field_name.startswith("working_groups_")
-        ]
         selected_additional_working_group_ids = [
             value
-            for field_name in additional_working_group_fields
+            for field_name in self.data.keys()
+            if field_name.startswith("working_groups_")
             for value in self.data.getlist(field_name)
         ]
+        all_additional_working_group_ids = [
+            field_name
+            for field_name in self.fields.keys()
+            if field_name.startswith("working_groups_")
+        ]
+        has_all_working_groups_disabled = all(
+            "disabled" in self.fields[field_name].widget.attrs
+            or self.fields[field_name].disabled
+            for field_name in all_additional_working_group_ids
+        )
 
         # Determine the base working groups the patient should have
         if is_base_working_groups_disabled:
@@ -788,8 +793,12 @@ class PatientForm(forms.ModelForm):
                     working_groups = WorkingGroup.objects.filter(
                         id__in=selected_working_group_ids
                     ).exclude(id=unallocated_working_group.id)
-                elif self.instance.id and self.instance.working_groups.exists():
-                    # No working groups have been selected, (assume all working groups controls are disabled)
+                elif (
+                    self.instance.id
+                    and self.instance.working_groups.exists()
+                    and has_all_working_groups_disabled
+                ):
+                    # No working groups have been selected
                     # so keep existing working groups
                     working_groups = self.instance.working_groups.all()
                 else:
