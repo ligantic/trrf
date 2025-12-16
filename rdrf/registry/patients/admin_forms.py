@@ -562,6 +562,9 @@ class PatientForm(forms.ModelForm):
                 ]
 
                 def apply_field_config(target_field, target_field_config):
+                    if self.fields[target_field].widget.input_type == "hidden":
+                        return
+
                     if getattr(
                         self.fields[target_field].widget,
                         "allow_multiple_selected",
@@ -762,17 +765,22 @@ class PatientForm(forms.ModelForm):
         )
         base_working_group_choices = self.fields["working_groups"].choices
         selected_working_group_ids = self.data.getlist("working_groups")
-
-        additional_working_group_fields = [
-            field_name
-            for field_name in self.data.keys()
-            if field_name.startswith("working_groups_")
-        ]
         selected_additional_working_group_ids = [
             value
-            for field_name in additional_working_group_fields
+            for field_name in self.data.keys()
+            if field_name.startswith("working_groups_")
             for value in self.data.getlist(field_name)
         ]
+        all_additional_working_group_ids = [
+            field_name
+            for field_name in self.fields.keys()
+            if field_name.startswith("working_groups_")
+        ]
+        has_all_working_groups_disabled = all(
+            "disabled" in self.fields[field_name].widget.attrs
+            or self.fields[field_name].disabled
+            for field_name in all_additional_working_group_ids
+        )
 
         # Determine the base working groups the patient should have
         if is_base_working_groups_disabled:
@@ -788,8 +796,12 @@ class PatientForm(forms.ModelForm):
                     working_groups = WorkingGroup.objects.filter(
                         id__in=selected_working_group_ids
                     ).exclude(id=unallocated_working_group.id)
-                elif self.instance.id and self.instance.working_groups.exists():
-                    # No working groups have been selected, (assume all working groups controls are disabled)
+                elif (
+                    self.instance.id
+                    and self.instance.working_groups.exists()
+                    and has_all_working_groups_disabled
+                ):
+                    # No working groups have been selected
                     # so keep existing working groups
                     working_groups = self.instance.working_groups.all()
                 else:
