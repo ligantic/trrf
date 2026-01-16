@@ -75,7 +75,7 @@ class PatientListConfiguration:
         },
         "patient_guid": {
             "label": "GUID",
-            "permission": "patients.can_view_patient_guid",
+            "permission": "patients.view_patientguid",
             "class": ColumnPatientGuid,
         },
     }
