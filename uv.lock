@@ -172,6 +172,15 @@ wheels = [
 ]
 
 [[package]]
+name = "cachetools"
+version = "4.1.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/fc/c8/0b52cf3132b4b85c9e83faa3e4d375575afeb3a1710c40b2b2cd2a3e5635/cachetools-4.1.1.tar.gz", hash = "sha256:bbaa39c3dede00175df2dc2b03d0cf18dd2d32a7de7beb68072d13043c9edb20", size = 23574, upload-time = "2020-06-28T19:42:39.37Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/cd/5c/f3aa86b6d5482f3051b433c7616668a9b96fbe49a622210e2c9781938a5c/cachetools-4.1.1-py3-none-any.whl", hash = "sha256:513d4ff98dd27f85743a8dc0e92f55ddb1b49e060c2d5961512855cda2c01a98", size = 10960, upload-time = "2020-06-28T19:42:38.034Z" },
+]
+
+[[package]]
 name = "ccg-django-utils"
 version = "0.4.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1407,6 +1416,12 @@ wheels = [
 ]
 
 [[package]]
+name = "pypdftk"
+version = "0.5"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f6/90/cf9d07b633dfbfb26ea1032d22d20b7959394b706c943ff4caaa2a48957c/pypdftk-0.5.tar.gz", hash = "sha256:b6f7f000133480842b3bf9f8222cb6bd5e2b20cf50c5ec050f2e44d9f7dc3296", size = 5981, upload-time = "2021-04-11T21:16:37.593Z" }
+
+[[package]]
 name = "pyrsistent"
 version = "0.20.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2007,6 +2022,7 @@ dependencies = [
     { name = "aws-xray-sdk" },
     { name = "awslambdaric" },
     { name = "boto3" },
+    { name = "cachetools" },
     { name = "ccg-django-utils" },
     { name = "django" },
     { name = "django-anymail" },
@@ -2038,6 +2054,7 @@ dependencies = [
     { name = "pillow" },
     { name = "psycopg2-binary" },
     { name = "pycountry" },
+    { name = "pypdftk" },
     { name = "python-dateutil" },
     { name = "python-magic" },
     { name = "pyyaml" },
@@ -2084,6 +2101,7 @@ requires-dist = [
     { name = "aws-xray-sdk", specifier = "==2.15.0" },
     { name = "awslambdaric", specifier = "==3.1.1" },
     { name = "boto3", specifier = "==1.40.41" },
+    { name = "cachetools", specifier = "==4.1.1" },
     { name = "ccg-django-utils", specifier = "==0.4.2" },
     { name = "coverage", marker = "extra == 'test'", specifier = "==5.5" },
     { name = "django", specifier = "==5.2.1" },
@@ -2121,6 +2139,7 @@ requires-dist = [
     { name = "psycopg2-binary", specifier = "==2.9.10" },
     { name = "pycountry", specifier = "==24.6.1" },
     { name = "pynose", marker = "extra == 'test'", specifier = "==1.5.5" },
+    { name = "pypdftk", specifier = "==0.5" },
     { name = "pytest", marker = "extra == 'test'", specifier = "==7.1.1" },
     { name = "pytest-django", marker = "extra == 'test'", specifier = "==4.5.2" },
     { name = "python-dateutil", specifier = "==2.8.2" },
