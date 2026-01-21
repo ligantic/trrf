@@ -81,12 +81,12 @@ def patient_self_registration(_step, client_name, email_address, password):
 
     # Populate plain text fields
     for key, value in params.items():
-        world.browser.find_element_by_id(key).send_keys(value + Keys.TAB)
+        world.browser.find_element(By.ID, key).send_keys(value + Keys.TAB)
 
     # Select the gender radio button
     # 1 - Male, 2 - Female, 3 - Indeterminate
-    world.browser.find_element_by_css_selector(
-        "input[name='gender'][value='1']"
+    world.browser.find_element(
+        By.CSS_SELECTOR, "input[name='gender'][value='1']"
     ).click()
 
     captcha_iframe_element = world.browser.find_element(
@@ -96,7 +96,7 @@ def patient_self_registration(_step, client_name, email_address, password):
     world.browser.switch_to.frame(captcha_iframe_element)
     scroll_to_y(500)
 
-    world.browser.find_element_by_id("recaptcha-anchor").send_keys(Keys.SPACE)
+    world.browser.find_element(By.ID, "recaptcha-anchor").send_keys(Keys.SPACE)
 
     world.browser.switch_to.default_content()
 
@@ -118,7 +118,14 @@ def login(_step, username, password):
 
 @step("logout")
 def logout(_step):
-    open_option_from_menu(_step, "Logout", "user")
+    BasePage(world.browser).open_menu("user")
+    button = world.browser.find_element(by=By.ID, value="logout-button")
+    button.click()
+    WebDriverWait(world.browser, TEST_WAIT).until(
+        expected_conditions.presence_of_element_located(
+            LoginPage.USERNAME_ELEMENT
+        )
+    )
 
 
 @step('reauthenticate with username "([^"]+)" and password "([^"]+)"')
@@ -129,6 +136,11 @@ def reauthenticate(_step, username, password):
 
 @step("am logged in successfully")
 def assert_is_logged_in(self):
+    WebDriverWait(world.browser, TEST_WAIT).until(
+        expected_conditions.presence_of_element_located(
+            BasePage.SITE_MENU.get("user")
+        )
+    )
     assert_equal(
         BasePage(world.browser).get_user_menu_text(),
         f"{world.user_first_name} {world.user_last_name}",
@@ -191,8 +203,8 @@ def open_option_from_menu(_step, option, menu):
 
 @step('"([^"]+)" image is displayed')
 def assert_is_image_displayed(_step, image_alt):
-    image = world.browser.find_element_by_css_selector(
-        f'img[alt="{image_alt}"]'
+    image = world.browser.find_element(
+        By.CSS_SELECTOR, f'img[alt="{image_alt}"]'
     )
     assert_true(image.is_displayed())
 
@@ -213,7 +225,13 @@ def setup_initial_otp_token(_step):
 
 @step("enter my generated OTP token")
 def enter_otp_token(_step):
+    current_url = world.browser.current_url
     utils.set_otp_token(TwoFactorLoginTokenPage(world.browser), world.key)
+    # Wait for the URL to change away from the 2FA login page
+    # Use longer timeout to handle CI environment delays
+    WebDriverWait(world.browser, TEST_WAIT * 2).until(
+        expected_conditions.url_changes(current_url)
+    )
 
 
 @step("confirm to disable two-factor auth")

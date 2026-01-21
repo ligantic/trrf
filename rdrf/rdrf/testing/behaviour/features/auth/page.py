@@ -103,7 +103,7 @@ class TwoFactorLoginTokenPage(BasePage):
         return self
 
     def submit(self):
-        self._get_element(self.SUBMIT_BUTTON).submit()
+        self._get_element(self.SUBMIT_BUTTON).click()
 
 
 class TwoFactorTokenGeneratorPage(TwoFactorLoginTokenPage):

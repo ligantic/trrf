@@ -3,6 +3,7 @@ import os
 import subprocess
 
 from aloe import world
+from selenium.common.exceptions import StaleElementReferenceException
 from selenium.webdriver.common.by import By
 
 TEST_WAIT = int(os.environ.get("TEST_WAIT") or "10")
@@ -250,13 +251,7 @@ def scroll_to(element):
 
 
 def scroll_to_multisection_cde(section, cde, item=1):
-    # item 1 means the 1st block of cdes in the multisection
-    print(
-        "Attempting to scroll to section %s cde %s item %s"
-        % (section, cde, item)
-    )
     formset_string = "-%s-" % (int(item) - 1)
-    print("formset_string = %s" % formset_string)
     xpath = "//div[@class='card-header' and contains(., '%s')]" % section
     panel_heading = world.browser.find_element(
         by=By.XPATH, value=xpath
@@ -273,7 +268,6 @@ def scroll_to_multisection_cde(section, cde, item=1):
     for label_element in default_panel.find_elements(
         by=By.XPATH, value=label_expression
     ):
-        print("found a label element for cde %s" % cde)
         input_div = label_element.find_element(
             by=By.XPATH, value=".//following-sibling::div"
         )
@@ -285,10 +279,6 @@ def scroll_to_multisection_cde(section, cde, item=1):
                 % formset_string,
             )
             scroll_to(input_element)
-            print(
-                "found input element: id = %s"
-                % input_element.get_attribute("id")
-            )
             return input_element
         except BaseException:
             continue
@@ -344,7 +334,7 @@ def scroll_to_cde(section, cde, item=None):
     if "__prefix__" in input_id:
         # hack to avoid this error
         input_id = input_id.replace("__prefix__", "0")
-        input_element = world.browser.find_element_by_id(input_id)
+        input_element = world.browser.find_element(By.ID, input_id)
         if not input_element:
             raise Exception("could not locate input with id %s" % input_id)
 
@@ -374,3 +364,35 @@ def wait_for_first_section():
             (By.CSS_SELECTOR, ".section-available")
         )
     )
+
+
+# From aloe_webdriver: https://github.com/aloetesting/aloe_webdriver
+
+
+def string_literal(content):
+    if '"' in content and "'" in content:
+        raise ValueError("Cannot represent this string in XPath")
+
+    if '"' in content:
+        content = "'%s'" % content
+    else:
+        content = '"%s"' % content
+
+    return content
+
+
+def contains_content(content):
+    for elem in world.browser.find_elements(
+        By.XPATH,
+        "//*[contains(normalize-space(.), {content}) "
+        "and not(./*[contains(normalize-space(.), {content})])]".format(
+            content=string_literal(content)
+        ),
+    ):
+        try:
+            if elem.is_displayed():
+                return True
+        except StaleElementReferenceException:
+            pass
+
+    return False

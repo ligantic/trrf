@@ -3,7 +3,6 @@ import time
 
 from aloe import step, world
 from aloe.registry import STEP_REGISTRY
-from aloe_webdriver.webdriver import contains_content
 from nose.tools import assert_equal, assert_true
 from selenium.webdriver.common.alert import Alert
 from selenium.webdriver.common.by import By
@@ -32,7 +31,7 @@ def login_as_angelman_user(step, user_name):
 
 @step('I should be at the welcome page and see a message which says "([^"]+)"')
 def angelman_user_logged_in(step, welcome_message):
-    login_message = world.browser.find_element_by_tag_name("h4").text
+    login_message = world.browser.find_element(By.TAG_NAME, "h4").text
 
     # Ensure that the user sees the expected page after successfully logging in
     assert world.expected_login_message in login_message
@@ -43,7 +42,7 @@ def try_to_manually_activate_new_user(step):
     world.browser.get(
         world.site_url + "admin/registration/registrationprofile/"
     )
-    world.browser.find_element_by_id("action-toggle").send_keys(Keys.SPACE)
+    world.browser.find_element(By.ID, "action-toggle").send_keys(Keys.SPACE)
 
     world.browser.find_element(
         by=By.XPATH,
@@ -58,13 +57,15 @@ def try_to_manually_activate_new_user(step):
 def check_user_activated(step):
     # Ensure that the user has been successfully activated by checking for the green tick icon
     assert not (
-        world.browser.find_elements_by_css_selector(
-            'img[src$="/static/admin/img/icon-yes.svg"].ng-hide'
+        world.browser.find_elements(
+            By.CSS_SELECTOR,
+            'img[src$="/static/admin/img/icon-yes.svg"].ng-hide',
         )
     )
 
     # Log out as the admin user
-    world.browser.get(world.site_url + "logout?next=/router/")
+    world.browser.find_element(By.ID, "authMenuDropdown").click()
+    world.browser.find_element(By.ID, "logout-button").click()
 
 
 @step("I try to surf the site...")
@@ -89,7 +90,7 @@ def load_export(step, export_name):
 
 @step('should see "([^"]+)"$')
 def should_see(step, text):
-    assert_true(contains_content(world.browser, text))
+    assert_true(utils.contains_content(text))
 
 
 @step('click "(.*)"')
@@ -132,7 +133,7 @@ def click_patient_listing(step, patient_name):
 @step('I click on "(.*)" in "(.*)" group in sidebar')
 def click_sidebar_group_item(step, item_name, group_name):
     # E.g. And I click "Clinical Data" in "Main" group in sidebar
-    sidebar = world.browser.find_element_by_id("sidebar")
+    sidebar = world.browser.find_element(By.ID, "sidebar")
     form_group_panel = sidebar.find_element(
         by=By.XPATH,
         value='//div[@class="card-header"][contains(., "%s")]' % group_name,
@@ -145,7 +146,7 @@ def click_sidebar_group_item(step, item_name, group_name):
 
 @step('I press "(.*)" button in "(.*)" group in sidebar')
 def click_button_sidebar_group(step, button_name, group_name):
-    sidebar = world.browser.find_element_by_id("sidebar")
+    sidebar = world.browser.find_element(By.ID, "sidebar")
     form_group_panel = sidebar.find_element(
         by=By.XPATH,
         value='//div[@class="card-header"][contains(., "%s")]' % group_name,
@@ -163,7 +164,7 @@ def enter_cde_on_form(step, cde_value, form, section, cde):
 
     utils.wait_for_first_section()
 
-    form_block = world.browser.find_element_by_id("main-form")
+    form_block = world.browser.find_element(By.ID, "main-form")
     section_div_heading = form_block.find_element(
         by=By.XPATH,
         value=".//div[@class='card-header'][contains(., '%s')]" % section,
@@ -207,7 +208,7 @@ def enter_cde_on_form_multisection(step, cde_value, form, section, cde, item):
 
     utils.wait_for_first_section()
 
-    form_block = world.browser.find_element_by_id("main-form")
+    form_block = world.browser.find_element(By.ID, "main-form")
     section_div_heading = form_block.find_element(
         by=By.XPATH,
         value=".//div[@class='card-header'][contains(., '%s')]" % section,
@@ -231,9 +232,6 @@ def enter_cde_on_form_multisection(step, cde_value, form, section, cde, item):
             if not correct_item(input_element):
                 continue
             input_element.send_keys(cde_value)
-            input_id = input_element.get_attribute("id")
-            print("input id %s sent keys '%s'" % (input_id, cde_value))
-
             return
         except BaseException:
             pass
@@ -265,7 +263,7 @@ def error_message_is(step, error_message):
 
 @step('location is "(.*)"')
 def location_is(step, location_name):
-    sidebar = world.browser.find_element_by_id("sidebar")
+    sidebar = world.browser.find_element(By.ID, "sidebar")
     location_parts = location_name.split("/")
     if len(location_parts) == 1:
         sidebar.find_element(
@@ -295,7 +293,7 @@ def click_module_dropdown_in_patient_listing(step, module_name, patient_name):
     else:
         button_caption, form_name = "Modules", module_name
 
-    patients_table = world.browser.find_element_by_id("patients_table")
+    patients_table = world.browser.find_element(By.ID, "patients_table")
 
     patient_row = patients_table.find_element(
         by=By.XPATH,
@@ -315,13 +313,13 @@ def click_module_dropdown_in_patient_listing(step, module_name, patient_name):
 
 @step("press the navigate back button")
 def press_back_button(step):
-    button = world.browser.find_element_by_css_selector("a.previous-form")
+    button = world.browser.find_element(By.CSS_SELECTOR, "a.previous-form")
     utils.click(button)
 
 
 @step("press the navigate forward button")
 def press_forward_button(step):
-    button = world.browser.find_element_by_css_selector("a.next-form")
+    button = world.browser.find_element(By.CSS_SELECTOR, "a.next-form")
     utils.click(button)
 
 
@@ -398,7 +396,7 @@ def value_is(step, textfield_label, expected_value):
 def value_is2(step, section, cde, expected_value):
     utils.wait_for_first_section()
 
-    form_block = world.browser.find_element_by_id("main-form")
+    form_block = world.browser.find_element(By.ID, "main-form")
     section_div_heading = form_block.find_element(
         by=By.XPATH,
         value=".//div[@class='card-header'][contains(., '%s')]" % section,
@@ -431,7 +429,7 @@ def check_checkbox(step, checkbox_label):
 
 @step("Sign consent")
 def sign_consent(step):
-    signature_div = world.browser.find_element_by_id("signature")
+    signature_div = world.browser.find_element(By.ID, "signature")
     utils.click(signature_div)
 
 
@@ -474,7 +472,7 @@ def goto_patient(step):
 
 @step('the page header should be "(.*)"')
 def the_page_header_should_be(step, header):
-    sidebar = world.browser.find_element_by_id("sidebar")
+    sidebar = world.browser.find_element(By.ID, "sidebar")
     panel_body = sidebar.find_element(
         by=By.XPATH, value='//div[@class="card-body"]'
     )
@@ -495,7 +493,7 @@ def login_as_role(step, role):
 
 @step('log in as "(.*)" with "(.*)" password')
 def login_as_user(step, username, password):
-    utils.click(world.browser.find_element_by_link_text("Log in"))
+    utils.click(world.browser.find_element(By.LINK_TEXT, "Log in"))
     username_field = world.browser.find_element(
         by=By.XPATH, value='.//input[@name="auth-username"]'
     )
@@ -513,7 +511,7 @@ def should_be_logged_in(step):
         by=By.PARTIAL_LINK_TEXT, value=world.user
     )
     utils.click(user_link)
-    world.browser.find_element_by_link_text("Logout")
+    world.browser.find_element(By.ID, "logout-button")
 
 
 @step("should be on the login page")
@@ -537,8 +535,8 @@ def click_user_menu(step):
 
 @step('the progress indicator should be "(.*)"')
 def the_progress_indicator_should_be(step, percentage):
-    progress_bar = world.browser.find_element_by_css_selector(
-        ".progress .progress-bar"
+    progress_bar = world.browser.find_element(
+        By.CSS_SELECTOR, ".progress .progress-bar"
     )
 
     logger.info(progress_bar.text.strip())
@@ -556,7 +554,7 @@ def go_home(step):
 def go_to_registry(step, name):
     world.browser.get(world.site_url)
     utils.click(
-        world.browser.find_element_by_link_text("Registries on this site")
+        world.browser.find_element(By.LINK_TEXT, "Registries on this site")
     )
     utils.click(world.browser.find_element(by=By.PARTIAL_LINK_TEXT, value=name))
 
@@ -583,7 +581,7 @@ def accept_alert(step):
 
 @step('When I click "(.*)" in sidebar')
 def sidebar_click(step, sidebar_link_text):
-    utils.click(world.browser.find_element_by_link_text(sidebar_link_text))
+    utils.click(world.browser.find_element(By.LINK_TEXT, sidebar_link_text))
 
 
 @step("I click Cancel")
@@ -661,8 +659,8 @@ def should_be_able_to_download(step, download_name):
     import re
 
     link_pattern = re.compile(r".*\/uploads\/\d+$")
-    download_link_element = world.browser.find_element_by_link_text(
-        download_name
+    download_link_element = world.browser.find_element(
+        By.LINK_TEXT, download_name
     )
     if not download_link_element:
         raise Exception("Could not locate download link %s" % download_name)
@@ -698,7 +696,7 @@ def check_history_popup(step, form, section, cde, history_values_csv):
     from selenium.webdriver.support.ui import WebDriverWait
 
     history_values = history_values_csv.split(",")
-    form_block = world.browser.find_element_by_id("main-form")
+    form_block = world.browser.find_element(By.ID, "main-form")
     section_div_heading = form_block.find_element(
         by=By.XPATH,
         value=".//div[@class='card-header'][contains(., '%s')]" % section,
@@ -742,12 +740,11 @@ def check_history_popup(step, form, section, cde, history_values_csv):
 
 @step('check the clear checkbox for multisection "(.*)" cde "(.*)" file "(.*)"')
 def clear_file_upload(step, section, cde, download_name):
-    from selenium.webdriver.common.by import By
     from selenium.webdriver.support import expected_conditions as ec
     from selenium.webdriver.support.ui import WebDriverWait
 
-    download_link_element = world.browser.find_element_by_link_text(
-        download_name
+    download_link_element = world.browser.find_element(
+        By.LINK_TEXT, download_name
     )
     clear_checkbox_path = ".//following-sibling::input[@type='checkbox']"
     WebDriverWait(world.browser, TEST_WAIT).until(
@@ -765,7 +762,6 @@ def scroll_to_section(step, section):
     from selenium.webdriver.common.action_chains import ActionChains
 
     mover = ActionChains(world.browser)
-    print("scrolling to section %s" % section)
     section_xpath = (
         ".//div[@class='panel panel-default' and contains(.,'%s') and not(contains(., '__prefix__')) and not(contains(.,'View previous values'))]"
         % section
@@ -775,9 +771,7 @@ def scroll_to_section(step, section):
     )
     if not section_element:
         raise Exception("could not find section %s" % section)
-    y = utils.scroll_to(section_element)
     mover.move_to_element(section_element)
-    print("scrolled to section %s y = %s" % (section, y))
 
 
 @step('I click the add button for multisection "(.*)"')

@@ -1,6 +1,7 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from aloe import step, world
+from django.utils import timezone
 from nose.tools import assert_equal
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as ec
@@ -35,7 +36,7 @@ def fill_out_form(step, form_name, patient_name, again=None):
 
 @step(r"(\d+) hour(?:s)? pass(?:es)?")
 def pass_time(_step, hours):
-    now = (datetime.now() + timedelta(hours=int(hours))).timestamp()
+    now = (timezone.now() + timedelta(hours=int(hours))).timestamp()
     go_to_url(f"mail/send_longitudinal_followups?now={int(now)}")
 
 
@@ -71,7 +72,7 @@ def empty_mail(_step):
 def check_mail(_step, count):
     go_to_url("mail/outbox")
     sent_emails = len(
-        world.browser.find_elements_by_css_selector(EMAIL_SELECTOR)
+        world.browser.find_elements(By.CSS_SELECTOR, EMAIL_SELECTOR)
     )
     assert_equal(sent_emails, int(count))
 

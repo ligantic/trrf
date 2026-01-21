@@ -4,7 +4,9 @@ from contextlib import contextmanager
 
 from aloe import after, around, before, world
 from django.conf import settings
-from selenium import webdriver
+from selenium.webdriver import Remote
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.firefox.options import Options as FirefoxOptions
 
 from . import utils
 
@@ -23,21 +25,23 @@ TEST_DISABLE_TEARDOWN = (
 )
 
 
-def get_desired_capabilities(browser):
-    return {
-        "firefox": webdriver.DesiredCapabilities.FIREFOX,
-        "chrome": webdriver.DesiredCapabilities.CHROME,
-    }.get(browser, webdriver.DesiredCapabilities.FIREFOX)
+def get_browser_options(browser):
+    options_map = {
+        "firefox": FirefoxOptions,
+        "chrome": ChromeOptions,
+    }
+    options_class = options_map.get(browser, FirefoxOptions)
+    return options_class()
 
 
 @around.all
 @contextmanager
 def with_browser():
-    desired_capabilities = get_desired_capabilities(TEST_BROWSER)
+    options = get_browser_options(TEST_BROWSER)
 
-    world.browser = webdriver.Remote(
-        desired_capabilities=desired_capabilities,
+    world.browser = Remote(
         command_executor=TEST_SELENIUM_HUB,
+        options=options,
     )
     world.browser.implicitly_wait(TEST_WAIT)
 
