@@ -11,10 +11,47 @@
 <script>
     $(document).ready(function(){
         $('#import-msg').hide();
-        $('#submit-form-btn').click(function() {
+        $('#import-error').hide();
+
+        $('#import-form').submit(function(e) {
+            e.preventDefault();
             $('#import-msg').show();
-            $('#import-form').submit();
+            $('#import-error').hide();
+            $('#submit-form-btn').prop('disabled', true);
+
+            var formData = new FormData(this);
+            $.ajax({
+                url: $(this).attr('action') || window.location.pathname,
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    pollStatus(response.job_id);
+                },
+                error: function() {
+                    $('#import-msg').hide();
+                    $('#import-error').text('{% trans "Failed to start import. Please try again." %}').show();
+                    $('#submit-form-btn').prop('disabled', false);
+                }
+            });
         });
+
+        function pollStatus(jobId) {
+            $.getJSON('/import/status/' + jobId + '/', function(data) {
+                if (data.status === 'running') {
+                    setTimeout(function(){ pollStatus(jobId); }, 3000);
+                } else if (data.status === 'success') {
+                    window.location.href = '/import/?state=success';
+                } else {
+                    $('#import-msg').hide();
+                    $('#import-error').text('{% trans "Import Failed" %}: ' + (data.error_message || 'Unknown error')).show();
+                    $('#submit-form-btn').prop('disabled', false);
+                }
+            }).fail(function() {
+                setTimeout(function(){ pollStatus(jobId); }, 3000);
+            });
+        }
     });
 </script>
 {% endblock %}
@@ -59,4 +96,5 @@
     </form>
     
     <h2 class="muted" id="import-msg">{% trans 'Importing, please wait' %}...</h2>
+    <div class="alert alert-danger" id="import-error" style="display:none"></div>
 {% endblock %}

@@ -254,6 +254,11 @@ patterns += [
         name="import_registry",
     ),
     re_path(
+        r"^import/status/(?P<job_id>[0-9a-f-]+)/?$",
+        import_registry_view.ImportRegistryStatusView.as_view(),
+        name="import_registry_status",
+    ),
+    re_path(
         r"^report/", include(("report.urls", "report_urls"), namespace="report")
     ),
     re_path(
