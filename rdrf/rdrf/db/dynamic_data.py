@@ -417,7 +417,13 @@ class FormDataParser:
 
     def _get_cde_dict(self, form_model, section_model, cde_model, data):
         section_dict = self._get_section_dict(form_model, section_model, data)
-        for cde_dict in section_dict["cdes"]:
+        cdes_data = section_dict["cdes"]
+        
+        # Handle both old nested structure [[{...}]] and new flat structure [{...}]
+        if cdes_data and isinstance(cdes_data[0], list):
+            cdes_data = cdes_data[0]  # Flatten to first form's CDEs
+        
+        for cde_dict in cdes_data:
             if cde_dict["code"] == cde_model.code:
                 return cde_dict
         cde_dict = {"code": cde_model.code, "value": None}
