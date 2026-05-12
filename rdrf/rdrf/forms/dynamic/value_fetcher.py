@@ -16,12 +16,17 @@ class DynamicValueFetcher:
                                 if cde_dict["code"] == cde_code
                             ]
                         else:
-                            return [
-                                cde_dict["value"]
-                                for section_item in section_dict["cdes"]
-                                for cde_dict in section_item
-                                if cde_dict["code"] == cde_code
-                            ]
+                            results = []
+                            for section_item in section_dict["cdes"]:
+                                # Guard: flat dict appended to allow_multiple section
+                                if isinstance(section_item, dict):
+                                    if section_item["code"] == cde_code:
+                                        results.append(section_item["value"])
+                                else:
+                                    for cde_dict in section_item:
+                                        if cde_dict["code"] == cde_code:
+                                            results.append(cde_dict["value"])
+                            return results
         return []
 
     def get_value_from_dynamic_data(self, form_name, section_code, cde_code):
