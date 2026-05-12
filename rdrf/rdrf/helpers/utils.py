@@ -442,9 +442,13 @@ def get_cde_value(
                         values = []
                         items = section_dict["cdes"]
                         for item in items:
-                            for cde_dict in item:
-                                if cde_dict["code"] == cde_model.code:
-                                    values.append(cde_dict["value"])
+                            if isinstance(item, dict):
+                                if item["code"] == cde_model.code:
+                                    values.append(item["value"])
+                            else:
+                                for cde_dict in item:
+                                    if cde_dict["code"] == cde_model.code:
+                                        values.append(cde_dict["value"])
                         if form_index is None:
                             return values
                         if form_index >= len(values):
@@ -709,10 +713,15 @@ class TimeStripper(object):
                         else:
                             items = section["cdes"]
                             for item in items:
-                                for cde in item:
-                                    if self.is_date_cde(cde):
-                                        if self.update_cde(cde):
+                                if isinstance(item, dict):
+                                    if self.is_date_cde(item):
+                                        if self.update_cde(item):
                                             updated += 1
+                                else:
+                                    for cde in item:
+                                        if self.is_date_cde(cde):
+                                            if self.update_cde(cde):
+                                                updated += 1
 
         return updated > 0
 

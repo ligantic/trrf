@@ -1042,9 +1042,16 @@ class DynamicDataWrapper(object):
                             return item["value"]
                     else:
                         results = []
-                        for cde in item:
-                            if cde["code"] == cde_code:
-                                results.append(cde["value"])
+                        # item is one element of section_dict["cdes"];
+                        # if allow_multiple was True it should be a row-array,
+                        # but may be a flat dict if the section schema changed.
+                        if isinstance(item, dict):
+                            if item["code"] == cde_code:
+                                results.append(item["value"])
+                        else:
+                            for cde in item:
+                                if cde["code"] == cde_code:
+                                    results.append(cde["value"])
                         return results
 
     def iter_cdes(self, registry_code):

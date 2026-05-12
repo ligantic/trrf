@@ -230,8 +230,12 @@ class FormProgressCalculator:
                                 yield cde_dict
                         else:
                             for item in section_dict["cdes"]:
-                                for cde_dict in item:
-                                    yield cde_dict
+                                # Guard: flat dict appended to allow_multiple section
+                                if isinstance(item, dict):
+                                    yield item
+                                else:
+                                    for cde_dict in item:
+                                        yield cde_dict
 
     def _calculate_form_has_data(self):
         for cde_dict in self._form_section_traversal():
