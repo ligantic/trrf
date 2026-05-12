@@ -151,6 +151,17 @@ def build_form_data(data):
         for section_dict in form_dict["sections"]:
             if not section_dict["allow_multiple"]:
                 for cde_dict in section_dict["cdes"]:
+                    # Guard: stored data may have a nested row-array if the section
+                    # was previously allow_multiple=True; flatten it.
+                    if isinstance(cde_dict, list):
+                        for inner_cde in cde_dict:
+                            delimited_key = mongo_key(
+                                form_dict["name"],
+                                section_dict["code"],
+                                inner_cde["code"],
+                            )
+                            flattened[delimited_key] = inner_cde["value"]
+                        continue
                     value = cde_dict["value"]
                     delimited_key = mongo_key(
                         form_dict["name"],
@@ -163,6 +174,16 @@ def build_form_data(data):
                 flattened[multisection_code] = []
                 multisection_items = section_dict["cdes"]
                 for cde_list in multisection_items:
+                    # Guard: stored data may have flat dicts if CDEs were appended
+                    # after the section changed from allow_multiple=True to False.
+                    if isinstance(cde_list, dict):
+                        delimited_key = mongo_key(
+                            form_dict["name"],
+                            section_dict["code"],
+                            cde_list["code"],
+                        )
+                        flattened[delimited_key] = cde_list["value"]
+                        continue
                     d = {}
                     for cde_dict in cde_list:
                         delimited_key = mongo_key(
