@@ -689,8 +689,9 @@ def get_patient_fields():
             LivingStates.CHOICES
         ).get(patient.living_status, patient.living_status),
         "self_registered": graphene.Boolean(),
-        "resolve_self_registered": lambda patient, _info: patient.created_by
-        is None,
+        "resolve_self_registered": lambda patient, _info: (
+            patient.created_by is None
+        ),
         "last_login": graphene.DateTime(),
         "resolve_last_login": RegisteredUserType.resolve_last_login,
         "user_status": graphene.String(),

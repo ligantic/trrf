@@ -297,8 +297,9 @@ class RegistryImporter(BaseImporter):
 META_FILTERS = {
     definitions.ExportTypes.CDES: lambda m: m["name"] == "CDEs",
     definitions.ExportTypes.REFDATA: lambda m: m["name"] == "Reference Data",
-    definitions.ExportTypes.REGISTRY_DEF: lambda m: m["name"]
-    != "Registry Data",
+    definitions.ExportTypes.REGISTRY_DEF: lambda m: (
+        m["name"] != "Registry Data"
+    ),
 }
 
 

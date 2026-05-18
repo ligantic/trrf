@@ -322,13 +322,27 @@ class DSLValidator:
         errors = []
 
         result_handlers = {
-            ConditionCheckResult.DUPLICATE_CONDITION: lambda: f"Duplicate condition on line {idx}: {condition_str}",
-            ConditionCheckResult.DIFFERENT_CONDITION_SAME_TARGET: lambda: f"Different condition with same target on line {idx}: {condition_str}",
-            ConditionCheckResult.OPPOSITE_CONDITION_SAME_ACTION: lambda: f"Opposite condition with same target on line {idx}: {condition_str}",
-            ConditionCheckResult.TARGET_AND_CONDITION_OVERLAP: lambda: f"The target CDEs and conditions CDEs overlap on line {idx}",
-            ConditionCheckResult.INVALID_CONDITION: lambda: f"The conditions repeat or contradict on line {idx}",
-            ConditionCheckResult.MULTI_SECTION_CDE_FAILURE: lambda: f"The condition and target CDEs must be within the same section on line {idx}",
-            ConditionCheckResult.MULTI_VALUE_REQUIRED_INCLUDES_EXCLUDES: lambda: f"The inclusion/exclusion operators require a CDE with multiple values on line {idx}",
+            ConditionCheckResult.DUPLICATE_CONDITION: lambda: (
+                f"Duplicate condition on line {idx}: {condition_str}"
+            ),
+            ConditionCheckResult.DIFFERENT_CONDITION_SAME_TARGET: lambda: (
+                f"Different condition with same target on line {idx}: {condition_str}"
+            ),
+            ConditionCheckResult.OPPOSITE_CONDITION_SAME_ACTION: lambda: (
+                f"Opposite condition with same target on line {idx}: {condition_str}"
+            ),
+            ConditionCheckResult.TARGET_AND_CONDITION_OVERLAP: lambda: (
+                f"The target CDEs and conditions CDEs overlap on line {idx}"
+            ),
+            ConditionCheckResult.INVALID_CONDITION: lambda: (
+                f"The conditions repeat or contradict on line {idx}"
+            ),
+            ConditionCheckResult.MULTI_SECTION_CDE_FAILURE: lambda: (
+                f"The condition and target CDEs must be within the same section on line {idx}"
+            ),
+            ConditionCheckResult.MULTI_VALUE_REQUIRED_INCLUDES_EXCLUDES: lambda: (
+                f"The inclusion/exclusion operators require a CDE with multiple values on line {idx}"
+            ),
         }
 
         check_result = checker.check_condition(condition_list, action, target)

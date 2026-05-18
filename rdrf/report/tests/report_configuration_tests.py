@@ -15,8 +15,8 @@ class ReportGeneratorTestCase(TestCase):
         reg2 = Registry.objects.create(code="REG2")
 
         key_patient_guid = "patientguid {guid}"
-        patient_fields = (
-            lambda: get_configuration()
+        patient_fields = lambda: (
+            get_configuration()
             .get("demographic_model", {})
             .get("patient", {})
             .get("fields", {})
