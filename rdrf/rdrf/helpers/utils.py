@@ -517,7 +517,18 @@ def parse_iso_date(s):
 
 def parse_iso_datetime(s):
     "Opposite of datetime.date.isoformat()"
-    return dateutil.parser.parse(s) if s else None
+    if not s:
+        return None
+    from django.utils import timezone
+
+    dt = dateutil.parser.parse(s)
+    # Legacy timestamps were stored without offset (USE_TZ was False before
+    # the Django 5 upgrade). Normalise to aware so comparisons with
+    # timezone.now() don't raise "can't compare offset-naive and
+    # offset-aware datetimes".
+    if settings.USE_TZ and timezone.is_naive(dt):
+        dt = timezone.make_aware(dt)
+    return dt
 
 
 def wrap_uploaded_files(registry_code, post_files_data):
