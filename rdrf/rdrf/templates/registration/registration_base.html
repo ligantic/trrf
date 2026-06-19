@@ -50,6 +50,9 @@
     </style>
 
     <script type="text/javascript">
+        $(window).on("resize", function () {
+            adjustContentTopPadding("registration_base_container");
+        });
         $(document).ready(function() {
             adjustContentTopPadding("registration_base_container");
             var registry_code = "{{registry_code}}";

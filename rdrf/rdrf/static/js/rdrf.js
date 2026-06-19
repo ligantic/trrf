@@ -27,3 +27,7 @@ function adjustContentTopPadding(contentId = "content") {
     "padding-top", fixedTopSectionHeight + bannerHeight + relativePadding
   );
 }
+
+$(window).on("resize", function () {
+  adjustContentTopPadding();
+});
