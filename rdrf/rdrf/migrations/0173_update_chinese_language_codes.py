@@ -54,7 +54,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("rdrf", "0172_language_registryformtranslation"),
-        ("groups", "0030_customuser_preferred_language"),
+        ("groups", "0024_customuser_is_locked"),
     ]
 
     operations = [
