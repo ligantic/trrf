@@ -815,7 +815,7 @@ class CdePolicy(models.Model):
 
 class Language(models.Model):
     language_code = models.CharField(
-        max_length=6, choices=settings.ALL_LANGUAGES, unique=True
+        max_length=10, choices=settings.ALL_LANGUAGES, unique=True
     )
 
     class Meta:
@@ -1430,7 +1430,7 @@ class DemographicFields(models.Model):
 
 
 class EmailTemplate(models.Model):
-    language = models.CharField(max_length=6, choices=settings.ALL_LANGUAGES)
+    language = models.CharField(max_length=10, choices=settings.ALL_LANGUAGES)
     description = models.TextField()
     subject = models.CharField(max_length=50)
     body = models.TextField()
