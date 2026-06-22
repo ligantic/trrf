@@ -12,6 +12,6 @@
 {% if BANNER_TEXT %}
     <div class="alert alert-info mb-0 text-center" role="alert">
       <span class="fa fa-info-circle" aria-hidden="true"></span>
-      {{ BANNER_TEXT }}
+      {{ BANNER_TEXT|safe }}
     </div>
 {% endif %}
