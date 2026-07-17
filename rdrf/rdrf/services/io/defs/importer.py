@@ -118,7 +118,11 @@ class Importer(object):
 
     def load_yaml_from_string(self, yaml_string):
         self.yaml_data_file = "yaml string"
-        self.data = yaml.safe_load(yaml_string)
+        loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
+        self.load_data(yaml.load(yaml_string, Loader=loader))
+
+    def load_data(self, data):
+        self.data = data
         self.state = ImportState.LOADED
 
     def load_yaml(self, yaml_data_file):
@@ -361,7 +365,8 @@ class Importer(object):
                     pv for pv in CDEPermittedValue.objects.filter(pv_group=pvg)
                 ]
                 existing_value_codes = set([pv.code for pv in existing_values])
-                import_value_codes = set([v["code"] for v in pvg_map["values"]])
+                import_value_codes = set([v["code"]
+                                         for v in pvg_map["values"]])
                 import_missing = existing_value_codes - import_value_codes
                 # ensure applied import "wins" - this potentially could affect other
                 # registries though
@@ -528,7 +533,8 @@ class Importer(object):
         logger.info("creating generic sections")
         for section_map in generic_section_maps:
             logger.info("importing generic section map %s" % section_map)
-            s, created = Section.objects.get_or_create(code=section_map["code"])
+            s, created = Section.objects.get_or_create(
+                code=section_map["code"])
             s.code = section_map["code"]
             s.abbreviated_name = section_map["abbreviated_name"]
             s.display_name = section_map["display_name"]
@@ -541,7 +547,8 @@ class Importer(object):
 
     def _create_patient_data_section(self, section_map):
         if section_map:
-            s, created = Section.objects.get_or_create(code=section_map["code"])
+            s, created = Section.objects.get_or_create(
+                code=section_map["code"])
             s.code = section_map["code"]
             s.display_name = section_map["display_name"]
             s.header = section_map["header"]
@@ -694,7 +701,8 @@ class Importer(object):
                 if changes.has_stage_mapping(stage_dict["id"]):
                     prev_stages = stage_dict["prev_stages"]
                     next_stages = stage_dict["next_stages"]
-                    current_stage = changes.get_stages_mapping(stage_dict["id"])
+                    current_stage = changes.get_stages_mapping(
+                        stage_dict["id"])
                     if prev_stages:
                         current_stage.allowed_prev_stages.clear()
                         for stage_id in prev_stages:
@@ -797,7 +805,8 @@ class Importer(object):
                 logger.info("starting import of form map %s" % frm_map)
 
                 sections = ",".join(
-                    [section_map["code"] for section_map in frm_map["sections"]]
+                    [section_map["code"]
+                        for section_map in frm_map["sections"]]
                 )
 
                 # First create section models so the form save validation passes
@@ -1333,7 +1342,8 @@ class Importer(object):
                 Group.objects.filter(name__in=d["access_groups"])
             )
             report.filter_working_groups.set(
-                WorkingGroup.objects.filter(name__in=d["filter_working_groups"])
+                WorkingGroup.objects.filter(
+                    name__in=d["filter_working_groups"])
             )
             report.filter_consents.set(
                 [
@@ -1397,7 +1407,8 @@ class Importer(object):
                     continue
 
                 group_names = cde_pol_dict["groups_allowed"]
-                groups = [g for g in Group.objects.filter(name__in=group_names)]
+                groups = [g for g in Group.objects.filter(
+                    name__in=group_names)]
 
                 cde_policy = CdePolicy(
                     registry=registry_model,
@@ -1452,7 +1463,8 @@ class Importer(object):
             dashboard, created = RegistryDashboard.objects.get_or_create(
                 registry=registry
             )
-            logger.info(f"Add dashboard for registry {dashboard.registry.code}")
+            logger.info(
+                f"Add dashboard for registry {dashboard.registry.code}")
 
             if not created:
                 dashboard.widgets.all().delete()

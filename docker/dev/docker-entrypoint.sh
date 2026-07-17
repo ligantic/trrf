@@ -134,6 +134,21 @@ function _django_collectstatic {
 
 
 function _django_fixtures {
+    if [[ "${ENABLE_REGISTRY_SEEDING:-0}" == "1" ]]; then
+        info "seeding development registry from ${REGISTRY_DEFINITION_FILE}"
+        seed_args=(--registry-file "${REGISTRY_DEFINITION_FILE}")
+        if [[ "${REGISTRY_SEED_UPDATE_EXISTING:-0}" == "1" ]]; then
+            seed_args+=(--update-existing --confirm-update)
+        fi
+        set -x
+        django-admin seed_dev_database "${seed_args[@]}" || fail "development registry seeding failed"
+        set +x
+        return
+    fi
+    if [[ "${SKIP_DJANGO_FIXTURES:-0}" == "1" ]]; then
+        info "skipping fixture initialization"
+        return
+    fi
     info "loading fixtures ${DJANGO_FIXTURES}"
     set -x
     django-admin init ${DJANGO_FIXTURES}
@@ -150,6 +165,14 @@ function _runserver() {
 
     info "RUNSERVER_OPTS is ${RUNSERVER_OPTS}"
     set -x
+    if [[ "${DEBUGPY:-0}" == "1" ]]; then
+        debugpy_args=(--listen "0.0.0.0:${DEBUGPY_PORT:-5678}")
+        if [[ "${DEBUGPY_WAIT_FOR_CLIENT:-0}" == "1" ]]; then
+            debugpy_args+=(--wait-for-client)
+        fi
+        # shellcheck disable=SC2086
+        exec python -Xfrozen_modules=off -m debugpy "${debugpy_args[@]}" -m django ${RUNSERVER_OPTS}
+    fi
     # shellcheck disable=SC2086
     exec django-admin ${RUNSERVER_OPTS}
 }

@@ -18,6 +18,36 @@ Email:
 
 [matthew.bellgard@qut.edu.au](mailto:matthew.bellgard@qut.edu.au)
 
+### Debugging in the dev container
+
+Rebuild and reopen the workspace in the dev container after changing its
+configuration. The dev container is part of the TRRF Compose project, starts
+the `db` and `clinicaldb` services, and shares the Compose network with Django.
+
+Open **Run and Debug** in VS Code and start **Django: Compose (debugpy)**. The
+launch task rebuilds and starts the `runserver` service with the debug override,
+waits for port 5678, and attaches to the Django process. Source paths under
+`/app` in the service are mapped to the local `trrf` directory. The debugger
+connects to the `runserver` service by Compose DNS rather than a host bridge.
+
+The debug configuration runs Django's built-in `runserver` with `--noreload` so
+the debugger stays attached to one process. Stop the service with the **Django:
+Stop debug server** task when debugging is complete; the databases and dev
+container remain running.
+
+### Restoring QA data
+
+Replace both local databases from plain SQL PostgreSQL dumps with:
+
+```shell
+scripts/restore-qa-dumps.sh /path/to/primary.sql /path/to/clinical.sql
+```
+
+The script starts both database containers, stops Django, drops and recreates
+the local `webapp` databases, normalizes Azure PostgreSQL ownership and ACL
+metadata, restores each dump transactionally, and validates table ownership and
+counts. Existing local database contents are destroyed.
+
 ### Publications
 
 **Please cite the following**:

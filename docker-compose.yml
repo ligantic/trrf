@@ -1,10 +1,20 @@
-version: "3.7"
+name: trrf
 
 volumes:
   dev_db_data:
   dev_clinicaldb_data:
 
 services:
+  devcontainer:
+    image: mcr.microsoft.com/devcontainers/python:3.12
+    command: sleep infinity
+    volumes:
+      - "${HOST_WORKSPACE_FOLDER:-..}:/workspaces/gasr"
+    working_dir: /workspaces/gasr/rdrf
+    depends_on:
+      - db
+      - clinicaldb
+
   db:
     image: "postgres:${POSTGRES_VERSION}"
     env_file:
@@ -37,7 +47,7 @@ services:
       - .:/app
       - ./data/dev/:/data
     ports:
-      - "8000:8000"
+      - "${TRRF_HOST_PORT:-8000}:8000"
     depends_on:
       - db
       - clinicaldb
@@ -53,7 +63,7 @@ services:
       - .:/app
       - ./data/dev/:/data
     ports:
-        - "8001:8080"
+      - "8001:8080"
     depends_on:
       - db
       - clinicaldb
@@ -63,11 +73,11 @@ services:
       - lambda_local
       - lambda.longitudinal_followup_handler
 
-  xray-daemon:
-    image: amazon/aws-xray-daemon:3.2.0
-    ports:
-      - "2000"
-      - "2000/udp"
-    env_file:
-      - .env_local
-    command: ["-o", "--bind", "0.0.0.0:2000"]
+  # xray-daemon:
+  #   image: amazon/aws-xray-daemon:3.2.0
+  #   ports:
+  #     - "2000"
+  #     - "2000/udp"
+  #   env_file:
+  #     - .env_local
+  #   command: ["-o", "--bind", "0.0.0.0:2000"]
