@@ -51,14 +51,17 @@ services:
       context: .
       dockerfile: docker/dev/Dockerfile
     image: ${TRRF_IMAGE_NAME}
+    environment:
+      ALLOWED_HOSTS: "${RUNSERVER_ALLOWED_HOSTS-127.0.0.1 localhost [::1]}"
+      DJANGO_FIXTURES: "${RUNSERVER_FIXTURES-DEV}"
     env_file:
       - docker/dev/envs/postgres
       - docker/dev/envs/runserver
       - .env_local
     restart: on-failure
     volumes:
-      - .:/app
-      - ./data/dev/:/data
+      - "${HOST_WORKSPACE_FOLDER:-.}:/app"
+      - "${HOST_WORKSPACE_FOLDER:-.}/data/dev/:/data"
     ports:
       - "${TRRF_HOST_PORT:-8000}:8000"
     depends_on:
@@ -74,8 +77,8 @@ services:
       - docker/dev/envs/runserver
       - .env_local
     volumes:
-      - .:/app
-      - ./data/dev/:/data
+      - "${HOST_WORKSPACE_FOLDER:-.}:/app"
+      - "${HOST_WORKSPACE_FOLDER:-.}/data/dev/:/data"
     ports:
       - "8001:8080"
     depends_on:
