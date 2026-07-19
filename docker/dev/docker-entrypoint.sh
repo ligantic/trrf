@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -o pipefail
+
 
 # wait for a given host:port to become available
 #
@@ -117,10 +119,11 @@ function _django_check_deploy {
 
 function _django_migrate {
     info "running migrate"
+    mkdir -p "${LOG_DIRECTORY}"
     set -x
-    django-admin migrate --noinput --settings="${DJANGO_SETTINGS_MODULE}" 2>&1 | tee "${LOG_DIRECTORY}"/uwsgi-migrate.log
-    django-admin migrate --database=clinical --noinput --settings="${DJANGO_SETTINGS_MODULE}" 2>&1 | tee "${LOG_DIRECTORY}"/uwsgi-migrate-clinical.log
-    django-admin update_permissions --settings="${DJANGO_SETTINGS_MODULE}" 2>&1 | tee "${LOG_DIRECTORY}"/uwsgi-permissions.log
+    django-admin migrate --noinput --settings="${DJANGO_SETTINGS_MODULE}" 2>&1 | tee "${LOG_DIRECTORY}"/uwsgi-migrate.log || fail "default database migration failed"
+    django-admin migrate --database=clinical --noinput --settings="${DJANGO_SETTINGS_MODULE}" 2>&1 | tee "${LOG_DIRECTORY}"/uwsgi-migrate-clinical.log || fail "clinical database migration failed"
+    django-admin update_permissions --settings="${DJANGO_SETTINGS_MODULE}" 2>&1 | tee "${LOG_DIRECTORY}"/uwsgi-permissions.log || fail "permission update failed"
     set +x
 }
 
@@ -151,7 +154,7 @@ function _django_fixtures {
     fi
     info "loading fixtures ${DJANGO_FIXTURES}"
     set -x
-    django-admin init ${DJANGO_FIXTURES}
+    django-admin init ${DJANGO_FIXTURES} || fail "fixture initialization failed"
     set +x
 }
 

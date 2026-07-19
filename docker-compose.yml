@@ -3,14 +3,15 @@ name: trrf
 volumes:
   dev_db_data:
   dev_clinicaldb_data:
+  smtp4dev_data:
 
 services:
   devcontainer:
     image: mcr.microsoft.com/devcontainers/python:3.12
     command: sleep infinity
     volumes:
-      - "${HOST_WORKSPACE_FOLDER:-..}:/workspaces/gasr"
-    working_dir: /workspaces/gasr/rdrf
+      - "${HOST_WORKSPACE_FOLDER:-..}:/workspaces/rdrf"
+    working_dir: /workspaces/rdrf/rdrf
     depends_on:
       - db
       - clinicaldb
@@ -33,6 +34,18 @@ services:
     ports:
       - "5432"
 
+  smtp4dev:
+    image: rnwood/smtp4dev:v3
+    environment:
+      ServerOptions__Urls: http://*:80
+      ServerOptions__HostName: smtp4dev
+    volumes:
+      - smtp4dev_data:/smtp4dev
+    ports:
+      - "${SMTP4DEV_WEB_PORT:-15000}:80"
+      - "${SMTP4DEV_SMTP_PORT:-12525}:25"
+      - "${SMTP4DEV_IMAP_PORT:-13143}:143"
+
   runserver:
     build:
       context: .
@@ -51,7 +64,8 @@ services:
     depends_on:
       - db
       - clinicaldb
-      - xray-daemon
+      - smtp4dev
+      # - xray-daemon
 
   longitudinal-followup-lambda:
     image: ${TRRF_IMAGE_NAME}
@@ -67,7 +81,8 @@ services:
     depends_on:
       - db
       - clinicaldb
-      - xray-daemon
+      - smtp4dev
+      # - xray-daemon
     working_dir: /app
     command:
       - lambda_local
