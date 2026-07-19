@@ -75,8 +75,7 @@
 
     <script>
         $(document).ready(function () {
-            var hasErrors = {{ error_messages| length
-        }} > 0;
+            var hasErrors = {{ error_messages|length }} > 0;
 
         adjustContentTopPadding();
 
@@ -183,8 +182,7 @@
                                 </ul>
                             </div>
                             {% if changes_since_version %}
-                            <button type="button" id="exit-compare-mode-btn" class="btn btn-outline-secondary">{% trans
-                                "Exit compare mode" %}</button>
+                            <button type="button" id="exit-compare-mode-btn" class="btn btn-outline-secondary">{% trans "Exit compare mode" %}</button>
                             <div class="alert alert-info" style="margin-top: 12px; margin-bottom: 0px">
                                 <h4>{% trans "Compare mode" %}</h4>
                                 <p>

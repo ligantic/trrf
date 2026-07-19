@@ -372,8 +372,7 @@
     <div class="col-lg-3 col-12 d-print-none">
         <nav class="rdrf-subnav-rail rdrf-clinical-rail" data-rdrf-subnav aria-label="{% trans 'Form sections' %}">
             {% for s in sections %}
-            <a class="rdrf-subnav-rail__item" href="#section_{{ s }}">{{ display_names|get_display_name:s|translate
-                }}</a>
+            <a class="rdrf-subnav-rail__item" href="#section_{{ s }}">{{ display_names|get_display_name:s|translate }}</a>
             {% endfor %}
         </nav>
     </div>
@@ -398,9 +397,9 @@
                     {% for fpc in form_progress_cdes.items %}
                     <li class="list-group-item">
                         {% if fpc.1 %}
-                        <img src='{% static ' images/tick.png'%}'>
+                        <img src="{% static 'images/tick.png' %}">
                         {% elif fpc.1 == False %}
-                        <img src='{% static ' images/cross.png'%}'>
+                        <img src="{% static 'images/cross.png' %}">
                         {% endif %}
                         {{fpc.0|translate}}
                     </li>
@@ -409,8 +408,7 @@
             </div>
         </div>
         {% endif %}
-        <form class="form-horizontal" id="main-form" novalidate enctype="multipart/form-data" method="post">{%
-            csrf_token %}
+        <form class="form-horizontal" id="main-form" novalidate enctype="multipart/form-data" method="post">{% csrf_token %}
             <input class="form-control" type="hidden" name="position">
 
             {% for s in sections %}
@@ -462,8 +460,7 @@
                                     {% endif %}
                                     {% if element.label == "Delete" %}
                                     {% else %}
-                                    <label for="{{ element.auto_id}}" style="display: {{element.is_hidden|yesno:"
-                                        None,block"}}" class="col-sm-3 col-form-label">
+                                    <label for="{{ element.auto_id}}" style="display: {{element.is_hidden|yesno:"None,block"}}" class="col-sm-3 col-form-label">
                                         {{ element.label }}
                                         {% if element.field.required %}
                                         <span class="fa fa-asterisk" style="color: red;" aria-hidden="true"></span>
@@ -495,8 +492,7 @@
                                     {% if f.was_deleted %}
                                     <div class="row">
                                         <div class="col-sm-12">
-                                            <div class="alert alert-danger text-center">{% trans "This form was deleted"
-                                                %}</div>
+                                            <div class="alert alert-danger text-center">{% trans "This form was deleted" %}</div>
                                         </div>
                                     </div>
                                     {% endif %}
@@ -510,7 +506,7 @@
                                             <div></div>
                                             {% else %}
                                             <label for="{{ element.auto_id}}"
-                                                style="display: {{element.is_hidden|yesno:" None,block"}}"
+                                                style="display: {{element.is_hidden|yesno:"None,block"}}"
                                                 class="col-sm-3 col-form-label">
                                                 {% if element.label == "Delete" %}
                                                 {% trans "Mark for deletion" %}
@@ -537,9 +533,7 @@
                                             </label>
                                             <div class="col-sm-9">
                                                 {% if not f.was_deleted and changes_since_version %}
-                                                <div title="{%trans " Previous value:"
-                                                    %}&nbsp;{{element.field.previous_value|array_item:index|default:_('Was
-                                                    not set previously')}}">
+                                                <div title="{% trans " Previous value:" %}&nbsp;{{ element.field.previous_value|array_item:index|default:_('Was not set previously') }}">
                                                     {{ element|safe }}
                                                 </div>
                                                 {% else %}
@@ -588,9 +582,7 @@
                                     </label>
                                     <div class="col-sm-9">
                                         {% if changes_since_version %}
-                                        <div title="{% trans " Previous value:"
-                                            %}{{field.field.previous_value|default_if_none:'Was not set
-                                            previously'|default:'Was not set previously'}}">
+                                        <div title="{% trans " Previous value:" %}{{ field.field.previous_value|default_if_none:'Was not set previously'|default:'Was not set previously' }}">
                                             {{field|safe}}
                                         </div>
                                         {% else %}
@@ -618,19 +610,15 @@
             <div class="modal-body">
                 <p data-session-state="expiring">{% trans "Your session will expire in " %}<strong
                         id="sessionExpiryTimeout">X seconds</strong>.</p>
-                <p data-session-state="expired" class="d-none alert alert-danger">{% trans "Your session has expired."
-                    %}</p>
+                <p data-session-state="expired" class="d-none alert alert-danger">{% trans "Your session has expired." %}</p>
             </div>
             <div class="modal-footer">
                 <div data-session-state="expiring">
-                    <button id="continueWorkingBtn" type="button" class="btn btn-primary" data-bs-dismiss="modal">{%
-                        trans "Continue working" %}</button>
-                    <button id="logoutBtn" type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans
-                        "Logout" %}</button>
+                    <button id="continueWorkingBtn" type="button" class="btn btn-primary" data-bs-dismiss="modal">{% trans "Continue working" %}</button>
+                    <button id="logoutBtn" type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Logout" %}</button>
                 </div>
                 <div data-session-state="expired" class="d-none">
-                    <button id="goToLoginBtn" type="button" class="btn btn-primary" data-bs-dismiss="modal">{% trans "Go
-                        to Login Page" %}</button>
+                    <button id="goToLoginBtn" type="button" class="btn btn-primary" data-bs-dismiss="modal">{% trans "Go to Login Page" %}</button>
                 </div>
             </div>
         </div>

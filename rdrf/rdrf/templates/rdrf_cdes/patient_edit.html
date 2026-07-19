@@ -480,9 +480,9 @@
                         </div>
                         {% for element in form.empty_form %}
                         {% if element.errors %}
-                        <div class="row has-error" style="display: {{element.is_hidden|yesno:" None,flex"}}">
+                        <div class="row has-error" style="display: {{element.is_hidden|yesno:"None,flex"}}">
                             {% else %}
-                            <div class="row" style="display: {{element.is_hidden|yesno:" None,flex"}}">
+                            <div class="row" style="display: {{element.is_hidden|yesno:"None,flex"}}">
                                 {% endif %}
                                 {% if element.label == "Delete" %}
                                 {% else %}
@@ -515,8 +515,7 @@
                                 <div>
                                     <h3 class="h5 mb-0">{% trans name %}</h3>
                                     {% if name == "Registry" %}
-                                    <p class="demographics-section__description">{% trans "Update your patient's
-                                        registry details here." %}</p>
+                                    <p class="demographics-section__description">{% trans "Update your patient's registry details here." %}</p>
                                     {% endif %}
                                 </div>
                                 <a class="btn btn-info btn-xs" onclick="add_form(this, '{{form.prefix}}')">
@@ -534,10 +533,9 @@
                                     <!-- Empty in order to skip adding delete field in case of can_delete == False -->
                                     {% else %}
                                     {% if element.errors %}
-                                    <div class="row has-error" style="display: {{element.is_hidden|yesno:"
-                                        None,flex"}}">
+                                    <div class="row has-error" style="display: {{element.is_hidden|yesno:"None,flex"}}">
                                         {% else %}
-                                        <div class="row" style="display: {{element.is_hidden|yesno:" None,flex"}}">
+                                        <div class="row" style="display: {{element.is_hidden|yesno:"None,flex"}}">
                                             {% endif %}
                                             <label for="{{ element.auto_id}}" class="col-sm-3 col-form-label">
                                                 {% if element.label == "Delete" %}
@@ -546,8 +544,7 @@
                                                 {{ element.label|translate}}
                                                 {% if element.field.required %}
                                                 <span class="fa fa-asterisk" style="color: red;"
-                                                    aria-hidden="true"></span><span class="visually-hidden">{% trans
-                                                    "required" %}</span>
+                                                    aria-hidden="true"></span><span class="visually-hidden">{% trans "required" %}</span>
                                                 {% endif %}
                                                 {% endif %}
                                             </label>
@@ -584,14 +581,12 @@
                                 <div>
                                     <h3 class="h5 mb-0">{% trans name %}</h3>
                                     {% if name == "Registry" %}
-                                    <p class="demographics-section__description">{% trans "Update your patient's
-                                        registry details here." %}</p>
+                                    <p class="demographics-section__description">{% trans "Update your patient's registry details here." %}</p>
                                     {% endif %}
                                 </div>
                             </div>
                             {% if link %}
-                            <div class="rdrf-card__meta"><a href="{% static doc %}">{% trans "Information Sheet - Please
-                                    Read" %}!</a></div>
+                            <div class="rdrf-card__meta"><a href="{% static doc %}">{% trans "Information Sheet - Please Read" %}!</a></div>
                             {% endif %}
                             {% if info_text_expression %}
                             <div class="rdrf-card__meta">
@@ -606,7 +601,7 @@
                             {% if element.errors %}
                             <div class="row has-error">
                                 {% else %}
-                                <div class="row" style="display: {{element.is_hidden|yesno:" None,flex"}}">
+                                <div class="row" style="display: {{element.is_hidden|yesno:"None,flex"}}">
                                     {% endif %}
                                     {% if link %}
                                     <label for="{{ element.auto_id}}" style="text-align: left"
@@ -619,13 +614,11 @@
                                     </label>
                                     <div class="col-sm-1">
                                         {% else %}
-                                        <label for="{{ element.auto_id}}" style="display: {{element.is_hidden|yesno:"
-                                            None,block"}}" class="col-sm-3 col-form-label">
+                                        <label for="{{ element.auto_id}}" style="display: {{element.is_hidden|yesno:"None,block"}}" class="col-sm-3 col-form-label">
                                             {{ element.label|translate }}
                                             {% if element.field.required %}
                                             <span class="fa fa-asterisk" style="color: red;"
-                                                aria-hidden="true"></span><span class="visually-hidden">{% trans
-                                                "required" %}</span>
+                                                aria-hidden="true"></span><span class="visually-hidden">{% trans "required" %}</span>
                                             {% endif %}
                                         </label>
                                         <div class="col-sm-9">
