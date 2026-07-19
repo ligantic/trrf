@@ -78,10 +78,39 @@ textarea:focus-visible {
 }
 
 .rdrf-navbar .project_logo {
-  height: 3.25rem;
+  height: auto;
+  max-height: 3.375rem;
   max-width: 11.75rem;
   object-fit: contain;
   width: auto;
+}
+
+.rdrf-navbar__participant {
+  align-items: center;
+  border-left: 1px solid var(--color-border-subtle);
+  color: var(--color-text-heading);
+  display: flex;
+  font-size: .875rem;
+  font-weight: 600;
+  gap: var(--space-2);
+  margin-left: var(--space-5);
+  max-width: 22rem;
+  min-width: 0;
+  padding-left: var(--space-5);
+}
+
+.rdrf-navbar__participant a {
+  color: inherit;
+  overflow: hidden;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rdrf-navbar__participant a:hover,
+.rdrf-navbar__participant a:focus-visible {
+  color: var(--color-accent-strong);
+  text-decoration: underline;
 }
 
 .rdrf-navbar .navbar-nav {
@@ -105,6 +134,19 @@ textarea:focus-visible {
   .rdrf-navbar .navbar-nav {
     align-items: stretch;
     gap: 0;
+  }
+
+  .rdrf-navbar .project_logo {
+    max-height: 2.75rem;
+    max-width: 9.5rem;
+  }
+
+  .rdrf-navbar__participant {
+    border-left: 0;
+    font-size: .75rem;
+    margin-left: auto;
+    max-width: min(10rem, 35vw);
+    padding: 0 var(--space-2);
   }
 }
 

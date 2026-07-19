@@ -109,6 +109,26 @@ class DemographicsEditPageTest(TestCase):
             len(section_ids),
         )
 
+    def test_patient_identity_renders_in_navbar_not_banner(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+
+        navbar = re.search(
+            r'<nav class="navbar.*?</nav>', content, flags=re.DOTALL
+        )
+        self.assertIsNotNone(navbar)
+        self.assertIn("rdrf-navbar__participant", navbar.group(0))
+        self.assertIn(str(self.patient), navbar.group(0))
+
+        banner = re.search(
+            r'<div class="banner">.*?</div>\s*</div>',
+            content,
+            flags=re.DOTALL,
+        )
+        self.assertIsNotNone(banner)
+        self.assertNotIn(str(self.patient), banner.group(0))
+
     def test_readonly_demographic_field_renders_readonly(self):
         self._add_field_rule("umrn", DemographicFields.READONLY)
         response = self.client.get(self.url)

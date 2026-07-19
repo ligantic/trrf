@@ -15,13 +15,21 @@
         {% project_logo as PL %}
         {% project_title as PT %}
         {% if PL %}
-          <img src="{% static PL %}" class="project_logo" alt="{% trans "Project logo" %}">
-          &nbsp;
-        {% endif %}
-        {% if PT %}
-          <span class="d-none d-lg-inline">{% project_title %}</span>
+          <img src="{% static PL %}" class="project_logo" alt="{{ PT }}">
+        {% elif PT %}
+          <span>{% project_title %}</span>
         {% endif %}
       </a>
+      {% if patient_link or patient %}
+        <div class="rdrf-navbar__participant">
+          {% if patient_link %}
+            {{ patient_link|safe }}
+          {% else %}
+            <span class="fa fa-user" aria-hidden="true"></span>
+            <span>{{ patient }}</span>
+          {% endif %}
+        </div>
+      {% endif %}
       <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar-collapsing-links" aria-controls="navbar-collapsing-links" aria-expanded="false" aria-label="Toggle navigation">
           <span class="fa fa-bars"></span>
       </button>
