@@ -11,7 +11,7 @@ function hide_empty_menu() {
 function adjustContentTopPadding(contentId = "content") {
   var fixedTopSectionHeight = $(".fixed-top").height() || 0;
   var bannerHeight = $(".banner").height() || 0;
-  var relativePadding = 36;
+  var relativePadding = 0;
 
   if (fixedTopSectionHeight === 0 && bannerHeight === 0) {
     // Both navbar and banner are missing, better not do anything

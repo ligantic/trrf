@@ -25,3 +25,4 @@ class RegistryFeatures:
     NO_TRANSLATION = "no_translation"
     FORMS_REQUIRE_TRANSLATION = "forms_require_translation"
     HIDE_UNTRANSLATED_FORMS = "hide_untranslated_forms"
+    PRO_INSTRUMENTS = "pro_instruments"

@@ -3,72 +3,77 @@
 {% load i18n %}
 
 {% block card_header %}
-  {% if not widget.title %}
-    {% trans "Module Progress" %}
-  {% else %}
-    {{ block.super }}
-  {% endif %}
+  <h2 class="h5 mb-0">{% trans "Modules" %}</h2>
 {% endblock %}
+
+{% block card_class %} rdrf-modules-panel{% endblock %}
 
 {% block card_body_text %}
-
-  {% with fixed_module_progress=dashboard.patient_status.module_progress.fixed %}
-
-    <table class="w-100">
-      {% for cfg, forms in fixed_module_progress.items %}
-        {% for form, form_dict in forms.items  %}
+  <p class="rdrf-modules-panel__intro">{% trans "Review your module progress and upcoming due dates." %}</p>
+  {% if dashboard.patient_status.module_progress %}
+    {% with fixed_module_progress=dashboard.patient_status.module_progress.fixed multi_module_progress=dashboard.patient_status.module_progress.multi %}
+    <div class="table-responsive">
+      <table class="table table-sm align-middle mb-0">
+        <thead>
           <tr>
-            <td style="width: 70%" class="pe-2">
-              <a href="{{ form_dict.link }}" class="card-link">{% trans form.nice_name %}</a>
-            </td>
-            <td style="width: 30%"><div class="progress">
-              {% with progress=form_dict.progress %}
-                <div class="progress-bar {% if progress < 25 %}bg-danger
-                                            {% if progress < 10 %}text-dark{% endif %}
-                                         {% elif progress >= 25 and progress < 75 %}bg-warning
-                                         {% else %}bg-success
-                                         {% endif %}" role="progressbar" style="width: {{ progress }}%" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100">{{ progress }}%</div>
-                </div>
-              {% endwith %}
-            </td>
+            <th scope="col">{% trans "Module" %}</th>
+            <th scope="col">{% trans "Status" %}</th>
+            <th scope="col">{% trans "Last completed" %}</th>
+            <th scope="col">{% trans "Next due" %}</th>
+            <th scope="col"><span class="visually-hidden">{% trans "Action" %}</span></th>
           </tr>
-
-        {% endfor %}
-      {% endfor %}
-    </table>
-
-  {% endwith %}
-
-  {% with multi_module_progress=dashboard.patient_status.module_progress.multi %}
-
-  {% if multi_module_progress.items|length > 0 %}
-  <table class="w-100 caption-top mt-2 table table-sm table-striped">
-    <caption>{% trans "Longitudinal modules" %}</caption>
-    <tbody>
-      {% for cfg, forms in multi_module_progress.items %}
-        {% for form, progress_dict in forms.items %}
-          <tr>
-            <td>
-              {% trans form.nice_name %}
-            </td>
-            <td style="width: 35%" class="text-end">
-              {% if progress_dict.last_completed %}
-                {% blocktrans trimmed with last_completed=progress_dict.last_completed  %}
-                  Last completed {{ last_completed }}
-                {% endblocktrans %}
-              {% else %}
-                {% trans "Not started" %}
-              {% endif %}
-            </td>
-            <td style="width: 12%" class="ps-2 d-print-none"><a href="{{ progress_dict.link }}" class="btn btn-outline-info btn-xs">
-              <i class="fa fa-plus"></i> {% trans "Add" %}</a>
-            </td>
-          </tr>
-        {% endfor %}
-      {% endfor %}
-    </tbody>
-  </table>
+        </thead>
+        <tbody>
+          {% if fixed_module_progress.items %}
+            <tr class="table-light">
+              <th colspan="5" scope="colgroup">{% trans "One-off modules" %}</th>
+            </tr>
+            {% for cfg, forms in fixed_module_progress.items %}
+              {% for form, form_dict in forms.items %}
+                <tr>
+                  <th scope="row">{{ form.nice_name }}</th>
+                  <td>
+                    <span class="rdrf-badge rdrf-badge--{{ form_dict.status }}">
+                      {% if form_dict.status == "complete" %}{% trans "Complete" %}{% elif form_dict.status == "in-progress" %}{% trans "In progress" %}{% else %}{% trans "Not started" %}{% endif %}
+                    </span>
+                  </td>
+                  <td>{% trans "-" %}</td>
+                  <td>{% trans "-" %}</td>
+                  <td class="text-end d-print-none"><a href="{{ form_dict.link }}" class="btn btn-sm btn-outline-primary">{% if form_dict.status == "not-started" %}{% trans "Start" %}{% else %}{% trans "Edit" %}{% endif %}</a></td>
+                </tr>
+              {% endfor %}
+            {% endfor %}
+          {% endif %}
+          {% if multi_module_progress.items %}
+            <tr class="table-light">
+              <th colspan="5" scope="colgroup">{% trans "Longitudinal modules" %}</th>
+            </tr>
+            {% for cfg, forms in multi_module_progress.items %}
+              {% for form, form_dict in forms.items %}
+                <tr>
+                  <th scope="row">
+                    {{ form.nice_name }}
+                    {% if form_dict.cadence %}<span class="d-block small text-muted fw-normal">{{ form_dict.cadence }}</span>{% endif %}
+                  </th>
+                  <td>
+                    <span class="rdrf-badge rdrf-badge--{{ form_dict.status }}">
+                      {% if form_dict.status == "overdue" %}{% trans "Overdue" %}{% elif form_dict.status == "due-now" %}{% trans "Due now" %}{% elif form_dict.status == "due-soon" %}{% trans "Due soon" %}{% elif form_dict.status == "complete" %}{% trans "Complete" %}{% else %}{% trans "Not started" %}{% endif %}
+                    </span>
+                  </td>
+                  <td>{% if form_dict.last_completed %}{{ form_dict.last_completed|date:"DATE_FORMAT" }}{% else %}{% trans "-" %}{% endif %}</td>
+                  <td>{% if form_dict.next_due %}{{ form_dict.next_due|date:"DATE_FORMAT" }}{% else %}{% trans "-" %}{% endif %}</td>
+                  <td class="text-end d-print-none"><a href="{{ form_dict.link }}" class="btn btn-sm btn-outline-primary">{% trans "Add entry" %}</a></td>
+                </tr>
+              {% endfor %}
+            {% endfor %}
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+    {% endwith %}
+  {% else %}
+    <p class="rdrf-modules-panel__empty">{% trans "No modules are currently available for this participant." %}</p>
   {% endif %}
-
-  {% endwith %}
 {% endblock %}
+
+{% block card_meta %}{% endblock %}

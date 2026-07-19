@@ -1,0 +1,215 @@
+"""CAP-07 Clinical Module Data Capture tests.
+
+Covers:
+- U-1 (PROPOSALS.md §4): per-file upload size validation on
+  FileTypeRestrictedFileField — over-limit uploads are rejected with a
+  friendly message showing the limit; under-limit uploads pass.
+- REQ-07-01/REQ-07-02 template layer: the clinical form page renders with
+  the left section rail (.rdrf-subnav-rail) with one entry per section
+  targeting the section anchors, section cards (.rdrf-card), the
+  reference-vs-capture block split, the form progress bar (.rdrf-progress),
+  and multisection entries styled as nested cards.
+"""
+
+import uuid
+
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.exceptions import ValidationError
+from django.db import connections
+from django.test import TestCase, override_settings
+from django.urls import reverse
+from registry.groups import GROUPS as RDRF_GROUPS
+from registry.groups.models import CustomUser
+from registry.patients.models import Patient
+
+from rdrf.db.contexts_api import RDRFContextManager
+from rdrf.forms.dynamic.fields import FileTypeRestrictedFileField
+from rdrf.models.definition.models import (
+    ClinicalData,
+    CommonDataElement,
+    Registry,
+    RegistryForm,
+    Section,
+    WhitelistedFileExtension,
+)
+
+AUTH_BACKEND = "django.contrib.auth.backends.ModelBackend"
+
+
+class FileFieldMaxSizeValidationTest(TestCase):
+    """U-1: FileTypeRestrictedFileField enforces MAX_UPLOAD_FILE_SIZE."""
+
+    def setUp(self):
+        WhitelistedFileExtension.objects.create(file_extension=".pdf")
+        self.field = FileTypeRestrictedFileField(required=False)
+
+    def _upload(self, size):
+        return SimpleUploadedFile(
+            "evidence.pdf", b"x" * size, content_type="application/pdf"
+        )
+
+    @override_settings(MAX_UPLOAD_FILE_SIZE=1024)
+    def test_over_limit_upload_is_rejected_with_limit_in_message(self):
+        with self.assertRaises(ValidationError) as ctx:
+            self.field.clean(self._upload(1025))
+        message = "".join(ctx.exception.messages)
+        self.assertIn("too large", message)
+        self.assertIn("1.0\xa0KB", message)  # the limit, human readable
+
+    @override_settings(MAX_UPLOAD_FILE_SIZE=1024)
+    def test_under_limit_upload_is_accepted(self):
+        cleaned = self.field.clean(self._upload(1024))
+        self.assertEqual(cleaned.name, "evidence.pdf")
+
+    @override_settings(MAX_UPLOAD_FILE_SIZE=1024)
+    def test_over_limit_and_bad_extension_reports_size_first(self):
+        bad = SimpleUploadedFile("evidence.exe", b"x" * 2048)
+        with self.assertRaises(ValidationError) as ctx:
+            self.field.clean(bad)
+        self.assertIn("too large", "".join(ctx.exception.messages))
+
+    @override_settings(MAX_UPLOAD_FILE_SIZE=1024)
+    def test_extension_whitelist_still_enforced_under_limit(self):
+        bad = SimpleUploadedFile("evidence.exe", b"x" * 10)
+        with self.assertRaises(ValidationError) as ctx:
+            self.field.clean(bad)
+        self.assertIn("not a supported file extension",
+                      "".join(ctx.exception.messages))
+
+
+class ClinicalFormPageTest(TestCase):
+    """View-smoke test of the CAP-07 clinical form template uplift."""
+
+    databases = ["default", "clinical"]
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        # When the clinical DB alias shares the default database (the local
+        # test setup), clinical-model migrations are routed away from it and
+        # rdrf_clinicaldata never gets created. The form view loads dynamic
+        # data from it unconditionally, so create it here. DDL runs inside
+        # the class-level atomic, so it is rolled back.
+        connection = connections["clinical"]
+        table_names = connection.introspection.table_names()
+        if ClinicalData._meta.db_table not in table_names:
+            with connection.schema_editor() as schema_editor:
+                schema_editor.create_model(ClinicalData)
+
+    def setUp(self):
+        self.registry = Registry.objects.create(code="cap07")
+
+        self.cde = CommonDataElement.objects.create(
+            code="CAP07Q1",
+            name="Reason for hospitalisation",
+            abbreviated_name="Reason",
+            datatype="string",
+        )
+        CommonDataElement.objects.create(
+            code="CAP07Q2",
+            name="Medication name",
+            abbreviated_name="Medication",
+            datatype="string",
+        )
+        Section.objects.create(
+            code="CAP07SEC",
+            display_name="Hospitalisations",
+            abbreviated_name="Hosp",
+            elements="CAP07Q1",
+            allow_multiple=False,
+        )
+        Section.objects.create(
+            code="CAP07MULTI",
+            display_name="Medications",
+            abbreviated_name="Meds",
+            elements="CAP07Q2",
+            allow_multiple=True,
+        )
+        self.form = RegistryForm.objects.create(
+            name="ClinicalModule",
+            registry=self.registry,
+            abbreviated_name="Clinical",
+            sections="CAP07SEC,CAP07MULTI",
+        )
+        # progress indicator derives from complete_form_cdes (REQ-07-01)
+        self.form.complete_form_cdes.set([self.cde])
+
+        self.user = CustomUser.objects.create(
+            username=str(uuid.uuid4()), is_active=True
+        )
+        self.user.add_group(RDRF_GROUPS.PATIENT)
+        self.user.registry.set([self.registry])
+
+        self.patient = Patient.objects.create(
+            consent=True,
+            date_of_birth="2015-01-01",
+            family_name="Capseven",
+            given_names="Clinical",
+            user=self.user,
+        )
+        self.patient.rdrf_registry.set([self.registry])
+
+        context_manager = RDRFContextManager(self.registry)
+        self.context = context_manager.get_or_create_default_context(
+            self.patient
+        )
+
+        self.url = reverse(
+            "registry_form",
+            args=[
+                self.registry.code,
+                self.form.pk,
+                self.patient.pk,
+                self.context.pk,
+            ],
+        )
+        self.client.force_login(self.user, backend=AUTH_BACKEND)
+
+    def _get_page(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        return response.content.decode()
+
+    def test_form_page_renders_section_rail_and_cards(self):
+        content = self._get_page()
+
+        # REQ-07-01: section rail with an entry per section, anchored to the
+        # section card ids, and the horizontal module navigation shell.
+        self.assertIn("rdrf-subnav-rail", content)
+        self.assertIn("data-rdrf-module-nav", content)
+        self.assertIn('href="#section_CAP07SEC"', content)
+        self.assertIn('href="#section_CAP07MULTI"', content)
+        self.assertIn('id="section_CAP07SEC"', content)
+        self.assertIn('id="section_CAP07MULTI"', content)
+
+        # Section cards
+        self.assertIn("rdrf-section-card", content)
+        self.assertIn("rdrf-card__title-row", content)
+
+        # REQ-07-02: editable fields render inside capture blocks
+        self.assertIn("rdrf-capture-block", content)
+
+    def test_form_page_renders_progress_bar(self):
+        content = self._get_page()
+        # complete_form_cdes configured => progress surfaced as rdrf-progress
+        self.assertIn("rdrf-progress", content)
+        self.assertIn('role="progressbar"', content)
+
+    def test_multisection_renders_nested_entry_cards_with_add_remove(self):
+        content = self._get_page()
+        self.assertIn("rdrf-multisection-entry", content)
+        # add/remove affordances still wired to the legacy JS
+        self.assertIn("add_form(this,", content)
+        self.assertIn("delete_form(this,", content)
+
+    def test_section_header_renders_in_reference_block(self):
+        Section.objects.filter(code="CAP07SEC").update(
+            header="<p>Reasons in the last 12 months</p>"
+        )
+        content = self._get_page()
+        self.assertIn('class="rdrf-reference-block"', content)
+        self.assertIn("Reasons in the last 12 months", content)
+
+    def test_no_reference_block_without_section_header(self):
+        content = self._get_page()
+        self.assertNotIn('class="rdrf-reference-block"', content)

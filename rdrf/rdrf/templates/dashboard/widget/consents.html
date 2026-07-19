@@ -4,12 +4,12 @@
 
   {% block card_header %}
     {% if not widget.title %}
-      {% trans "Consents" %}
+      <h2 class="h5 mb-0">{% trans "Consents" %}</h2>
     {% else %}
       {{ block.super }}
     {% endif %}
 
-    <span class="badge pull-right {% if consent_status.valid %}bg-success{% else %}bg-danger{% endif %}">
+    <span class="rdrf-badge {% if consent_status.valid %}rdrf-badge--complete{% else %}rdrf-badge--not-started{% endif %}">
       {% if consent_status.valid %}
         {% trans "Complete" %}
       {% else %}

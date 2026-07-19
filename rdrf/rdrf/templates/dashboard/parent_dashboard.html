@@ -3,50 +3,252 @@
 {% load i18n %}
 
 {% block content %}
-  <h1>{% trans "Welcome" %}, {{ parent.first_name }}</h1>
+<style>
+  #content.container {
+    max-width: none;
+    padding: 0;
+  }
 
-  {% if patients|length > 1 %}
-    <ul class="nav nav-tabs d-print-none">
-      {% for tab_patient in patients %}
-        <li class="nav-item">
-          <a href="{% url 'parent_dashboard' dashboard.registry.code %}?patient_id={{ tab_patient.id }}"
-             class="nav-link {% if tab_patient == dashboard.patient %}active{% endif %}"
-             aria-current="{% if tab_patient == dashboard.patient %}true{% else %}false{% endif %}"
-          >{{ tab_patient }}</a>
-        </li>
-      {% endfor %}
-    </ul>
+  .rdrf-dashboard {
+    background-color: var(--color-surface-reference);
+    margin: 0 auto;
+    max-width: 82rem;
+    min-height: calc(100vh - 4rem);
+    padding: var(--space-6) var(--space-4) var(--space-8);
+  }
+
+  .rdrf-dashboard__header {
+    background-color: var(--color-surface-primary);
+    border: 1px solid var(--color-border-subtle);
+    box-shadow: var(--elevation-xs);
+    padding: var(--space-4) var(--space-5) 0;
+  }
+
+  .rdrf-dashboard__title {
+    color: var(--color-text-heading);
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.4;
+    margin: 0;
+  }
+
+  .rdrf-dashboard__intro {
+    color: var(--color-text-primary);
+    font-size: .875rem;
+    line-height: 1.3;
+    margin: var(--space-1) 0 var(--space-4);
+  }
+
+  .rdrf-dashboard__header-footer {
+    align-items: center;
+    border-top: 1px solid var(--color-border-subtle);
+    display: flex;
+    gap: var(--space-3);
+    justify-content: space-between;
+    padding: var(--space-3) 0;
+  }
+
+  .rdrf-dashboard__print {
+    align-items: center;
+    background-color: var(--color-surface-primary);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-secondary);
+    display: inline-flex;
+    height: 2rem;
+    justify-content: center;
+    padding: 0;
+    width: 2rem;
+  }
+
+  .rdrf-dashboard__print:hover {
+    background-color: var(--color-accent-bg-hover);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  .rdrf-dashboard__grid {
+    align-items: start;
+    display: grid;
+    gap: var(--space-5);
+    grid-template-columns: minmax(0, 7fr) minmax(20rem, 5fr);
+    margin-top: var(--space-5);
+  }
+
+  .rdrf-dashboard__primary,
+  .rdrf-dashboard__secondary {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .rdrf-dashboard__consents {
+    margin-top: var(--space-5);
+    max-width: calc((100% - var(--space-5)) * .58);
+  }
+
+  .rdrf-dashboard .rdrf-card {
+    border-color: var(--color-border-subtle);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--elevation-base);
+    padding: var(--space-4);
+  }
+
+  .rdrf-dashboard .border-primary {
+    border-color: var(--color-border-subtle) !important;
+  }
+
+  .rdrf-dashboard .rdrf-card__title-row {
+    border-bottom: 1px solid var(--color-border-subtle);
+    margin-bottom: var(--space-3);
+    padding-bottom: var(--space-3);
+  }
+
+  .rdrf-dashboard .rdrf-card h2 {
+    color: var(--color-text-heading);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  .rdrf-dashboard .table {
+    color: var(--color-text-primary);
+    font-size: var(--text-xs-size);
+    margin-bottom: 0;
+  }
+
+  .rdrf-dashboard .table > :not(caption) > * > * {
+    border-bottom-color: var(--color-border-subtle);
+    padding: var(--space-2) var(--space-3);
+    vertical-align: middle;
+  }
+
+  .rdrf-dashboard .table thead th,
+  .rdrf-dashboard .table .table-light th {
+    background-color: var(--color-surface-reference);
+    color: var(--color-text-secondary);
+    font-size: var(--text-xs-size);
+    font-weight: var(--text-xs-weight-medium);
+  }
+
+  .rdrf-dashboard .table th[scope="row"] {
+    color: var(--color-text-heading);
+    font-weight: 600;
+  }
+
+  .rdrf-dashboard .btn-outline-primary {
+    border-color: var(--color-accent);
+    border-radius: var(--radius-sm);
+    color: var(--color-accent);
+    font-size: var(--text-xs-size);
+    font-weight: 600;
+  }
+
+  .rdrf-dashboard .btn-outline-primary:hover {
+    background-color: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+
+  .rdrf-dashboard .card-link {
+    font-size: .875rem;
+    font-weight: 500;
+  }
+
+  @media (max-width: 991.98px) {
+    .rdrf-dashboard__grid {
+      grid-template-columns: 1fr;
+    }
+
+    .rdrf-dashboard__consents {
+      max-width: none;
+    }
+  }
+
+  @media (max-width: 575.98px) {
+    .rdrf-dashboard {
+      padding: var(--space-3);
+    }
+
+    .rdrf-dashboard__header {
+      padding: var(--space-4) var(--space-4) 0;
+    }
+  }
+</style>
+
+<main class="rdrf-dashboard">
+  <header class="rdrf-dashboard__header">
+    <nav class="rdrf-breadcrumb rdrf-dashboard__breadcrumb" aria-label="{% trans 'Breadcrumb' %}"><span aria-current="page">{% trans "Dashboard" %}</span></nav>
+    <h1 class="rdrf-dashboard__title">{% blocktrans with first_name=parent.first_name %}Welcome back, {{ first_name }}{% endblocktrans %}</h1>
+    <p class="rdrf-dashboard__intro">{% trans "Track, manage and record your patients." %}</p>
+
+    <div class="rdrf-dashboard__header-footer">
+{% if patients|length > 1 %}
+      <nav class="rdrf-segmented d-print-none" aria-label="{% trans "Switch participant" %}">
+  {% for tab_patient in patients %}
+  <a href="{% url 'parent_dashboard' dashboard.registry.code %}?patient_id={{ tab_patient.id }}"
+    class="rdrf-segmented__option{% if tab_patient == dashboard.patient %} rdrf-segmented__option--active{% endif %}"
+    {% if tab_patient == dashboard.patient %}aria-current="page"{% endif %}>{{ tab_patient }}</a>
+  {% endfor %}
+</nav>
+{% elif dashboard.patient %}
+      <p class="rdrf-participant-label d-print-none">{{ dashboard.patient }}</p>
+{% endif %}
+      <button type="button" class="rdrf-dashboard__print d-print-none" onclick="window.print();" title="{% trans 'Print' %}" aria-label="{% trans 'Print' %}">
+        <span class="fa fa-print" aria-hidden="true"></span>
+      </button>
+    </div>
+  </header>
+
+{% with registry=dashboard.registry patient=dashboard.patient %}
+
+<div class="rdrf-dashboard__grid d-print-block">
+  {% if dashboard.patient_status.consent.valid %}
+  <div class="rdrf-dashboard__primary">
+    {% include "dashboard/widget/demographics.html" with widget=dashboard.widgets.demographics primary=True %}
+
+    {% include "dashboard/widget/module_progress.html" with widget=dashboard.widgets.module_progress %}
+  </div>
   {% endif %}
 
-  <div class="my-2 clearfix d-print-none">
-    <button type="button" class="btn btn-outline-secondary float-md-end" onclick="window.print();">
-      <span class="fa fa-print" aria-hidden="true"></span> {% trans "Print" %}
-    </button>
-  </div>
-
-  {% with registry=dashboard.registry patient=dashboard.patient %}
-
-  <div class="row d-print-block">
-    {% if dashboard.patient_status.consent.valid %}
-    <div class="col-md">
-      {% include "dashboard/widget/demographics.html" with widget=dashboard.widgets.demographics primary=True %}
-
-      {% if dashboard.widgets.clinical_data %}
-        {% include "dashboard/widget/clinical_data.html" with widget=dashboard.widgets.clinical_data %}
-      {% endif %}
-    </div>
+  <aside class="rdrf-dashboard__secondary">
+    {% if dashboard.widgets.clinical_data %}
+      {% include "dashboard/widget/clinical_data.html" with widget=dashboard.widgets.clinical_data %}
     {% endif %}
+    {% if dashboard.pro_instruments %}
+    <section class="rdrf-card page-break-inside-avoid">
+      <div class="rdrf-card__title-row">
+        <h2 class="h5 mb-0">{% trans "Questionnaires" %}</h2>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+          <thead>
+            <tr>
+              <th scope="col">{% trans "Questionnaire" %}</th>
+              <th scope="col">{% trans "Status" %}</th>
+              <th scope="col"><span class="visually-hidden">{% trans "Action" %}</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for instrument in dashboard.pro_instruments %}
+            <tr>
+              <th scope="row">{{ instrument.name }}</th>
+              <td><span class="rdrf-badge rdrf-badge--{{ instrument.status_css }}">{{ instrument.status_label }}</span>
+              </td>
+                <td class="text-end d-print-none"><a href="{{ instrument.url }}" class="btn btn-sm btn-outline-primary">{% trans "Open" %}</a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+    {% endif %}
+  </aside>
+</div>
 
-    <div class="col-md">
+<div class="rdrf-dashboard__consents">
       {% include "dashboard/widget/consents.html" with widget=dashboard.widgets.consents consent_status=dashboard.patient_status.consent %}
+</div>
 
-      {% if dashboard.patient_status.consent.valid and dashboard.patient_status.module_progress %}
-        {% include "dashboard/widget/module_progress.html" with widget=dashboard.widgets.module_progress %}
-      {% endif %}
-
-    </div>
-  </div>
-
-  {% endwith %}
+{% endwith %}
+</main>
 
 {% endblock %}

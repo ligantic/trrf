@@ -1,77 +1,90 @@
 <!DOCTYPE HTML>
 {% load static %}
+{% load project_stylesheet %}
 {% load project_title %}
 {% load i18n %}
 {% load get_most_relevant_registry %}
 {% load get_translate_value %}
 
 {% with registry_code|get_most_relevant_registry:request.user as relevant_registry %}
-<html {% if LANGUAGE_BIDI %}dir="rtl"{% endif %} translate="{{ relevant_registry|get_translate_value }}">
+<html {% if LANGUAGE_BIDI %}dir="rtl" {% endif %} translate="{{ relevant_registry|get_translate_value }}">
 {% endwith %}
-    <head>
-        <title>{% project_title %}</title>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-        <script src="{% static 'js/vendor/jquery-3.5.1.min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/jquery-ui-1.13.2.min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'vendor/bootstrap-5.1.0/js/bootstrap.bundle.min.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/vendor/underscore-1.13.1.min.js' %}"></script>
-        <script type="text/javascript" src="{% url 'javascript-catalog' %}"></script>
-        
-        <link rel="stylesheet" href="{% static 'css/jquery-1.13.2/themes/smoothness/jquery-ui.min.css' %}">
-        <link rel="stylesheet" href="{% static 'vendor/bootstrap-5.1.0/css/' %}{% if LANGUAGE_BIDI %}bootstrap.rtl.min.css{% else %}bootstrap.min.css{% endif %}">
-        <link rel="stylesheet" href="{% static 'css/bootstrap-overrides.css' %}">
-        <link rel="stylesheet" href="{% static 'css/vendor/font-awesome.min.css' %}">
+<head>
+    <title>{% project_title %}</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-        <link rel="stylesheet" type="text/css" href="{% static 'css/rdrf.css' %}" media="all">
-        <link rel="stylesheet" href="{% static 'css/report.css' %}">
-        <script type="text/javascript" src="{% static 'js/rpc_module.js' %}"></script>
-        <script type="text/javascript" src="{% static 'js/rdrf.js' %}"></script>
-        <script>
-            var rpc = new RPC.RPC("{% url 'rpc' %}", "{{csrf_token}}");
-             $(document).ready(function () {
-                adjustContentTopPadding();
-            });
-        </script>
-    </head>
-    
-    <body>
+    <script src="{% static 'js/vendor/jquery-3.5.1.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/vendor/jquery-ui-1.13.2.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'vendor/bootstrap-5.1.0/js/bootstrap.bundle.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/vendor/underscore-1.13.1.min.js' %}"></script>
+    <script type="text/javascript" src="{% url 'javascript-catalog' %}"></script>
 
-        <div id="wrap">
-            <div class="fixed-top">
-                {% include "rdrf_cdes/banner/_show_banner.html" %}
-                {% include "rdrf_cdes/navbar.html" %}
-            </div>
-            <div id="content" class="container">
-                {% include "rdrf_cdes/alert_language_is_not_supported.html" %}
-                {% if messages %}
-                    {% for message in messages %}
-                        <div {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{message}}</div>
+    <link rel="stylesheet" href="{% static 'css/jquery-1.13.2/themes/smoothness/jquery-ui.min.css' %}">
+    <link rel="stylesheet"
+        href="{% static 'vendor/bootstrap-5.1.0/css/' %}{% if LANGUAGE_BIDI %}bootstrap.rtl.min.css{% else %}bootstrap.min.css{% endif %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap-overrides.css' %}">
+    <link rel="stylesheet" href="{% static 'css/vendor/font-awesome.min.css' %}">
+
+    <link rel="stylesheet" type="text/css" href="{% static 'css/rdrf.css' %}" media="all">
+    <link rel="stylesheet" href="{% static 'css/report.css' %}">
+    {# RDRF UX uplift theme (planning/THEME.md): tokens first, then components #}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/rdrf-tokens.css' %}" media="all">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/rdrf-components.css' %}" media="all">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/rdrf-chrome.css' %}" media="all">
+    {% project_stylesheet as PSS %}
+    {% if PSS %}
+    {% static "" as baseUrl %}
+    <link rel="stylesheet" type="text/css" href="{{ baseUrl }}/{{ PSS }}" media="all">
+    {% endif %}
+    <script type="text/javascript" src="{% static 'js/rpc_module.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/rdrf.js' %}"></script>
+    <script>
+        var rpc = new RPC.RPC("{% url 'rpc' %}", "{{csrf_token}}");
+        $(document).ready(function () {
+            adjustContentTopPadding();
+        });
+    </script>
+</head>
+
+<body>
+
+    <div id="wrap">
+        <div class="fixed-top">
+            {% include "rdrf_cdes/banner/_show_banner.html" %}
+            {% include "rdrf_cdes/navbar.html" %}
+        </div>
+        <div id="content" class="container">
+            {% include "rdrf_cdes/alert_language_is_not_supported.html" %}
+            {% if messages %}
+            {% for message in messages %}
+            <div {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{message}}</div>
+            {% endfor %}
+            {% endif %}
+
+            {% if form.errors %}
+            <div class="alert alert-danger">
+                This form contains errors:
+                <ul>
+                    {% for field in form %}
+                    {% for error in field.errors %}
+                    <li><strong>{{ field.label }}:</strong> {{ error }}</li>
                     {% endfor %}
-                {% endif %}
-
-                {% if form.errors %}
-                    <div class="alert alert-danger">
-                        This form contains errors:
-                        <ul>
-                        {% for field in form %}
-                            {% for error in field.errors %}
-                                <li><strong>{{ field.label }}:</strong> {{ error }}</li>
-                            {% endfor %}
-                        {% endfor %}
-                        </ul>
-                    </div>
-                {% endif %}
-
-                {% block content %}
-                {% endblock %}
+                    {% endfor %}
+                </ul>
             </div>
+            {% endif %}
 
-            {% block footer %}
-            {% include 'rdrf_cdes/footer.html' %}
+            {% block content %}
             {% endblock %}
         </div>
-        
-    </body>
+
+        {% block footer %}
+        {% include 'rdrf_cdes/footer.html' %}
+        {% endblock %}
+    </div>
+
+</body>
+
 </html>

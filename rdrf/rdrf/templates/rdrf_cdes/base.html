@@ -16,7 +16,8 @@
 {% get_current_language_bidi as LANGUAGE_BIDI %}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 {% with registry_code|get_most_relevant_registry:request.user as relevant_registry %}
-<html {% if LANGUAGE_BIDI %}dir="rtl"{% endif %} xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" translate="{{ relevant_registry|get_translate_value }}">
+<html {% if LANGUAGE_BIDI %}dir="rtl" {% endif %} xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"
+    translate="{{ relevant_registry|get_translate_value }}">
 {% endwith %}
 {% endblock %}
 
@@ -24,12 +25,18 @@
     <title>{% project_title %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="stylesheet" href="{% static 'vendor/bootstrap-5.1.0/css/' %}{% if LANGUAGE_BIDI %}bootstrap.rtl.min.css{% else %}bootstrap.min.css{% endif %}">
+    <link rel="stylesheet"
+        href="{% static 'vendor/bootstrap-5.1.0/css/' %}{% if LANGUAGE_BIDI %}bootstrap.rtl.min.css{% else %}bootstrap.min.css{% endif %}">
     <link rel="stylesheet" href="{% static 'css/bootstrap-overrides.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'vendor/bootstrap-slider-11.0.2/css/bootstrap-slider.min.css' %}">
+    <link rel="stylesheet" type="text/css"
+        href="{% static 'vendor/bootstrap-slider-11.0.2/css/bootstrap-slider.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/rdrf.css' %}" media="all">
     <link rel="stylesheet" type="text/css" href="{% static 'vendor/timepicki-2.0.1/css/timepicki.css' %}">
     <link rel="stylesheet" href="{% static 'css/vendor/font-awesome.min.css' %}">
+    {# RDRF UX uplift theme (planning/THEME.md): tokens first, then components #}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/rdrf-tokens.css' %}" media="all">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/rdrf-components.css' %}" media="all">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/rdrf-chrome.css' %}" media="all">
 
     {% include "localisation/in_context.html" %}
 
@@ -48,10 +55,11 @@
     {% endif %}
 
     <script type="text/javascript" src="{% static 'vendor/bootstrap-5.1.0/js/bootstrap.bundle.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'vendor/bootstrap-slider-11.0.2/js/bootstrap-slider.min.js' %}"></script>
+    <script type="text/javascript"
+        src="{% static 'vendor/bootstrap-slider-11.0.2/js/bootstrap-slider.min.js' %}"></script>
     <script src="{% static 'js/vendor/jquery-validation-1.21.0.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/date_validation.js' %}"></script>
-    <script type = "text/javascript" src = "{% static 'js/calculated_field_plugin.js' %}" ></script>
+    <script type="text/javascript" src="{% static 'js/calculated_field_plugin.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/vendor/underscore-1.13.1.min.js' %}"></script>
     <script type="text/javascript" src="{% url 'javascript-catalog' %}"></script>
     <script type="text/javascript" src="{% static 'js/rpc_module.js' %}"></script>
@@ -107,9 +115,9 @@
             <div class="row">
                 <div class="col-md-12">
                     <p>
-                        <h3>
-                            <span class="fa fa-list-alt" aria-hidden="true"></span> {{ location|translate|safe }}
-                        </h3>
+                    <h3>
+                        <span class="fa fa-list-alt" aria-hidden="true"></span> {{ location|translate|safe }}
+                    </h3>
                     </p>
                     {{ patient_link | safe}}
                 </div>
@@ -133,4 +141,5 @@
         {% endblock %}
     </div>
 </body>
+
 </html>

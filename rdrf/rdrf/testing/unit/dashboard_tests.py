@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
@@ -18,6 +19,11 @@ from rdrf.models.definition.models import (
     RegistryDashboard,
     RegistryForm,
     Section,
+)
+from rdrf.models.pro_instruments import (
+    PROInstrument,
+    PROInstrumentAdministration,
+    PROInstrumentStatus,
 )
 from rdrf.testing.unit.tests import RDRFTestCase
 from rdrf.views.dashboard_view import ParentDashboard, ParentDashboardView
@@ -269,6 +275,53 @@ class ParentDashboardTest(RDRFTestCase):
             "/TEST/forms/32/12/add",
         )
 
+    def test_get_pro_instruments(self):
+        patient = create_valid_patient(registry=self.registry)
+        cde = CommonDataElement.objects.create(
+            code="PROQ1", abbreviated_name="PROQ1"
+        )
+        Section.objects.create(
+            code="PROSECTION", abbreviated_name="PROSECTION", elements=cde.code
+        )
+        form = RegistryForm.objects.create(
+            name="ProForm",
+            registry=self.registry,
+            abbreviated_name="Pro Form",
+            sections="PROSECTION",
+        )
+        instrument = PROInstrument.objects.create(
+            registry=self.registry,
+            registry_form=form,
+            display_name="Demo questionnaire",
+            slug="demo-questionnaire",
+        )
+        parent_dashboard = ParentDashboard(
+            self._request(), self.dashboard, patient
+        )
+
+        self.assertEqual(parent_dashboard._get_pro_instruments(), [])
+
+        self.registry.metadata_json = '{"features": ["pro_instruments"]}'
+        self.registry.save()
+        instruments = parent_dashboard._get_pro_instruments()
+        self.assertEqual(len(instruments), 1)
+        self.assertEqual(instruments[0]["name"], "Demo questionnaire")
+        self.assertEqual(
+            instruments[0]["url"],
+            f"/TEST/pro/demo-questionnaire/{patient.pk}",
+        )
+        self.assertEqual(instruments[0]["status_css"], "not-started")
+
+        PROInstrumentAdministration.objects.create(
+            instrument=instrument,
+            patient_id=patient.pk,
+            status=PROInstrumentStatus.IN_PROGRESS,
+        )
+        self.assertEqual(
+            parent_dashboard._get_pro_instruments()[0]["status_css"],
+            "in-progress",
+        )
+
     def test_patient_consent_summary(self):
         sec1 = ConsentSection.objects.create(
             registry=self.registry,
@@ -406,21 +459,37 @@ class ParentDashboardTest(RDRFTestCase):
         expected_module_progress = {
             "fixed": {
                 cfg1: {
-                    form1: {"link": "/TEST/forms/61/9/7", "progress": 20},
-                    form3: {"link": "/TEST/forms/63/9/7", "progress": 0},
+                    form1: {
+                        "link": "/TEST/forms/61/9/7",
+                        "progress": 20,
+                        "status": "in-progress",
+                    },
+                    form3: {
+                        "link": "/TEST/forms/63/9/7",
+                        "progress": 0,
+                        "status": "not-started",
+                    },
                 },
             },
             "multi": {
                 cfg3: {
                     form5: {
                         "link": "/TEST/forms/65/9/add",
-                        "last_completed": "26-08-2022",
+                        "progress": 0,
+                        "last_completed": datetime(2022, 8, 26, 7, 49, 53, 841787),
+                        "next_due": None,
+                        "cadence": None,
+                        "status": "complete",
                     }
                 },
                 cfg2: {
                     form4: {
                         "link": "/TEST/forms/64/9/add",
+                        "progress": 0,
                         "last_completed": None,
+                        "next_due": None,
+                        "cadence": None,
+                        "status": "not-started",
                     }
                 },
             },

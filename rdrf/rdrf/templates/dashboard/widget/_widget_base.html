@@ -3,14 +3,14 @@
 
 {% trans 'None' as no_data_msg %}
 
-<div class="card page-break-inside-avoid {% if primary %}border-primary{% endif %}">
-  <div class="card-header {% if primary %}bg-primary text-white{% endif %}">
+<section class="rdrf-card page-break-inside-avoid {% if primary %}border-primary{% endif %}{% block card_class %}{% endblock %}">
+  <div class="rdrf-card__title-row">
       {% block card_header %}
-        {{widget.title}}
+        <h2 class="h5 mb-0">{{ widget.title }}</h2>
       {% endblock %}
   </div>
-  <div class="card-body">
-    <div class="card-text">
+  <div>
+    <div>
       {% block card_body_text %}
       {% endblock %}
       {% if widget %}
@@ -40,7 +40,7 @@
     </div>
     {% block card_links %}
     {% endblock %}
-    <ul class="list-unstyled d-print-none">
+    <ul class="list-unstyled rdrf-card__actions d-print-none mb-0">
       {% if widget %}
         {% for link in widget.form_links %}
           <li><a href="{{ link.url }}" class="card-link">{{ link.label }}</a></li>
@@ -48,9 +48,11 @@
       {% endif %}
     </ul>
   </div>
-  {% if widget %}
-    {% if widget.free_text %}
-      <div class="card-footer small">{{ widget.free_text }}</div>
+  {% block card_meta %}
+    {% if widget %}
+      {% if widget.free_text %}
+        <div class="rdrf-card__meta mt-3 mb-0">{{ widget.free_text }}</div>
+      {% endif %}
     {% endif %}
-  {% endif %}
-</div>
+  {% endblock %}
+</section>

@@ -14,118 +14,346 @@
 
 
 {% block extrastyle %}
-    {{block.super}}
-    <link rel="stylesheet" href="{% static 'css/jquery-1.13.2/themes/smoothness/jquery-ui.min.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'css/form_common.css' %}" media="all">
+{{block.super}}
+<link rel="stylesheet" href="{% static 'css/jquery-1.13.2/themes/smoothness/jquery-ui.min.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/form_common.css' %}" media="all">
 
-    <script type="text/javascript" src="{% static 'js/rpc_module.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/input_styling.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/vendor/jsignature-2.1.3.min.js' %}"></script>
+<style>
+    /* CAP-06: demographics subsection layout */
+    #main-form {
+        color: var(--color-text-primary);
+        position: relative;
+    }
 
-    <script>
-        function select_country(obj) {
-            var state_id = obj.id.replace("country", "state");
-            var state_select = $('#' + state_id);
-            state_select.find('option').remove();
-            $.get( "{% url 'v1:state_lookup' 'XX' %}".replace('XX', obj.value), function( data ) {
-                if (data) {
-                    state_select.append("<option value='-1'>---------</option>");
-                    $.each(data, function(i, item) {
-                        state_select.append("<option value=" + item.code +">"+ item.name +"</option>");
-                    })
-                }
-            });
+    /* This page uses a breadcrumb rather than the base two-column launcher. */
+    #sidebar {
+        display: none;
+    }
+
+    #sidebar + .col-xxl-8.col-lg-9 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    .demographics-page-header {
+        border-bottom: 1px solid var(--color-border-subtle);
+        margin-bottom: var(--space-6);
+        padding: var(--space-5) var(--space-4);
+    }
+
+    .demographics-breadcrumb {
+        margin-bottom: var(--space-4);
+    }
+
+    .demographics-breadcrumb a {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .demographics-breadcrumb a:hover {
+        color: var(--color-accent);
+        text-decoration: underline;
+    }
+
+    .demographics-breadcrumb [aria-current="page"] {
+        color: var(--color-text-heading);
+        font-weight: 600;
+    }
+
+    .demographics-page-header h1 {
+        color: var(--color-text-heading);
+        font-size: 1.25rem;
+        font-weight: 500;
+        line-height: 1.4;
+        margin: 0;
+    }
+
+    .previous-form,
+    .next-form {
+        display: none !important;
+    }
+
+    .demographics-rail {
+        align-self: flex-start;
+        margin-bottom: 1.5rem;
+        min-width: 11.5rem;
+    }
+
+    .demographics-rail .rdrf-subnav-rail__item {
+        padding: .45rem .35rem;
+        font-size: .875rem;
+    }
+
+    .demographics-rail .rdrf-subnav-rail__item--active {
+        background: transparent;
+    }
+
+    .demographics-section {
+        background: transparent;
+        border: 0;
+        border-bottom: 1px solid var(--color-border-subtle);
+        border-radius: 0;
+        box-shadow: none;
+        margin-bottom: var(--space-5);
+        padding: 0 0 var(--space-5);
+        scroll-margin-top: 6rem;
+    }
+
+    .demographics-section:last-of-type {
+        border-bottom: 0;
+        margin-bottom: 0;
+    }
+
+    .demographics-section .rdrf-card__title-row {
+        align-items: flex-start;
+        border-bottom: 1px solid var(--color-border-subtle);
+        margin-bottom: var(--space-5);
+        padding-bottom: var(--space-5);
+    }
+
+    .demographics-section .rdrf-card__title-row>*:first-child {
+        font-size: 1rem;
+        line-height: 1.4;
+    }
+
+    .demographics-section__description {
+        color: var(--color-text-primary);
+        font-size: .875rem;
+        line-height: 1.3;
+        margin: var(--space-2) 0 0;
+    }
+
+    .demographics-section .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .demographics-section label,
+    .demographics-section .control-label {
+        color: var(--color-text-heading);
+        font-size: .875rem;
+        font-weight: 600;
+        text-align: left !important;
+    }
+
+    .demographics-section .help-block,
+    .demographics-section .helptext {
+        color: var(--color-text-secondary);
+        font-size: .8125rem;
+        line-height: 1.35;
+        margin-top: .25rem;
+    }
+
+    .demographics-section .form-control,
+    .demographics-section select {
+        border-color: var(--color-border-default);
+        border-radius: var(--radius-sm);
+        box-shadow: none;
+        min-height: 2.35rem;
+    }
+
+    .demographics-section .form-control:focus,
+    .demographics-section select:focus {
+        border-color: var(--color-accent);
+        box-shadow: 0 0 0 3px var(--color-focus-ring);
+    }
+
+    .demographics-form-actions {
+        border: 0;
+        gap: var(--space-5);
+        justify-content: flex-end;
+        margin: 0;
+        padding: 0;
+    }
+
+    .demographics-form-actions--top {
+        position: absolute;
+        right: 0;
+        top: 0;
+        z-index: 1;
+    }
+
+    .demographics-form-actions .btn {
+        border-radius: var(--radius-md);
+        box-shadow: var(--elevation-xs);
+        font-size: .875rem;
+        font-weight: 600;
+        line-height: 1.25rem;
+        padding: .5rem .875rem;
+    }
+
+    .demographics-form-actions .btn-primary {
+        background-color: var(--color-accent);
+        border-color: var(--color-accent);
+    }
+
+    .demographics-form-actions .btn-outline-secondary {
+        background-color: #f9f9f9;
+        border-color: rgba(155, 155, 155, .5);
+        color: #3f3f46;
+    }
+
+    .demographics-form-actions--footer {
+        margin-top: var(--space-5);
+    }
+
+    .demographics-section textarea.form-control {
+        min-height: 7rem;
+    }
+
+    @media (min-width: 992px) {
+        .demographics-rail {
+            position: sticky;
+            top: 6rem;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        #main-form {
+            padding: 0;
         }
 
-        function add_form(el, prefix) {
-            var mgmt_form = $("#mgmt_" + prefix);
-            var empty_form = $("#empty_" + prefix);
-            var forms = $("#forms_" + prefix);
-
-            var total_forms = mgmt_form.find("input[id=id_"+ prefix +"-TOTAL_FORMS]");
-
-            var new_form = empty_form.clone(true, true);
-
-            var replace_prefix = function(elem, attr_name) {
-                elem.attr(attr_name, elem.attr(attr_name).replace(/__prefix__/g, total_forms.val()));
-            };
-
-            new_form.find("label").each(function() {
-                replace_prefix($(this), "for");
-            });
-
-            new_form.find(":input").each(function() {
-                replace_prefix($(this), "id");
-                replace_prefix($(this), "name");
-
-                if ($(this).attr('id').match(/date/)) {
-                    $(this).datepicker({
-                        changeMonth: true,
-                        changeYear: true,
-                        dateFormat: 'dd-mm-yy',
-                        yearRange: '-120:+120',
-                        buttonImage: "{% static 'images/calendar.gif' %}",
-                        buttonImageOnly: true,
-                    });
-                }
-            });
-
-            CollapsingPanels.expandParentPanel(el);
-
-            var total_forms_inc = parseInt(total_forms.val()) + 1;
-            total_forms.attr("value", total_forms_inc);
-
-            $("<hr>").attr("style", "border: solid 1px gray").appendTo(new_form);
-            new_form.prependTo(forms).slideDown("fast");
+        .demographics-form-actions {
+            justify-content: stretch;
         }
 
-        function delete_form(form_div, prefix) {
-            var mgmt_form = $("#mgmt_" + prefix);
-            var total_forms = mgmt_form.find("input[id=id_"+ prefix +"-TOTAL_FORMS]")
-            var total_forms_dec = parseInt(total_forms.val()) - 1;
-            total_forms.attr("value", total_forms_dec);
-
-            $(form_div).parent().parent().parent().slideUp(function() {
-                $(form_div).parent().parent().parent().remove();
-            });
+        .demographics-form-actions .btn {
+            flex: 1 1 0;
         }
 
-        $(document).ready(function(){
-            $("input[id*='date']").each(function () {
-                if( ! $(this).attr('id').match(/patient_relative-__prefix__-date_of_birth/)) {
-                    $(this).datepicker({
-                        "dateFormat": "dd-mm-yy",
-                        "yearRange": "-120:+0",
-                        "maxDate": 0,
-                        "changeMonth": true,
-                        "changeYear": true,
-	                "dayNamesShort": $.datepicker.regional['{{request.LANGUAGE_CODE.lower}}' ].dayNamesShort,
-                        "dayNames": $.datepicker.regional['{{request.LANGUAGE_CODE.lower}}' ].dayNames,
-                        "monthNamesShort": $.datepicker.regional['{{request.LANGUAGE_CODE.lower}}'].monthNamesShort,
-                        "monthNames": $.datepicker.regional[ '{{request.LANGUAGE_CODE.lower}}' ].monthNames
-                    })
-                }
-            });
+        .demographics-form-actions--top {
+            position: static;
+            margin-bottom: var(--space-5);
+        }
+    }
+</style>
 
-            setInputStyling();
+<script type="text/javascript" src="{% static 'js/rpc_module.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/input_styling.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/rdrf-subnav.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/vendor/jsignature-2.1.3.min.js' %}"></script>
 
-            $('#main-form').data('serialize', $('#main-form').serialize());
-
-            $(window).bind('beforeunload', function(e){
-                if($('#main-form').serialize()!=$('#main-form').data('serialize')) {
-                    return "{% trans "You have unsaved changes!" %}";
-                } else {
-                    e=null;
-                }
-            });
-
-            $("#main-form").submit(function() {
-                $(window).unbind("beforeunload");
-                $("#submit-btn").prop("disabled", true);
-            });
-
+<script>
+    function select_country(obj) {
+        var state_id = obj.id.replace("country", "state");
+        var state_select = $('#' + state_id);
+        state_select.find('option').remove();
+        $.get("{% url 'v1:state_lookup' 'XX' %}".replace('XX', obj.value), function (data) {
+            if (data) {
+                state_select.append("<option value='-1'>---------</option>");
+                $.each(data, function (i, item) {
+                    state_select.append("<option value=" + item.code + ">" + item.name + "</option>");
+                })
+            }
         });
-    </script>
+    }
+
+    function add_form(el, prefix) {
+        var mgmt_form = $("#mgmt_" + prefix);
+        var empty_form = $("#empty_" + prefix);
+        var forms = $("#forms_" + prefix);
+
+        var total_forms = mgmt_form.find("input[id=id_" + prefix + "-TOTAL_FORMS]");
+
+        var new_form = empty_form.clone(true, true);
+
+        var replace_prefix = function (elem, attr_name) {
+            elem.attr(attr_name, elem.attr(attr_name).replace(/__prefix__/g, total_forms.val()));
+        };
+
+        new_form.find("label").each(function () {
+            replace_prefix($(this), "for");
+        });
+
+        new_form.find(":input").each(function () {
+            replace_prefix($(this), "id");
+            replace_prefix($(this), "name");
+
+            if ($(this).attr('id').match(/date/)) {
+                $(this).datepicker({
+                    changeMonth: true,
+                    changeYear: true,
+                    dateFormat: 'dd-mm-yy',
+                    yearRange: '-120:+120',
+                    buttonImage: "{% static 'images/calendar.gif' %}",
+                    buttonImageOnly: true,
+                });
+            }
+        });
+
+        CollapsingPanels.expandParentPanel(el);
+
+        var total_forms_inc = parseInt(total_forms.val()) + 1;
+        total_forms.attr("value", total_forms_inc);
+
+        $("<hr>").attr("style", "border: solid 1px gray").appendTo(new_form);
+        new_form.prependTo(forms).slideDown("fast");
+    }
+
+    function delete_form(form_div, prefix) {
+        var mgmt_form = $("#mgmt_" + prefix);
+        var total_forms = mgmt_form.find("input[id=id_" + prefix + "-TOTAL_FORMS]")
+        var total_forms_dec = parseInt(total_forms.val()) - 1;
+        total_forms.attr("value", total_forms_dec);
+
+        $(form_div).parent().parent().parent().slideUp(function () {
+            $(form_div).parent().parent().parent().remove();
+        });
+    }
+
+    $(document).ready(function () {
+        $("input[id*='date']").each(function () {
+            if (!$(this).attr('id').match(/patient_relative-__prefix__-date_of_birth/)) {
+                $(this).datepicker({
+                    "dateFormat": "dd-mm-yy",
+                    "yearRange": "-120:+0",
+                    "maxDate": 0,
+                    "changeMonth": true,
+                    "changeYear": true,
+                    "dayNamesShort": $.datepicker.regional['{{request.LANGUAGE_CODE.lower}}'].dayNamesShort,
+                    "dayNames": $.datepicker.regional['{{request.LANGUAGE_CODE.lower}}'].dayNames,
+                    "monthNamesShort": $.datepicker.regional['{{request.LANGUAGE_CODE.lower}}'].monthNamesShort,
+                    "monthNames": $.datepicker.regional['{{request.LANGUAGE_CODE.lower}}'].monthNames
+                })
+            }
+        });
+
+        setInputStyling();
+
+        $('#main-form').data('serialize', $('#main-form').serialize());
+
+        $(window).bind('beforeunload', function (e) {
+            if ($('#main-form').serialize() != $('#main-form').data('serialize')) {
+                return "{% trans "You have unsaved changes!" %}";
+            } else {
+                e = null;
+            }
+        });
+
+        $("#main-form").submit(function () {
+            $(window).unbind("beforeunload");
+            $("#submit-btn, #main-form button[type=submit]").prop("disabled", true);
+        });
+
+    });
+</script>
+
+<script>
+    // CAP-06 progressive enhancement: error/input association.
+    // (Rail active-state tracking lives in shared js/rdrf-subnav.js.)
+    document.addEventListener('DOMContentLoaded', function () {
+        // Associate rendered field errors with their inputs for assistive tech.
+        document.querySelectorAll('.rdrf-field-error').forEach(function (err) {
+            var input = document.getElementById(err.id.replace(/_errors$/, ''));
+            if (input) {
+                input.setAttribute('aria-invalid', 'true');
+                var described = (input.getAttribute('aria-describedby') || '')
+                    .split(/\s+/).filter(Boolean);
+                described.push(err.id);
+                input.setAttribute('aria-describedby', described.join(' '));
+            }
+        });
+    });
+</script>
 
 {% endblock %}
 
@@ -135,272 +363,310 @@
 
 {% block actions %}
 {% if actions %}
-    <li class="dropdown">
-        <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false">
+<li class="dropdown">
+    <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false">
         <span class="fa fa-list"></span> {% trans "Actions" %}<span class="caret"></span></a>
-        <ul class="dropdown-menu" role="menu">
-                    {% for action in actions %}
-                        <li><a class="dropdown-item" href="{{action.link}}"><span class="fa fa-minus"></span> {{action.title|translate}}</a></li>
-                    {% endfor %}
-        </ul>
-    </li>
+    <ul class="dropdown-menu" role="menu">
+        {% for action in actions %}
+        <li><a class="dropdown-item" href="{{action.link}}"><span class="fa fa-minus"></span>
+                {{action.title|translate}}</a></li>
+        {% endfor %}
+    </ul>
+</li>
 {% endif %}
 {% endblock %}
 
 {% block sidebar %}
-<!-- Sidebar -->
-	{{ context_launcher | safe }}
-<!-- /#sidebar-wrapper -->
 {% endblock %}
 
 {% block formbtns %}
-	<div class="btn-group" role="group" aria-label="...">
-		<button id="submit-btn" type="submit" class="btn btn-success" form="main-form" value="Save">
-			<span class="fa fa-save" aria-hidden="true"></span> {% trans "Save" %}
-		</button>
-
-		<a href="" class="btn btn-danger">
-			<span class="fa fa-times" aria-hidden="true"></span> {% trans 'Cancel' %}
-		</a>
-
-		</div>
 {% endblock %}
 
 {% block content %}
 
 
 
-	<a class="previous-form d-none d-md-inline-block" href="{{ previous_form_link }}">
-		<span class="fa fa-chevron-left" aria-hidden="true"></span>
-	</a>
+<a class="previous-form d-none d-md-inline-block" href="{{ previous_form_link }}">
+    <span class="fa fa-chevron-left" aria-hidden="true"></span>
+</a>
 
-	<a class="next-form d-none d-md-inline-block" href="{{ next_form_link }}">
-		<span class="fa fa-chevron-right" aria-hidden="true"></span>
-	</a>
+<a class="next-form d-none d-md-inline-block" href="{{ next_form_link }}">
+    <span class="fa fa-chevron-right" aria-hidden="true"></span>
+</a>
 
-    <div class="row">
-        <div class="col-md-12">
-            {% if message %}
-                <div class="alert alert-success" role="alert">
-                    {{ message }}
-                </div>
+<div class="row">
+    <div class="col-md-12">
+        {% if message %}
+        <div class="alert alert-success" role="alert">
+            {{ message }}
+        </div>
+        {% endif %}
+
+        {{ family_linkage_panel|safe }}
+
+        <header class="demographics-page-header">
+            <nav class="rdrf-breadcrumb demographics-breadcrumb" aria-label="{% trans 'Breadcrumb' %}">
+                <a href="{% url 'parent_dashboard' registry_code %}">{% trans 'Dashboard' %}</a>
+                <span class="rdrf-breadcrumb__separator" aria-hidden="true">›</span>
+                <span>{% trans 'Demographics' %}</span>
+                <span class="rdrf-breadcrumb__separator" aria-hidden="true">›</span>
+                <span aria-current="page">{% trans 'Registry' %}</span>
+            </nav>
+            <h1>{% trans form_title %}</h1>
+        </header>
+
+        {% if errors %}
+        <div class="alert alert-danger" role="alert">
+            {% trans 'Please correct errors below' %}:<br>
+            {% for error_message in error_messages %}
+            {{ error_message }}<br>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-2 col-12 d-print-none">
+        <!-- CAP-06 completeness indicator pending D-09 -->
+        <nav id="demographics-subnav" class="rdrf-subnav-rail demographics-rail" data-rdrf-subnav
+            aria-label="{% trans 'Demographics sections' %}">
+            {% for form, sections in forms %}
+            {% for name, section in sections %}
+            {% if name not in section_blacklist and name not in hidden_sectionlist %}
+            <a class="rdrf-subnav-rail__item"
+                href="#demographics-section-{{ forloop.parentloop.counter }}-{{ forloop.counter }}">{% trans name %}</a>
             {% endif %}
+            {% endfor %}
+            {% endfor %}
+        </nav>
+    </div>
 
-            {{ family_linkage_panel|safe }}
+    <div class="col-lg-10 col-12">
+        <form class="form-horizontal" method="post" id="main-form" novalidate enctype="multipart/form-data">
 
-            <form class="form-horizontal" method="post" id="main-form" novalidate enctype="multipart/form-data">
+            {% csrf_token %}
 
-                {% csrf_token %}
-                <div class="card card-info trrf-page-header">
-                    <div class="card-body">
-                        <h2>{% trans form_title %}</h2>
-                    </div>
-                </div>
+            {% comment %}CAP-06: whole-form save/cancel at top and bottom (REQ-06-01). Per-subsection partial saves
+            deferred —
+            cross-subsection validation dependencies unresolved.{% endcomment %}
+            <div class="rdrf-form-actions demographics-form-actions demographics-form-actions--top d-print-none">
+                <a href="" class="btn btn-outline-secondary">
+                    {% trans 'Cancel' %}
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    {% trans "Save" %}
+                </button>
+            </div>
 
-                {% if errors %}
-                    <div class="alert alert-danger" role="alert">
-                        {% trans 'Please correct errors below' %}:<br>
-                        {% for error_message in error_messages %}
-                        {{ error_message }}<br>
-                        {% endfor %}
-                    </div>
+            {% for form, sections in forms %}
+            {% for name, section in sections %}
+            {% if name in section_blacklist %}
+            <div class="section_blacklist_hidden">
                 {% endif %}
-
-                {% for form, sections in forms %}
-                    {% for name, section in sections %}
-                        {% if name in section_blacklist %}
-                        <div class="section_blacklist_hidden">
-                        {% endif %}
-                        {% if form|is_formset_obj %}
-                        <div id="mgmt_{{form.prefix}}">{{form.management_form}}</div>
-                        <div style="display: none;" id="empty_{{form.prefix}}">
-                            <div class="row">
-                                <div class="col-sm-9 offset-sm-3">
-                                    <a class="btn btn-danger btn-xs float-end" onclick="delete_form(this, '{{form.prefix}}')">
-                                        <span class="fa fa-minus" aria-hidden="true"></span> {% trans 'Remove' %}
-                                    </a>
-                                </div>
+                {% if name in hidden_sectionlist %}
+                <div class="section_hidden">
+                    {% endif %}
+                    {% if form|is_formset_obj %}
+                    <div id="mgmt_{{form.prefix}}">{{form.management_form}}</div>
+                    <div style="display: none;" id="empty_{{form.prefix}}">
+                        <div class="row">
+                            <div class="col-sm-9 offset-sm-3">
+                                <a class="btn btn-danger btn-xs float-end"
+                                    onclick="delete_form(this, '{{form.prefix}}')">
+                                    <span class="fa fa-minus" aria-hidden="true"></span> {% trans 'Remove' %}
+                                </a>
                             </div>
-                            {% for element in form.empty_form %}
-                                {% if element.errors %}
-                                    <div class="row has-error" style="display: {{element.is_hidden|yesno:"None,flex"}}">
-                                {% else %}
-                                    <div class="row" style="display: {{element.is_hidden|yesno:"None,flex"}}">
+                        </div>
+                        {% for element in form.empty_form %}
+                        {% if element.errors %}
+                        <div class="row has-error" style="display: {{element.is_hidden|yesno:" None,flex"}}">
+                            {% else %}
+                            <div class="row" style="display: {{element.is_hidden|yesno:" None,flex"}}">
                                 {% endif %}
-                                        {% if element.label == "Delete" %}
+                                {% if element.label == "Delete" %}
+                                {% else %}
+                                <label for="{{ element.auto_id}}" class="col-sm-3 col-form-label">
+                                    {{ element.label|translate}}
+                                    {% if element.field.required %}
+                                    <span class="fa fa-asterisk" style="color: red;" aria-hidden="true"></span><span
+                                        class="visually-hidden">{% trans "required" %}</span>
+                                    {% endif %}
+                                </label>
+                                <div class="col-sm-9">
+                                    {{ element|safe }}
+                                    {% if not element.is_hidden %}
+                                    <small class="text-muted">
+                                        {{ element.help_text|translate }}
+                                    </small>
+                                    {% endif %}
+                                    {% if element.errors %}
+                                    <div class="invalid-feedback d-block rdrf-field-error"
+                                        id="{{ element.auto_id }}_errors">{{ element.errors.as_text }}</div>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <section id="demographics-section-{{ forloop.parentloop.counter }}-{{ forloop.counter }}"
+                            class="rdrf-card demographics-section{% if forloop.parentloop.counter == 1 and forloop.counter == 1 %} demographics-section--first{% endif %}">
+                            <div class="rdrf-card__title-row">
+                                <div>
+                                    <h3 class="h5 mb-0">{% trans name %}</h3>
+                                    {% if name == "Registry" %}
+                                    <p class="demographics-section__description">{% trans "Update your patient's registry details here." %}</p>
+                                    {% endif %}
+                                </div>
+                                <a class="btn btn-info btn-xs" onclick="add_form(this, '{{form.prefix}}')">
+                                    <span class="fa fa-plus" aria-hidden="true"></span> {% trans 'Add' %}
+                                </a>
+                            </div>
+                            <div id="section_{{form.prefix}}">
+                                <div id="forms_{{form.prefix}}">
+                                    {% for f in form %}
+                                    {% with secs=section|default:f.fields %}
+                                    {% for s in secs %}
+                                    {% get_form_element f s as element %}
+                                    {% if element %}
+                                    {% if element.label == "Delete" and form.can_delete == False %}
+                                    <!-- Empty in order to skip adding delete field in case of can_delete == False -->
+                                    {% else %}
+                                    {% if element.errors %}
+                                    <div class="row has-error" style="display: {{element.is_hidden|yesno:"
+                                        None,flex"}}">
                                         {% else %}
+                                        <div class="row" style="display: {{element.is_hidden|yesno:" None,flex"}}">
+                                            {% endif %}
                                             <label for="{{ element.auto_id}}" class="col-sm-3 col-form-label">
+                                                {% if element.label == "Delete" %}
+                                                {% trans 'Mark for deletion' %}
+                                                {% else %}
                                                 {{ element.label|translate}}
-                                                {% if  element.field.required %}
-                                                    <span class="fa fa-asterisk" style="color: red;" aria-hidden="true"></span>
+                                                {% if element.field.required %}
+                                                <span class="fa fa-asterisk" style="color: red;"
+                                                    aria-hidden="true"></span><span class="visually-hidden">{% trans
+                                                    "required" %}</span>
+                                                {% endif %}
                                                 {% endif %}
                                             </label>
                                             <div class="col-sm-9">
-                                                {{ element|safe }}
-						                        {% if not element.is_hidden %}
-                                                    <small class="text-muted">
-                                                        {{ element.help_text|translate }}
-                                                    </small>
-						                        {% endif %}
+                                                {{ element }}
+                                                {% if not element.is_hidden %}
+                                                <small class="text-muted">
+                                                    {{ element.help_text }}
+                                                </small>
+                                                {% endif %}
                                                 {% if element.errors %}
-                                                    <span class="badge bg-danger">{{ element.errors.as_text }}</span>
+                                                <div class="invalid-feedback d-block rdrf-field-error"
+                                                    id="{{ element.auto_id }}_errors">{{ element.errors.as_text }}</div>
                                                 {% endif %}
                                             </div>
+                                        </div>
                                         {% endif %}
-                                    </div>
-                            {% endfor %}
-                        </div>
-                        {% for name, section in sections %}
-                            {% if name in hidden_sectionlist %}
-                            <div class="section_hidden">
-                            {% endif %}
-                                <div class="card collapsible">
-                                    <div class="card-header">
-                                        <div class="card-title">
-                                            <strong>{% trans name %}</strong>
 
-                                            <a class="btn btn-info btn-xs float-end" onclick="add_form(this, '{{form.prefix}}')">
-                                                <span class="fa fa-plus" aria-hidden="true"></span> {% trans 'Add' %}
-                                            </a>
-                                        </div>
-                                    </div>
-                                    <div class="card-body">
-                                        <div id="section_{{form.prefix}}">
-                                        <div id="forms_{{form.prefix}}">
-                                        {% for f in form %}
-                                            {% with secs=section|default:f.fields %}
-                                                {% for s in secs %}
-                                                    {% get_form_element f s as element %}
-                                                        {% if element %}
-                                                            {% if element.label == "Delete" and form.can_delete == False %}
-                                                                <!-- Empty in order to skip adding delete field in case of can_delete == False -->
-                                                            {% else %}
-                                                                    {% if element.errors %}
-                                                                        <div class="row has-error" style="display: {{element.is_hidden|yesno:"None,flex"}}">
-                                                                    {% else %}
-                                                                        <div class="row" style="display: {{element.is_hidden|yesno:"None,flex"}}">
-                                                                    {% endif %}
-                                                                    <label for="{{ element.auto_id}}" class="col-sm-3 col-form-label">
-                                                                        {% if element.label == "Delete" %}
-                                                                            {% trans 'Mark for deletion' %}
-                                                                        {% else %}
-                                                                            {{ element.label|translate}}
-                                                                            {% if  element.field.required %}
-                                                                                <span class="fa fa-asterisk" style="color: red;" aria-hidden="true"></span>
-                                                                            {% endif %}
-                                                                        {% endif %}
-                                                                    </label>
-                                                                    <div class="col-sm-9">
-                                                                        {{ element }}
-                                                                        {% if not element.is_hidden %}
-                                                                            <small class="text-muted">
-                                                                                {{ element.help_text }}
-                                                                            </small>
-                                                                        {% endif %}
-                                                                        {% if element.errors %}
-                                                                            <span class="badge bg-danger">{{ element.errors.as_text }}</span>
-                                                                        {% endif %}
-                                                                    </div>
-                                                                </div>
-                                                            {% endif %}
-
-                                                        {% endif %}
-                                                {% endfor %}
-                                            {% endwith %}
-                                            <hr>
+                                        {% endif %}
                                         {% endfor %}
-                                        </div>
-                                        </div>
+                                        {% endwith %}
+                                        <hr>
+                                        {% endfor %}
                                     </div>
                                 </div>
-                            {% if name in hidden_sectionlist %}
+                        </section>
+                        {% else %}
+                        <section id="demographics-section-{{ forloop.parentloop.counter }}-{{ forloop.counter }}"
+                            class="rdrf-card demographics-section{% if forloop.parentloop.counter == 1 and forloop.counter == 1 %} demographics-section--first{% endif %}">
+                            {% with link=section|get_information_link %}
+                            {% with info_text_expression=section|get_info_text_expression %}
+                            {% with doc="docs/"|add:link %}
+                            <div class="rdrf-card__title-row">
+                                <div>
+                                    <h3 class="h5 mb-0">{% trans name %}</h3>
+                                    {% if name == "Registry" %}
+                                    <p class="demographics-section__description">{% trans "Update your patient's registry details here." %}</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% if link %}
+                            <div class="rdrf-card__meta"><a href="{% static doc %}">{% trans "Information Sheet - Please
+                                    Read" %}!</a></div>
+                            {% endif %}
+                            {% if info_text_expression %}
+                            <div class="rdrf-card__meta">
+                                {% autoescape off %}
+                                {{ info_text_expression }}
+                                {% endautoescape %}
                             </div>
                             {% endif %}
-                        <!-- </div> -->
-                        {% endfor %}
-                    {% else %}
-                        {% for name, section in sections %}
-                            {% if name in hidden_sectionlist %}
-                            <div class="section_hidden">
-                            {% endif %}
-
-                                <div class="card collapsible">
-                                    <div class="card-header">
-
-                                        <div class="card-title">
-                                            <strong>{% trans name %}</strong>
-
-                                            {% with link=section|get_information_link %}
-                                            {% with info_text_expression=section|get_info_text_expression %}
-                                            {% with doc="docs/"|add:link %}
-                                                {% if link %}<br><a href="{% static doc %}">{% trans "Information Sheet - Please Read" %}!</a>{% endif %}
-                                                {% if info_text_expression %}
-                                                    <br>
-                                                    <hr>
-                                                    {% autoescape off %}
-                                                        {{ info_text_expression }}
-                                                    {% endautoescape %}
-                                                {% endif %}
-                                            {% endwith %}
-                                            {% endwith %}
-                                        </div>
-
-                                    </div>
-                                    <div class="card-body">
-                                        {% for s in section %}
-                                            {% get_form_element form s as element %}
-                                            {% if element %}
-                                                {% if element.errors %}
-                                                    <div class="row has-error">
-                                                {% else %}
-                                                    <div class="row" style="display: {{element.is_hidden|yesno:"None,flex"}}">
-                                                {% endif %}
-                                                    {% if link %}
-                                                        <label for="{{ element.auto_id}}" style="text-align: left" class="col-sm-11 col-form-label">
-                                                            {{ element.label|translate }}
-                                                            {% if  element.field.required %}
-                                                                <span class="fa fa-asterisk" style="color: red;" aria-hidden="true"></span>
-                                                            {% endif %}
-                                                        </label>
-                                                        <div class="col-sm-1">
-                                                    {% else %}
-                                                        <label for="{{ element.auto_id}}" style="display: {{element.is_hidden|yesno:"None,block"}}" class="col-sm-3 col-form-label">
-                                                            {{ element.label|translate }}
-                                                            {% if  element.field.required %}
-                                                                <span class="fa fa-asterisk" style="color: red;" aria-hidden="true"></span>
-                                                            {% endif %}
-                                                        </label>
-                                                        <div class="col-sm-9">
-                                                    {% endif %}
-                                                            {{ element }}
-                                                            {% if not element.is_hidden %}
-                                                                <small class="text-muted">
-                                                                    {{ element.help_text|translate }}
-                                                                </small>
-                                                            {% endif %}
-                                                            {% if element.errors %}
-                                                                <span class="badge bg-danger">{{ element.errors.as_text }}</span>
-                                                            {% endif %}
-                                                    </div>
-                                                </div>
+                            {% for s in section %}
+                            {% get_form_element form s as element %}
+                            {% if element %}
+                            {% if element.errors %}
+                            <div class="row has-error">
+                                {% else %}
+                                <div class="row" style="display: {{element.is_hidden|yesno:" None,flex"}}">
+                                    {% endif %}
+                                    {% if link %}
+                                    <label for="{{ element.auto_id}}" style="text-align: left"
+                                        class="col-sm-11 col-form-label">
+                                        {{ element.label|translate }}
+                                        {% if element.field.required %}
+                                        <span class="fa fa-asterisk" style="color: red;" aria-hidden="true"></span><span
+                                            class="visually-hidden">{% trans "required" %}</span>
+                                        {% endif %}
+                                    </label>
+                                    <div class="col-sm-1">
+                                        {% else %}
+                                        <label for="{{ element.auto_id}}" style="display: {{element.is_hidden|yesno:"
+                                            None,block"}}" class="col-sm-3 col-form-label">
+                                            {{ element.label|translate }}
+                                            {% if element.field.required %}
+                                            <span class="fa fa-asterisk" style="color: red;"
+                                                aria-hidden="true"></span><span class="visually-hidden">{% trans
+                                                "required" %}</span>
                                             {% endif %}
-                                        {% endfor %}
+                                        </label>
+                                        <div class="col-sm-9">
+                                            {% endif %}
+                                            {{ element }}
+                                            {% if not element.is_hidden %}
+                                            <small class="text-muted">
+                                                {{ element.help_text|translate }}
+                                            </small>
+                                            {% endif %}
+                                            {% if element.errors %}
+                                            <div class="invalid-feedback d-block rdrf-field-error"
+                                                id="{{ element.auto_id }}_errors">{{ element.errors.as_text }}</div>
+                                            {% endif %}
+                                        </div>
                                     </div>
+                                    {% endif %}
+                                    {% endfor %}
                                     {% endwith %}
-                                </div>
-                            {% if name in hidden_sectionlist %}
-                            </div>
-                            {% endif %}
-                        {% endfor %}
-                    {% endif %}
+                                    {% endwith %}
+                                    {% endwith %}
+                        </section>
+                        {% endif %}
 
+                        {% if name in hidden_sectionlist %}
+                    </div>
+                    {% endif %}
                     {% if name in section_blacklist %}
                 </div>
-                    {% endif %}
+                {% endif %}
 
-                    {% endfor %}
                 {% endfor %}
-            </div>
+                {% endfor %}
+
+                <div class="rdrf-form-actions demographics-form-actions demographics-form-actions--footer d-print-none">
+                    <a href="" class="btn btn-outline-secondary">
+                        {% trans 'Cancel' %}
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        {% trans "Save" %}
+                    </button>
+                </div>
         </form>
     </div>
+</div>
 {% endblock %}

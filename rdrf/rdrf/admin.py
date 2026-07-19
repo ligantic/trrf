@@ -67,6 +67,7 @@ from rdrf.models.definition.models import (
     Section,
     WhitelistedFileExtension,
 )
+from rdrf.models.pro_instruments import PROInstrument
 
 logger = logging.getLogger(__name__)
 
@@ -638,8 +639,15 @@ CommonDataElementAdmin = create_restricted_model_admin_class(
     form=CommonDataElementAdminForm,
 )
 
+class PROInstrumentAdmin(admin.ModelAdmin):
+    list_display = ("slug", "display_name", "registry", "registry_form")
+    list_filter = ("registry",)
+    prepopulated_fields = {"slug": ("display_name",)}
+
+
 DESIGN_MODE_ADMIN_COMPONENTS = [
     (Registry, RegistryAdmin),
+    (PROInstrument, PROInstrumentAdmin),
     (CDEPermittedValue, CDEPermittedValueAdmin),
     (CommonDataElement, CommonDataElementAdmin),
     (CDEPermittedValueGroup, CDEPermittedValueGroupAdmin),

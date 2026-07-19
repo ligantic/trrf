@@ -36,6 +36,7 @@ from rdrf.views import (
     dashboard_view,
     favicon_view,
     patients_listing,
+    pro_instrument_view,
     xnat_view,
 )
 from rdrf.views.actions import ActionExecutorView
@@ -323,6 +324,16 @@ patterns += [
         r"^forms/dsl-help$",
         form_view.FormDSLHelpView.as_view(),
         name="registry_form_dsl_help",
+    ),
+    re_path(
+        r"^(?P<registry_code>\w+)/pro/(?P<slug>[\w-]+)/(?P<patient_id>\d+)/?$",
+        pro_instrument_view.ProInstrumentShellView.as_view(),
+        name="pro_instrument_shell",
+    ),
+    re_path(
+        r"^(?P<registry_code>\w+)/pro/(?P<slug>[\w-]+)/(?P<patient_id>\d+)/part/(?P<section_code>\w+)/?$",
+        pro_instrument_view.ProInstrumentPartView.as_view(),
+        name="pro_instrument_part",
     ),
     re_path(
         r"^(?P<registry_code>\w+)/?$",

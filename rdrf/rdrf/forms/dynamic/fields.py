@@ -6,6 +6,7 @@ from itertools import zip_longest
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.forms import CharField, ChoiceField, DateField, FileField, URLField
+from django.template.defaultfilters import filesizeformat
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
@@ -46,6 +47,20 @@ class FileTypeRestrictedFileField(FileField):
     def validate(self, value):
         if not value:
             return super().validate(value)
+
+        max_size = getattr(settings, "MAX_UPLOAD_FILE_SIZE", None)
+        if max_size and value.size and value.size > max_size:
+            raise ValidationError(
+                _(
+                    "This file is too large (%(size)s). "
+                    "The maximum allowed file size is %(limit)s."
+                )
+                % {
+                    "size": filesizeformat(value.size),
+                    "limit": filesizeformat(max_size),
+                }
+            )
+
         __, ext = os.path.splitext(value.name)
         value.file.seek(0)
 

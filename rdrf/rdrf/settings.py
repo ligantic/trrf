@@ -427,6 +427,10 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = (
     env.get("data_upload_max_number_fields", 30000) or None
 )
 
+# CAP-07 (U-1): per-file upload size limit enforced by file CDE fields with a
+# user-facing validation message. Default 10 MB.
+MAX_UPLOAD_FILE_SIZE = env.get("max_upload_file_size", 10 * 1024 * 1024)
+
 # django-useraudit
 # The setting `LOGIN_FAILURE_LIMIT` allows to enable a number of allowed login attempts.
 # If the settings is not set or set to 0, the feature is disabled.

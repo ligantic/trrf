@@ -1,0 +1,97 @@
+:root {
+  --color-surface-primary: #fff;
+  --color-surface-reference: #f8f9fa;
+  --color-border-subtle: #e9ecef;
+  --color-border-default: #ced4da;
+  --color-text-primary: #343a40;
+  --color-text-secondary: #6c757d;
+  --color-text-heading: #212529;
+
+  --color-accent: #0d6efd;
+  --color-accent-strong: #0a58ca;
+  --color-accent-bg-subtle: rgba(13, 110, 253, 0.10);
+  --color-accent-bg-hover: rgba(13, 110, 253, 0.15);
+  --color-focus-ring: rgba(13, 110, 253, 0.35);
+
+  --font-body: sans-serif;
+  --text-xs-size: 12px;
+  --text-xs-line-height: 18px;
+  --text-xs-weight-medium: 500;
+  --text-xs-letter-spacing: 0;
+
+  --elevation-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --elevation-base: 0 1px 3px rgba(0, 0, 0, 0.10);
+  --elevation-md: 0 4px 6px rgba(0, 0, 0, 0.10);
+  --elevation-lg: 0 10px 15px rgba(0, 0, 0, 0.10);
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-pill: 9999px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+
+  --status-in-progress-bg: rgba(13, 110, 253, 0.20);
+  --status-in-progress-bg-hover: rgba(13, 110, 253, 0.25);
+  --status-in-progress-bg-active: rgba(13, 110, 253, 0.22);
+  --status-in-progress-fg: #0a58ca;
+  --status-in-progress-focus-ring: rgba(13, 110, 253, 0.35);
+
+  --status-not-started-bg: rgba(108, 117, 125, 0.10);
+  --status-not-started-bg-hover: rgba(108, 117, 125, 0.15);
+  --status-not-started-bg-active: rgba(108, 117, 125, 0.12);
+  --status-not-started-fg: #495057;
+  --status-not-started-focus-ring: rgba(73, 80, 87, 0.35);
+
+  --status-due-soon-bg: rgba(255, 193, 7, 0.15);
+  --status-due-soon-bg-hover: rgba(255, 193, 7, 0.20);
+  --status-due-soon-bg-active: rgba(255, 193, 7, 0.17);
+  --status-due-soon-fg: #997404;
+  --status-due-soon-focus-ring: rgba(153, 116, 4, 0.35);
+
+  --status-overdue-bg: rgba(220, 53, 69, 0.10);
+  --status-overdue-bg-hover: rgba(220, 53, 69, 0.15);
+  --status-overdue-bg-active: rgba(220, 53, 69, 0.12);
+  --status-overdue-fg: #b02a37;
+  --status-overdue-focus-ring: rgba(176, 42, 55, 0.35);
+
+  --status-due-now-bg: rgba(111, 66, 193, 0.10);
+  --status-due-now-bg-hover: rgba(111, 66, 193, 0.15);
+  --status-due-now-bg-active: rgba(111, 66, 193, 0.12);
+  --status-due-now-fg: #59359a;
+  --status-due-now-focus-ring: rgba(89, 53, 154, 0.35);
+
+  --status-complete-bg: rgba(25, 135, 84, 0.10);
+  --status-complete-bg-hover: rgba(25, 135, 84, 0.15);
+  --status-complete-bg-active: rgba(25, 135, 84, 0.12);
+  --status-complete-fg: #146c43;
+  --status-complete-focus-ring: rgba(20, 108, 67, 0.35);
+
+  --clinical-stable-bg: rgba(25, 135, 84, 0.10);
+  --clinical-stable-bg-hover: rgba(25, 135, 84, 0.15);
+  --clinical-stable-bg-active: rgba(25, 135, 84, 0.12);
+  --clinical-stable-border: rgba(25, 135, 84, 0.50);
+  --clinical-stable-fg: #146c43;
+  --clinical-stable-focus-ring: rgba(20, 108, 67, 0.35);
+
+  --clinical-monitoring-bg: rgba(255, 193, 7, 0.15);
+  --clinical-monitoring-bg-hover: rgba(255, 193, 7, 0.20);
+  --clinical-monitoring-bg-active: rgba(255, 193, 7, 0.17);
+  --clinical-monitoring-border: rgba(153, 116, 4, 0.50);
+  --clinical-monitoring-fg: #997404;
+  --clinical-monitoring-focus-ring: rgba(153, 116, 4, 0.35);
+
+  --clinical-no-issues-bg: rgba(108, 117, 125, 0.10);
+  --clinical-no-issues-bg-hover: rgba(108, 117, 125, 0.15);
+  --clinical-no-issues-bg-active: rgba(108, 117, 125, 0.12);
+  --clinical-no-issues-border: rgba(108, 117, 125, 0.50);
+  --clinical-no-issues-fg: #6c757d;
+  --clinical-no-issues-focus-ring: rgba(108, 117, 125, 0.35);
+}

@@ -3,6 +3,7 @@
 {% load i18n %}
 
 {% block extrahead %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/rdrf-settings.css' %}">
     {{ block.super }}
     <link rel="stylesheet" href="{% static 'css/jquery-1.13.2/themes/smoothness/jquery-ui.min.css' %}">
     <script>
@@ -40,17 +41,16 @@
 {% endblock %}
 
 {% block content %}
-    <div class="row">
-        <div class="col-md-12">
-            <p><h3><span class="fa fa-list-alt" aria-hidden="true"></span> {% trans 'Parent Details' %}</h3></p>
-            <i class="text-muted"><span class="fa fa-user" aria-hidden="true"></span> {{ parent.first_name }} {{  parent.last_name }}</i>
-        </div>
-    </div>
-    <br>
-    <form class="form-horizontal date-form" method="POST">
+    <main class="rdrf-settings-page">
+    <header class="rdrf-settings-header">
+        <nav class="rdrf-breadcrumb rdrf-settings-breadcrumb" aria-label="{% trans 'Breadcrumb' %}">{% trans 'Dashboard' %} › {% trans 'Settings' %} › {% trans 'My details' %}</nav>
+        <h1>{% trans 'Parent Details' %}</h1>
+        <p>{% trans 'Update your personal details here.' %}</p>
+    </header>
+    <form class="form-horizontal date-form rdrf-settings-form" method="POST">
         {% csrf_token %}
         {% for field in parent_form %}
-            <div class="row {% if field.errors %}has-error{% endif %}">
+            <div class="row rdrf-settings-field {% if field.errors %}has-error{% endif %}">
                 <label for="{{field.auto_id}}" class="col-md-3 offset-md-1 col-form-label">{% if field.field.required %}<span class="fa fa-asterisk" style="color: red" aria-hidden="true"></span>{% endif %} {{field.label}}</label>
                 <div class="col-md-6">
                     {{ field }}
@@ -61,10 +61,10 @@
             </div>
         {% endfor %}
 	    
-        <div class="row">
-            <div class="col-md-10">
-                <input type="submit" class="btn btn-success float-end" value="{% trans 'Save' %}">
-            </div>
+        <div class="rdrf-settings-actions">
+            <a href="" class="btn btn-outline-secondary">{% trans 'Cancel' %}</a>
+            <input type="submit" class="btn btn-primary" value="{% trans 'Save' %}">
         </div>
     </form>
+    </main>
 {% endblock %}

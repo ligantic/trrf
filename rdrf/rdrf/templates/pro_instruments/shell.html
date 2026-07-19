@@ -1,0 +1,50 @@
+{% extends "rdrf_cdes/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block extrahead %}
+    <script type="text/javascript" src="{% static 'js/rdrf-subnav.js' %}"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/rdrf-pro.css' %}">
+{% endblock %}
+
+{% block content %}
+    <main class="rdrf-pro-page">
+    <header class="rdrf-pro-header">
+        <nav class="rdrf-breadcrumb rdrf-pro-breadcrumb" aria-label="{% trans 'Breadcrumb' %}">
+            <a href="{% url 'parent_dashboard' instrument.registry.code %}">{% trans 'Dashboard' %}</a>
+            <span class="rdrf-breadcrumb__separator" aria-hidden="true">›</span>
+            <span aria-current="page">{{ instrument.display_name }}</span>
+        </nav>
+        <h1>{{ instrument.display_name }}</h1>
+        <p class="rdrf-participant-label">{{ patient }}</p>
+        <div class="rdrf-pro-summary" aria-label="{% trans 'Overall progress' %}">
+            <span class="rdrf-pro-summary__label">{% trans "Overall progress" %}</span>
+            <div class="rdrf-pro-summary__progress">
+                <div class="rdrf-progress" role="progressbar" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100" aria-label="{% trans 'Overall progress' %}">
+                    <div class="rdrf-progress__bar" style="width: {{ progress }}%;"></div>
+                </div>
+                <span class="rdrf-pro-summary__value">{{ progress }}%</span>
+            </div>
+            <span class="rdrf-badge {% if overall_status == 'complete' %}rdrf-badge--complete{% elif overall_status == 'in_progress' %}rdrf-badge--in-progress{% else %}rdrf-badge--not-started{% endif %}">
+                {% if overall_status == 'complete' %}{% trans "Complete" %}{% elif overall_status == 'in_progress' %}{% trans "In progress" %}{% else %}{% trans "Not started" %}{% endif %}
+            </span>
+        </div>
+    </header>
+
+    <div class="rdrf-pro-layout{% if not parts %} rdrf-pro-layout--without-rail{% endif %}">
+    <nav class="rdrf-subnav-rail" data-rdrf-subnav aria-label="{% trans 'Instrument parts' %}">
+        {% for part in parts %}
+            <a class="rdrf-subnav-rail__item" href="{{ part.url }}">
+                {{ part.section.display_name }}
+                <span class="rdrf-badge {{ part.status_css }}">{{ part.status_label }}</span>
+            </a>
+        {% endfor %}
+    </nav>
+    {% if continue_url %}
+        <div class="rdrf-pro-overview-actions">
+            <a class="btn btn-primary" href="{{ continue_url }}">{% trans "Continue" %}</a>
+        </div>
+    {% endif %}
+    </div>
+    </main>
+{% endblock %}

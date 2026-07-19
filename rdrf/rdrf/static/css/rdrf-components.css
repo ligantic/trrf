@@ -1,0 +1,501 @@
+/* Shared registry components. All visual values come from rdrf-tokens.css,
+  allowing client projects to override the theme without replacing markup. */
+
+/* ==========================================================================
+  Module status badges.
+   Usage: <span class="rdrf-badge rdrf-badge--in-progress">In progress</span>
+   ========================================================================== */
+.rdrf-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border: none;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-body);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-line-height);
+  font-weight: var(--text-xs-weight-medium);
+  letter-spacing: var(--text-xs-letter-spacing);
+  white-space: nowrap;
+  text-decoration: none;
+  background-color: var(--status-not-started-bg);
+  color: var(--status-not-started-fg);
+}
+
+/* In progress */
+.rdrf-badge--in-progress {
+  background-color: var(--status-in-progress-bg);
+  color: var(--status-in-progress-fg);
+}
+.rdrf-badge--in-progress:hover { background-color: var(--status-in-progress-bg-hover); }
+.rdrf-badge--in-progress:focus-visible {
+  background-color: var(--status-in-progress-bg);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--status-in-progress-focus-ring);
+}
+.rdrf-badge--in-progress:active { background-color: var(--status-in-progress-bg-active); }
+
+/* Not started */
+.rdrf-badge--not-started {
+  background-color: var(--status-not-started-bg);
+  color: var(--status-not-started-fg);
+}
+.rdrf-badge--not-started:hover { background-color: var(--status-not-started-bg-hover); }
+.rdrf-badge--not-started:focus-visible {
+  background-color: var(--status-not-started-bg);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--status-not-started-focus-ring);
+}
+.rdrf-badge--not-started:active { background-color: var(--status-not-started-bg-active); }
+
+/* Due soon */
+.rdrf-badge--due-soon {
+  background-color: var(--status-due-soon-bg);
+  color: var(--status-due-soon-fg);
+}
+.rdrf-badge--due-soon:hover { background-color: var(--status-due-soon-bg-hover); }
+.rdrf-badge--due-soon:focus-visible {
+  background-color: var(--status-due-soon-bg);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--status-due-soon-focus-ring);
+}
+.rdrf-badge--due-soon:active { background-color: var(--status-due-soon-bg-active); }
+
+/* Overdue */
+.rdrf-badge--overdue {
+  background-color: var(--status-overdue-bg);
+  color: var(--status-overdue-fg);
+}
+.rdrf-badge--overdue:hover { background-color: var(--status-overdue-bg-hover); }
+.rdrf-badge--overdue:focus-visible {
+  background-color: var(--status-overdue-bg);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--status-overdue-focus-ring);
+}
+.rdrf-badge--overdue:active { background-color: var(--status-overdue-bg-active); }
+
+/* Due now */
+.rdrf-badge--due-now {
+  background-color: var(--status-due-now-bg);
+  color: var(--status-due-now-fg);
+}
+.rdrf-badge--due-now:hover { background-color: var(--status-due-now-bg-hover); }
+.rdrf-badge--due-now:focus-visible {
+  background-color: var(--status-due-now-bg);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--status-due-now-focus-ring);
+}
+.rdrf-badge--due-now:active { background-color: var(--status-due-now-bg-active); }
+
+/* Complete (locked variant) */
+.rdrf-badge--complete {
+  background-color: var(--status-complete-bg);
+  color: var(--status-complete-fg);
+}
+.rdrf-badge--complete:hover { background-color: var(--status-complete-bg-hover); }
+.rdrf-badge--complete:focus-visible {
+  background-color: var(--status-complete-bg);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--status-complete-focus-ring);
+}
+.rdrf-badge--complete:active { background-color: var(--status-complete-bg-active); }
+
+/* ==========================================================================
+   Clinical status chips — THEME.md §5.3, §4.6.2 matrix (colored dot + border),
+   §4.6.3 interaction policy.
+   Usage: <span class="rdrf-chip rdrf-chip--stable">Stable</span>
+   ========================================================================== */
+.rdrf-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-body);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-line-height);
+  font-weight: var(--text-xs-weight-medium);
+  letter-spacing: var(--text-xs-letter-spacing);
+  white-space: nowrap;
+  text-decoration: none;
+  background-color: var(--color-surface-primary);
+  color: var(--color-text-primary);
+}
+
+/* Colored status dot (§4.6.2 "Dot/Text" column) */
+.rdrf-chip::before {
+  content: "";
+  display: inline-block;
+  width: var(--space-2);
+  height: var(--space-2);
+  border-radius: var(--radius-pill);
+  background-color: currentColor;
+  flex-shrink: 0;
+}
+
+/* Stable */
+.rdrf-chip--stable {
+  background-color: var(--clinical-stable-bg);
+  border-color: var(--clinical-stable-border);
+  color: var(--clinical-stable-fg);
+}
+.rdrf-chip--stable:hover { background-color: var(--clinical-stable-bg-hover); }
+.rdrf-chip--stable:focus-visible {
+  background-color: var(--clinical-stable-bg);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--clinical-stable-focus-ring);
+}
+.rdrf-chip--stable:active { background-color: var(--clinical-stable-bg-active); }
+
+/* Monitoring required */
+.rdrf-chip--monitoring-required {
+  background-color: var(--clinical-monitoring-bg);
+  border-color: var(--clinical-monitoring-border);
+  color: var(--clinical-monitoring-fg);
+}
+.rdrf-chip--monitoring-required:hover { background-color: var(--clinical-monitoring-bg-hover); }
+.rdrf-chip--monitoring-required:focus-visible {
+  background-color: var(--clinical-monitoring-bg);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--clinical-monitoring-focus-ring);
+}
+.rdrf-chip--monitoring-required:active { background-color: var(--clinical-monitoring-bg-active); }
+
+/* No issues */
+.rdrf-chip--no-issues {
+  background-color: var(--clinical-no-issues-bg);
+  border-color: var(--clinical-no-issues-border);
+  color: var(--clinical-no-issues-fg);
+}
+.rdrf-chip--no-issues:hover { background-color: var(--clinical-no-issues-bg-hover); }
+.rdrf-chip--no-issues:focus-visible {
+  background-color: var(--clinical-no-issues-bg);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--clinical-no-issues-focus-ring);
+}
+.rdrf-chip--no-issues:active { background-color: var(--clinical-no-issues-bg-active); }
+
+/* ==========================================================================
+   Card system — THEME.md §5.2: standard card container with title row,
+   metadata and optional actions. Predictable heights/alignment for
+   dashboard compositions (§6 CAP-01/CAP-03).
+   ========================================================================== */
+.rdrf-card {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-surface-primary);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-base);
+  padding: var(--space-5);
+  font-family: var(--font-body);
+  color: var(--color-text-primary);
+}
+
+.rdrf-card__title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+  color: var(--color-text-heading);
+  font-weight: 600;
+}
+
+.rdrf-card__meta {
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs-size);
+  line-height: var(--text-xs-line-height);
+  margin-bottom: var(--space-3);
+}
+
+.rdrf-card__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: auto;
+  padding-top: var(--space-3);
+}
+
+/* Dashboard module matrix follows the shared status/table component model. */
+.rdrf-modules-panel {
+  overflow: hidden;
+}
+
+.rdrf-modules-panel__intro {
+  color: var(--color-text-primary);
+  font-size: .875rem;
+  margin: 0 0 var(--space-4);
+}
+
+.rdrf-modules-panel .table {
+  font-size: .875rem;
+}
+
+.rdrf-modules-panel .table thead th,
+.rdrf-modules-panel .table .table-light th {
+  background-color: var(--color-surface-reference);
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs-size);
+  font-weight: var(--text-xs-weight-medium);
+}
+
+.rdrf-modules-panel .table th[scope="row"] {
+  color: var(--color-text-heading);
+}
+
+.rdrf-modules-panel__empty {
+  color: var(--color-text-secondary);
+  font-size: .875rem;
+  margin: 0;
+}
+
+/* ==========================================================================
+   Left-rail subsection navigation — THEME.md §5.1 (three-tier navigation),
+   §6 CAP-06 (demographics rail) / CAP-07 (clinical module subsections).
+   Active item carries an accent left-border from the #005CD6 family.
+   Usage: <nav class="rdrf-subnav-rail"><a class="rdrf-subnav-rail__item
+          rdrf-subnav-rail__item--active" ...>
+   ========================================================================== */
+.rdrf-subnav-rail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2) 0;
+  font-family: var(--font-body);
+}
+
+.rdrf-subnav-rail__item {
+  display: block;
+  padding: var(--space-2) var(--space-4);
+  border-left: 3px solid transparent;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.rdrf-subnav-rail__item:hover {
+  background-color: var(--color-accent-bg-hover);
+  color: var(--color-accent);
+}
+
+.rdrf-subnav-rail__item:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+  color: var(--color-accent);
+}
+
+.rdrf-subnav-rail__item--active {
+  border-left-color: var(--color-accent);
+  background-color: var(--color-accent-bg-subtle);
+  color: var(--color-accent-strong);
+  font-weight: 600;
+}
+
+/* Clinical module tabs use the legacy context launcher as a data source but
+   present it as the design's horizontal module navigation. */
+.rdrf-module-nav {
+  display: flex;
+  gap: var(--space-1);
+  overflow-x: auto;
+  margin: 0 0 var(--space-6);
+  padding: var(--space-1);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-reference);
+  scrollbar-width: thin;
+}
+
+.rdrf-module-nav__item {
+  flex: 0 0 auto;
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.rdrf-module-nav__item:hover {
+  background-color: var(--color-accent-bg-hover);
+  color: var(--color-accent);
+}
+
+.rdrf-module-nav__item:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+.rdrf-module-nav__item--active {
+  background-color: var(--color-surface-primary);
+  box-shadow: var(--elevation-xs);
+  color: var(--color-accent-strong);
+}
+
+#sidebar.rdrf-clinical-sidebar-replaced {
+  display: none;
+}
+
+.rdrf-form-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.rdrf-form-actions__cancel,
+.rdrf-form-actions__save {
+  min-width: 7.5rem;
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+}
+
+@media (max-width: 991.98px) {
+  .rdrf-module-nav { margin-inline: calc(var(--bs-gutter-x) * -0.5); }
+}
+
+/* RTL support: base template flips dir="rtl"; mirror the accent border. */
+[dir="rtl"] .rdrf-subnav-rail__item {
+  border-left: none;
+  border-right: 3px solid transparent;
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+}
+[dir="rtl"] .rdrf-subnav-rail__item--active {
+  border-right-color: var(--color-accent);
+}
+
+/* ==========================================================================
+   Reference vs capture blocks — THEME.md §6 CAP-07: reference-content
+   blocks must visually differ from editable capture blocks.
+   ========================================================================== */
+
+/* Read-only / informational content: subtle tinted surface + accent left border */
+.rdrf-reference-block {
+  background-color: var(--color-surface-reference);
+  border: 1px solid var(--color-border-subtle);
+  border-left: 3px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-5);
+  color: var(--color-text-secondary);
+  font-family: var(--font-body);
+}
+
+[dir="rtl"] .rdrf-reference-block {
+  border-left: 1px solid var(--color-border-subtle);
+  border-right: 3px solid var(--color-border-default);
+}
+
+/* Editable capture area: plain elevated white surface */
+.rdrf-capture-block {
+  background-color: var(--color-surface-primary);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--elevation-xs);
+  padding: var(--space-4) var(--space-5);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+}
+
+/* ==========================================================================
+   Progress bar — slim, token-driven, for module/instrument progress
+   (THEME.md §6 CAP-08 part navigator/progress).
+   Usage: <div class="rdrf-progress" role="progressbar" aria-valuenow="40"
+          aria-valuemin="0" aria-valuemax="100">
+            <div class="rdrf-progress__bar" style="width: 40%"></div>
+          </div>
+   ========================================================================== */
+.rdrf-progress {
+  width: 100%;
+  height: var(--space-2);
+  background-color: var(--color-border-subtle);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.rdrf-progress__bar {
+  height: 100%;
+  background-color: var(--color-accent);
+  border-radius: var(--radius-pill);
+  transition: width 0.2s ease;
+}
+
+/* Status-aware progress fills (optional modifiers, same token families) */
+.rdrf-progress__bar--complete { background-color: var(--status-complete-fg); }
+.rdrf-progress__bar--due-soon { background-color: var(--status-due-soon-fg); }
+.rdrf-progress__bar--overdue { background-color: var(--status-overdue-fg); }
+
+/* ==========================================================================
+   Participant switcher — segmented control (CAP-05, frame 113:448).
+   Full-page navigation links; the active participant carries an accent
+   surface. When only one participant is linked, use .rdrf-participant-label
+   (static, non-interactive) instead.
+   ========================================================================== */
+.rdrf-segmented {
+  display: inline-flex;
+  align-items: stretch;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  background-color: var(--color-surface-reference);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+}
+
+.rdrf-segmented__option {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.rdrf-segmented__option:hover {
+  background-color: var(--color-accent-bg-hover);
+  color: var(--color-accent);
+}
+
+.rdrf-segmented__option:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+  color: var(--color-accent);
+}
+
+.rdrf-segmented__option--active {
+  background-color: var(--color-accent);
+  color: var(--color-surface-primary);
+  font-weight: 600;
+}
+
+.rdrf-segmented__option--active:hover {
+  background-color: var(--color-accent-strong);
+  color: var(--color-surface-primary);
+}
+
+/* Single linked participant: static label, no switch affordance */
+.rdrf-participant-label {
+  display: inline-block;
+  margin: 0;
+  padding: var(--space-2) 0;
+  color: var(--color-text-heading);
+  font-family: var(--font-body);
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   Global focus fallback for RDRF interactive elements — THEME.md §7:
+   clear, WCAG AA keyboard focus indicators. Component-level rules above
+   provide status-specific rings; this covers anything else in the family.
+   ========================================================================== */
+.rdrf-badge:focus-visible,
+.rdrf-chip:focus-visible,
+.rdrf-card__actions a:focus-visible,
+.rdrf-card__actions button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}

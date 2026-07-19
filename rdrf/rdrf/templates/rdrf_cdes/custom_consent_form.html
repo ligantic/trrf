@@ -19,6 +19,311 @@
     <link rel="stylesheet" href="{% static 'css/jquery-1.13.2/themes/smoothness/jquery-ui.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/consent_extra.css' %}" media="all">
 
+    <style>
+        #sidebar {
+            display: none;
+        }
+
+        #sidebar + .col-xxl-8.col-lg-9 {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+
+        .banner {
+            display: none;
+        }
+
+        #content.container-fluid {
+            padding-top: 4.625rem !important;
+        }
+
+        .previous-form,
+        .next-form {
+            display: none !important;
+        }
+
+        #main-form {
+            color: var(--color-text-primary);
+            margin: 0 auto;
+            max-width: 57.875rem;
+        }
+
+        .rdrf-consent-header {
+            background: transparent;
+            border: 0;
+            border-bottom: 1px solid var(--color-border-subtle);
+            border-radius: 0;
+            box-shadow: none;
+            margin-bottom: var(--space-5);
+            position: static !important;
+        }
+
+        .rdrf-consent-header .card-body {
+            padding: var(--space-5) 0;
+        }
+
+        .rdrf-consent-breadcrumb {
+            margin-bottom: var(--space-3);
+        }
+
+        .rdrf-consent-header h1 {
+            color: var(--color-text-heading);
+            font-size: 1.25rem;
+            font-weight: 600;
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        .rdrf-consent-header__intro {
+            color: var(--color-text-primary);
+            font-size: .875rem;
+            margin: var(--space-1) 0 0;
+        }
+
+        .rdrf-consent-header .consent_to_all {
+            background-color: var(--color-accent);
+            border-color: var(--color-accent);
+            border-radius: var(--radius-md);
+            box-shadow: var(--elevation-xs);
+            font-size: .875rem;
+            font-weight: 600;
+            padding: .5rem .875rem;
+        }
+
+        #main-form > .card:not(#consent-header) {
+            background: transparent;
+            border: 0;
+            border-bottom: 1px solid var(--color-border-subtle);
+            border-radius: 0;
+            box-shadow: none;
+            margin-bottom: var(--space-5);
+        }
+
+        #main-form > .card:not(#consent-header) > .card-header {
+            background: transparent;
+            border-bottom: 0;
+            color: var(--color-text-heading);
+            font-size: 1rem;
+            padding: 0 0 var(--space-3);
+        }
+
+        #main-form > .rdrf-consent-section > .card-header {
+            color: var(--color-text-primary);
+            font-size: .875rem;
+            font-weight: 400;
+            line-height: 1.286;
+        }
+
+        #main-form > .rdrf-consent-section > .card-header h1,
+        #main-form > .rdrf-consent-section > .card-header h2,
+        #main-form > .rdrf-consent-section > .card-header h3,
+        #main-form > .rdrf-consent-section > .card-header h4,
+        #main-form > .rdrf-consent-section > .card-header h5,
+        #main-form > .rdrf-consent-section > .card-header h6 {
+            color: var(--color-text-heading);
+            font-size: .875rem;
+            font-weight: 500;
+            line-height: 1.286;
+            margin: 0 0 var(--space-2);
+            text-align: left;
+        }
+
+        #main-form > .rdrf-consent-upload > .card-header {
+            align-items: flex-start;
+            display: flex;
+            gap: var(--space-5);
+            padding-bottom: var(--space-4);
+        }
+
+        .rdrf-consent-upload__label {
+            display: flex;
+            flex: 0 0 12.5rem;
+            flex-direction: column;
+            gap: var(--space-1);
+        }
+
+        .rdrf-consent-upload__label strong {
+            color: var(--color-text-heading);
+            font-size: .875rem;
+            font-weight: 500;
+            line-height: 1.214;
+        }
+
+        .rdrf-consent-upload__label span {
+            color: var(--color-text-primary);
+            font-size: .875rem;
+            line-height: 1.286;
+        }
+
+        #main-form .rdrf-consent-upload > .card-header .btn {
+            background-color: var(--color-accent);
+            border-color: rgba(155, 155, 155, .1);
+            border-radius: var(--radius-md);
+            box-shadow: var(--elevation-xs);
+            color: var(--color-surface-primary);
+            float: none !important;
+            font-size: .875rem;
+            font-weight: 600;
+            padding: .5rem .875rem;
+        }
+
+        #main-form .rdrf-consent-upload [id^="forms_"] > [id^="empty_"] {
+            border-bottom: 1px solid var(--color-border-subtle);
+            display: block !important;
+            padding: var(--space-4) 0;
+        }
+
+        #main-form .rdrf-consent-upload [id^="forms_"] > [id^="empty_"] > .row:has(input[type="hidden"]) {
+            display: none;
+        }
+
+        #main-form .rdrf-consent-upload [id^="forms_"] > [id^="empty_"] > .row:has(input[type="file"]) {
+            align-items: center;
+            border-bottom: 0;
+            display: grid;
+            gap: var(--space-5);
+            grid-template-columns: 12.5rem minmax(0, 1fr);
+            padding: var(--space-3) 0 0;
+        }
+
+        #main-form .rdrf-consent-upload [id^="forms_"] > [id^="empty_"] > .row:has(input[type="file"]) > label {
+            margin: 0;
+            padding: 0;
+        }
+
+        #main-form .rdrf-consent-upload [id^="forms_"] > [id^="empty_"] > .row:has(input[type="file"]) > .col-sm-9 {
+            flex: none;
+            min-width: 0;
+            max-width: none;
+            padding: 0;
+            width: auto;
+        }
+
+        #main-form .rdrf-consent-upload [id^="forms_"] > [id^="empty_"] > .row:has([onclick*="delete_form"]) {
+            border-bottom: 0;
+            display: flex;
+            justify-content: flex-end;
+            padding: 0;
+        }
+
+        #main-form .rdrf-consent-upload [id^="forms_"] [onclick*="delete_form"] {
+            background-color: var(--status-overdue-bg);
+            border-color: transparent;
+            border-radius: var(--radius-md);
+            box-shadow: none;
+            color: var(--status-overdue-fg);
+            float: none !important;
+            font-size: var(--text-xs-size);
+            font-weight: 600;
+            padding: var(--space-2) var(--space-3);
+        }
+
+        #main-form .rdrf-consent-upload [id^="forms_"] hr {
+            display: none;
+        }
+
+        #main-form > .card:not(#consent-header) > .card-body {
+            padding: var(--space-3) 0 var(--space-5);
+        }
+
+        #main-form .card-body .row {
+            border-bottom: 1px solid var(--color-border-subtle);
+            margin-inline: 0;
+            padding: var(--space-3) 0;
+        }
+
+        #main-form .card-body .row:last-child {
+            border-bottom: 0;
+        }
+
+        #main-form .rdrf-consent-section .card-body .row:has(.form-check-input) {
+            align-items: flex-start;
+            display: flex;
+            gap: var(--space-3);
+        }
+
+        #main-form .rdrf-consent-section .card-body .row:has(.form-check-input) > label {
+            flex: 1 1 auto;
+            margin: 0;
+            order: 2;
+        }
+
+        #main-form .rdrf-consent-section .card-body .row:has(.form-check-input) > .col-sm-1 {
+            flex: 0 0 auto;
+            order: 1;
+            padding: 0;
+            width: auto;
+        }
+
+        #main-form .rdrf-consent-section video,
+        #main-form .rdrf-consent-section .video-js {
+            display: block;
+            height: auto;
+            margin: var(--space-4) 0 0;
+            max-width: 100%;
+            width: 43.75rem;
+        }
+
+        #main-form label {
+            color: var(--color-text-heading);
+            font-size: .875rem;
+            font-weight: 500;
+        }
+
+        #main-form .form-control,
+        #main-form .form-select {
+            border-color: var(--color-border-default);
+            border-radius: var(--radius-sm);
+            box-shadow: none;
+        }
+
+        #main-form .form-control:focus,
+        #main-form .form-select:focus {
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 3px var(--color-focus-ring);
+        }
+
+        .rdrf-consent-actions {
+            display: flex;
+            gap: var(--space-5);
+            justify-content: flex-end;
+            padding: var(--space-5) 0;
+        }
+
+        .rdrf-consent-actions .btn {
+            border-radius: var(--radius-md);
+            box-shadow: var(--elevation-xs);
+            font-size: .875rem;
+            font-weight: 600;
+            padding: .5rem .875rem;
+        }
+
+        .rdrf-consent-actions .btn-outline-secondary {
+            background: var(--color-surface-reference);
+            border-color: var(--color-border-default);
+            color: var(--color-text-primary);
+        }
+
+        @media (max-width: 575.98px) {
+            .rdrf-consent-header .d-grid {
+                gap: var(--space-4);
+            }
+
+            .rdrf-consent-actions {
+                justify-content: stretch;
+            }
+
+            .rdrf-consent-actions .btn {
+                flex: 1 1 0;
+            }
+
+            #main-form .rdrf-consent-upload [id^="forms_"] > [id^="empty_"] > .row:has(input[type="file"]) {
+                grid-template-columns: 1fr;
+                gap: var(--space-2);
+            }
+        }
+    </style>
+
 
     <script type="text/javascript" src={% static 'js/rpc_module.js' %}></script>
     <script type="text/javascript" src="{% static 'js/vendor/jquery-ui-1.13.2.min.js' %}"></script>
@@ -108,6 +413,7 @@
                 }
             {% endif %}
         });
+
     </script>
 
 {% endblock %}
@@ -116,22 +422,9 @@
 {% endblock %}
 
 {% block sidebar %}
-<!-- Sidebar -->
-	{{ context_launcher | safe }}
-<!-- /#sidebar-wrapper -->
 {% endblock %}
 
 {% block formbtns %}
-	<div class="btn-group" role="group" aria-label="...">
-		<button id="submit-btn" type="submit" class="btn btn-success" form="main-form" value="Save">
-			<span class="fa fa-save" aria-hidden="true"></span> {% trans 'Save' %}
-		</button>
-
-		<a href="" class="btn btn-danger">
-			<span class="fa fa-times" aria-hidden="true"></span> {% trans 'Cancel' %}
-		</a>
-
-	</div>
 {% endblock %}
 
 {% block content %}
@@ -167,10 +460,14 @@
             <form class="form-horizontal" method="post" id="main-form" novalidate enctype="multipart/form-data">
 
                 {% csrf_token %}
-                <div id="consent-header" class="card card-info">
+                <div id="consent-header" class="card card-info rdrf-consent-header">
                     <div class="card-body">
                           <div class="d-grid d-sm-block">
-                              <h2 class="d-none d-sm-inline">{% trans "Consents" %}</h2>
+                              <div class="float-sm-start">
+                                  <nav class="rdrf-breadcrumb rdrf-consent-breadcrumb" aria-label="{% trans 'Breadcrumb' %}">{% trans "Dashboard" %} › {% trans "Consent" %}</nav>
+                                  <h1>{% trans "Consents" %}</h1>
+                                  <p class="rdrf-consent-header__intro">{% trans "Angelman general information and consent" %}</p>
+                              </div>
                               <button type="button" class="consent_to_all btn btn-primary btn-success btn-lg float-sm-end">
                                 <i class="fa fa-square-o" ></i>
                                 {% trans "Consent to All" %}
@@ -229,11 +526,14 @@
                             {% endfor %}
                         </div>
                         {% for name, section in sections %}
-                            <div class="card">
+                            <div class="card rdrf-consent-section rdrf-consent-upload">
                                 <div class="card-header">
-                                    <strong class="float-start">{{name|translate}}</strong>
-                                    <a class="btn btn-info btn-xs float-end" onclick="add_form('{{form.prefix}}')">
-                                        <span class="fa fa-plus" aria-hidden="true"></span> {% trans 'Add' %}
+                                    <div class="rdrf-consent-upload__label">
+                                        <strong>{% trans 'Upload consent file' %}</strong>
+                                        <span>{% trans 'If required.' %}</span>
+                                    </div>
+                                    <a class="btn btn-info btn-xs" onclick="add_form('{{form.prefix}}')">
+                                        <span class="fa fa-plus" aria-hidden="true"></span> {% trans 'Upload' %}
                                     </a>
                                 </div>
                                 <div class="card-body">
@@ -299,7 +599,7 @@
                         {% endfor %}
                     {% else %}
                         {% for name, section in sections %}
-                            <div class="card">
+                            <div class="card rdrf-consent-section">
                                 <div class="card-header"><strong>{{name|translate}}</strong>
                                 {% with consent_info=section|get_consent_information %}
                                     {% if consent_info %}
@@ -381,6 +681,11 @@
                         {% endfor %}
                     {% endif %}
                 {% endfor %}
+
+                <div class="rdrf-consent-actions d-print-none">
+                    <a href="" class="btn btn-outline-secondary">{% trans 'Cancel' %}</a>
+                    <button id="submit-btn" type="submit" class="btn btn-primary" value="Save">{% trans 'Save' %}</button>
+                </div>
 			</div>
         </form>
     </div>

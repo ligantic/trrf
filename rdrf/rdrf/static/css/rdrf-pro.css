@@ -1,0 +1,147 @@
+/* PRO instrument shell shared by overview and part pages. */
+.rdrf-pro-page {
+  margin: 0 auto;
+  max-width: 82rem;
+  padding: var(--space-6) var(--space-4) var(--space-8);
+}
+
+.rdrf-pro-header {
+  border-bottom: 1px solid var(--color-border-subtle);
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-5);
+}
+
+.rdrf-pro-breadcrumb {
+  margin-bottom: var(--space-3);
+}
+
+.rdrf-pro-header h1 {
+  color: var(--color-text-heading);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.rdrf-pro-header .rdrf-participant-label {
+  color: var(--color-text-secondary);
+  font-size: .875rem;
+  font-weight: 500;
+  margin-top: var(--space-2);
+  padding: 0;
+}
+
+.rdrf-pro-summary {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.rdrf-pro-summary__label {
+  color: var(--color-text-heading);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.rdrf-pro-summary__progress {
+  align-items: center;
+  display: flex;
+  flex: 0 1 20rem;
+  gap: var(--space-3);
+}
+
+.rdrf-pro-summary__progress .rdrf-progress {
+  flex: 1 1 auto;
+  margin: 0;
+}
+
+.rdrf-pro-summary__value {
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm-size);
+  font-weight: 600;
+}
+
+.rdrf-pro-layout {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: minmax(12rem, 1fr) minmax(0, 4fr);
+}
+
+.rdrf-pro-layout--without-rail,
+.rdrf-pro-layout:has(.rdrf-subnav-rail[hidden]) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.rdrf-pro-layout--without-rail > .rdrf-subnav-rail,
+.rdrf-pro-layout:has(.rdrf-subnav-rail[hidden]) > :first-child {
+  display: none;
+}
+
+.rdrf-pro-breadcrumb a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.rdrf-pro-breadcrumb a:hover,
+.rdrf-pro-breadcrumb a:focus-visible {
+  color: var(--color-text-primary);
+  text-decoration: underline;
+}
+
+.rdrf-pro-layout > .rdrf-subnav-rail {
+  border-left: 1px solid var(--color-border-subtle);
+  padding-left: var(--space-2);
+}
+
+.rdrf-pro-page .rdrf-section-card {
+  border-radius: var(--radius-sm);
+  padding: var(--space-5);
+}
+
+.rdrf-pro-page .rdrf-card__actions {
+  justify-content: flex-end;
+}
+
+.rdrf-pro-overview-actions {
+  align-items: flex-start;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.rdrf-pro-page .rdrf-card__actions .btn {
+  border-radius: var(--radius-md);
+  box-shadow: var(--elevation-xs);
+  font-size: .875rem;
+  font-weight: 600;
+}
+
+.rdrf-pro-page .rdrf-capture-block {
+  border-radius: var(--radius-sm);
+}
+
+@media (max-width: 767.98px) {
+  .rdrf-pro-page {
+    padding: var(--space-5) var(--space-3);
+  }
+
+  .rdrf-pro-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .rdrf-pro-layout > .rdrf-subnav-rail {
+    border-left: 0;
+    border-bottom: 1px solid var(--color-border-subtle);
+    padding: 0 0 var(--space-3);
+  }
+
+  .rdrf-pro-summary__progress {
+    flex-basis: 100%;
+    order: 3;
+  }
+
+  .rdrf-pro-overview-actions {
+    justify-content: flex-start;
+  }
+}

@@ -14,82 +14,131 @@
 
 
 {% block extrastyle %}
-    {{ block.super }}
-    <script type="text/javascript" src="{% static 'js/form.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/form_dsl.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/calculated_field_plugin.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/xnat_lookup_plugin.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/lookup.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/vendor/moment-2.29.4.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/vendor/chart.js-3.3.2.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/vendor/chartjs-adapter-moment-1.0.0.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/vendor/adsafe.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/vendor/jsignature-2.1.3.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/virus_scan_check.js' %}"></script>
-    <script type="text/javascript" src="{% static 'js/custom_widget_setup.js' %}"></script>
-    <link rel="stylesheet" type="text/css" href="{% static 'css/variation/variation.css' %}" media="all">
-    <link rel="stylesheet" href="{% static 'css/jquery-1.13.2/themes/smoothness/jquery-ui.min.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'css/form_common.css' %}" media="all">
-    <style>
-        .modal .modal-dialog {
-            max-height: 600px;
-            overflow-y: auto;
-        }
+{{ block.super }}
+<script type="text/javascript" src="{% static 'js/form.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/form_dsl.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/calculated_field_plugin.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/xnat_lookup_plugin.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/lookup.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/vendor/moment-2.29.4.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/vendor/chart.js-3.3.2.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/vendor/chartjs-adapter-moment-1.0.0.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/vendor/adsafe.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/vendor/jsignature-2.1.3.min.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/virus_scan_check.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/custom_widget_setup.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/rdrf-subnav.js' %}?v=4"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'css/variation/variation.css' %}" media="all">
+<link rel="stylesheet" href="{% static 'css/jquery-1.13.2/themes/smoothness/jquery-ui.min.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'css/form_common.css' %}" media="all">
+<style>
+    .modal .modal-dialog {
+        max-height: 600px;
+        overflow-y: auto;
+    }
 
-        .highlight {
-            background-color: lightgray;
-        }
-    </style>
+    .highlight {
+        background-color: lightgray;
+    }
 
-    <script>
+    /* CAP-07: clinical form section rail + card layout */
+    .rdrf-clinical-rail {
+        margin-bottom: 1rem;
+    }
+
+    @media (min-width: 992px) {
+        .rdrf-clinical-rail {
+            position: sticky;
+            top: var(--rdrf-sticky-offset, 6rem);
+        }
+    }
+
+    /* Section cards keep Bootstrap .card structure (CollapsingPanels
+           targets .card.collapsible > .card-header/.card-body), so let the
+           Bootstrap paddings govern inside the rdrf-card shell. */
+    .rdrf-section-card {
+        padding: 0;
+        margin-bottom: 1.5rem;
+        scroll-margin-top: var(--rdrf-sticky-offset, 6rem);
+    }
+
+    .rdrf-section-card>.card-header {
+        background-color: transparent;
+        border-bottom: 1px solid var(--color-border-subtle);
+    }
+
+    .rdrf-section-card .rdrf-reference-block {
+        margin-bottom: 1rem;
+    }
+
+    .rdrf-section-card .rdrf-capture-block {
+        box-shadow: none;
+        border: 0;
+        padding: 0;
+    }
+
+    /* Repeatable (multisection) entries render as nested cards. */
+    .rdrf-multisection-entry {
+        background-color: var(--color-surface-primary);
+        border: 1px solid var(--color-border-subtle);
+        border-radius: var(--radius-md);
+        box-shadow: var(--elevation-xs);
+        padding: 1rem 1.25rem;
+        margin-bottom: 1rem;
+    }
+
+    /* The legacy add/remove JS appends <hr> separators between cloned
+           entries; the nested-card border replaces them visually. */
+    .rdrf-multisection-entry hr {
+        display: none;
+    }
+
+    .rdrf-form-progress-card {
+        margin-bottom: 1rem;
+    }
+</style>
+
+<script>
     // The following "corrects" the behaviour of the "today" button in the jquery datepicker
     // clicking the today button
-    $.datepicker._gotoToday = function(id) {
+    $.datepicker._gotoToday = function (id) {
         var target = $(id);
         var inst = this._getInst(target[0]);
         if (this._get(inst, 'gotoCurrent') && inst.currentDay) {
-                inst.selectedDay = inst.currentDay;
-                inst.drawMonth = inst.selectedMonth = inst.currentMonth;
-                inst.drawYear = inst.selectedYear = inst.currentYear;
+            inst.selectedDay = inst.currentDay;
+            inst.drawMonth = inst.selectedMonth = inst.currentMonth;
+            inst.drawYear = inst.selectedYear = inst.currentYear;
         }
         else {
-                var date = new Date();
-                inst.selectedDay = date.getDate();
-                inst.drawMonth = inst.selectedMonth = date.getMonth();
-                inst.drawYear = inst.selectedYear = date.getFullYear();
-                // the below two lines are new
-                this._setDateDatepicker(target, date);
-                this._selectDate(id, this._getDateDatepicker(target));
+            var date = new Date();
+            inst.selectedDay = date.getDate();
+            inst.drawMonth = inst.selectedMonth = date.getMonth();
+            inst.drawYear = inst.selectedYear = date.getFullYear();
+            // the below two lines are new
+            this._setDateDatepicker(target, date);
+            this._selectDate(id, this._getDateDatepicker(target));
         }
         this._notifyChange(inst);
         this._adjustDate(target);
     }
 
-    {% if user.is_superuser and has_form_progress %}
-        $(function() {
-            $( "#form-progress" ).progressbar({
-                value: {{form_progress}}
-            });
-        });
-    {% endif %}
-
     {% autoescape off %}
-    {{ generated_declarations }}
+    { { generated_declarations } }
     {% endautoescape %}
 
     {% autoescape off %}
-    {{ visibility_handler }}
+    { { visibility_handler } }
     {% endautoescape %}
 
-    $(document).ready(function(){
+    $(document).ready(function () {
         $("#form-progress-cdes").hide();
 
-        $("#show-cdes-btn").click(function() {
+        $("#show-cdes-btn").click(function () {
             $("#form-progress-cdes").toggle("fast");
         });
 
-        $(document).find( ".datepicker" ).each(function() {
-            $(this).on("mouseover", function() {
+        $(document).find(".datepicker").each(function () {
+            $(this).on("mouseover", function () {
                 $(this).datepicker({
                     changeMonth: true,
                     changeYear: true,
@@ -97,10 +146,10 @@
                     yearRange: '-120:+120',
                     buttonImage: "{% static 'images/calendar.gif' %}",
                     buttonImageOnly: true,
-                    "dayNamesShort": $.datepicker.regional['{{request.LANGUAGE_CODE.lower}}' ].dayNamesShort,
-                    "dayNames": $.datepicker.regional['{{request.LANGUAGE_CODE.lower}}' ].dayNames,
+                    "dayNamesShort": $.datepicker.regional['{{request.LANGUAGE_CODE.lower}}'].dayNamesShort,
+                    "dayNames": $.datepicker.regional['{{request.LANGUAGE_CODE.lower}}'].dayNames,
                     "monthNamesShort": $.datepicker.regional['{{request.LANGUAGE_CODE.lower}}'].monthNamesShort,
-                    "monthNames": $.datepicker.regional[ '{{request.LANGUAGE_CODE.lower}}' ].monthNames
+                    "monthNames": $.datepicker.regional['{{request.LANGUAGE_CODE.lower}}'].monthNames
                 });
             });
         });
@@ -116,20 +165,20 @@
         rdrfSetupFormPositionSaving();
 
         {% if current_position %}
-            rdrfScrollToFormPosition("{{ current_position }}");
+        rdrfScrollToFormPosition("{{ current_position }}");
         {% else %}
-            var searchParams = new URLSearchParams(window.location.search);
-            var currentPosition = searchParams.get("currentPosition")
-            if (currentPosition) {
-                searchParams.delete("currentPosition");
-                window.history.replaceState(null, null, "?" + searchParams);
-                rdrfScrollToFormPosition(currentPosition);
-            }
+        var searchParams = new URLSearchParams(window.location.search);
+        var currentPosition = searchParams.get("currentPosition")
+        if (currentPosition) {
+            searchParams.delete("currentPosition");
+            window.history.replaceState(null, null, "?" + searchParams);
+            rdrfScrollToFormPosition(currentPosition);
+        }
         {% endif %}
- 
+
         $('#main-form').data('serialize', serialized_form());
 
-        $(window).bind('beforeunload', function(e){
+        $(window).bind('beforeunload', function (e) {
             if (serialized_form() != $('#main-form').data('serialize')) {
                 return "You have unsaved changes!";
             } else {
@@ -137,29 +186,29 @@
             }
         });
 
-        $("#main-form").submit(function() {
+        $("#main-form").submit(function () {
             $(window).unbind("beforeunload");
             $("#submit-btn").prop("disabled", true);
         });
 
 
-		$('.next').hover(
-			function() {
-				$("#next-form-label").toggle("fast");
-			},
-			function() {
-				$("#next-form-label").toggle("fast");
-			}
-		);
+        $('.next').hover(
+            function () {
+                $("#next-form-label").toggle("fast");
+            },
+            function () {
+                $("#next-form-label").toggle("fast");
+            }
+        );
 
         {% autoescape off %}
-        {{ generated_code }}
+        { { generated_code } }
         {% endautoescape %}
     });
 
 
     {% autoescape off %}
-    {{ change_targets }}
+    { { change_targets } }
     {% endautoescape %}
 
     function attribute_replace($el, attribute_name, form_count) {
@@ -174,7 +223,7 @@
         var empty_form = $("#empty_" + prefix);
         var forms = $("#forms_" + prefix);
 
-        var total_forms = mgmt_form.find("input[id=id_"+ prefix +"-TOTAL_FORMS]")
+        var total_forms = mgmt_form.find("input[id=id_" + prefix + "-TOTAL_FORMS]")
 
         var new_form = empty_form.clone(true, true);
         new_form.removeAttr("id")
@@ -182,19 +231,19 @@
         var durationWidgets = [];
         var timePickers = [];
         var form_count = total_forms.val();
-        new_form.find("label").each(function() {
+        new_form.find("label").each(function () {
             var forAttribute = $(this).attr('for');
             if (typeof forAttribute !== typeof undefined && forAttribute !== false) {
                 attribute_replace($(this), "for", form_count);
             }
         });
-        new_form.find("div").each(function() {
+        new_form.find("div").each(function () {
             var idAttribute = $(this).attr("id");
             if (typeof idAttribute !== typeof undefined && idAttribute !== false) {
                 attribute_replace($(this), "id", form_count);
             }
         });
-        new_form.find(":input").each(function() {
+        new_form.find(":input").each(function () {
             var idAttribute = $(this).attr("id");
             if (typeof idAttribute !== typeof undefined && idAttribute !== false) {
                 attribute_replace($(this), "id", form_count);
@@ -223,7 +272,7 @@
                 durationInputs.push($(this));
             }
         });
-        new_form.find("script").each(function() {
+        new_form.find("script").each(function () {
             var replaced_script = $(this).html().replace(/__prefix__/g, form_count);
             $(this).html(replaced_script);
         });
@@ -238,12 +287,12 @@
 
         // Duration widget setup only done here as it contains
         // two related fields and must ensure all are cloned and renamed by now
-        durationWidgets.forEach(function(el) {
+        durationWidgets.forEach(function (el) {
             setupDurationWidget(el.attr('input-name'), el.attr('init_attrs'));
             el.data('pre', '');
         });
 
-        timePickers.forEach(function(el) {
+        timePickers.forEach(function (el) {
             var hasAMPM = el.attr('has_am_pm') == 'true';
             setupTimepicker(el, hasAMPM, el.attr('start_time'));
             // Add form-control class to timepicker inputs to fix alignment
@@ -252,8 +301,8 @@
 
         var targets = change_handler_targets();
         if (targets.hasOwnProperty(prefix)) {
-            targets[prefix].forEach( function (el) {
-                var el_name = prefix + "-" +  (total_forms_inc - 1) + "-" + cdeNamePrefix + el;
+            targets[prefix].forEach(function (el) {
+                var el_name = prefix + "-" + (total_forms_inc - 1) + "-" + cdeNamePrefix + el;
                 add_change_handler(el_name);
             });
         }
@@ -262,23 +311,23 @@
 
         // Hook to register further events required when a new multisection is added
         if (add_form_hooks.length > 0) {
-          for (const hook_function of add_form_hooks) {
-            hook_function(form_count);
-          }
+            for (const hook_function of add_form_hooks) {
+                hook_function(form_count);
+            }
         }
 
     }
 
     function delete_form(form_div, prefix) {
         var mgmt_form = $("#mgmt_" + prefix);
-        var total_forms = mgmt_form.find("input[id=id_"+ prefix +"-TOTAL_FORMS]")
+        var total_forms = mgmt_form.find("input[id=id_" + prefix + "-TOTAL_FORMS]")
         var total_forms_dec = parseInt(total_forms.val()) - 1;
         total_forms.attr("value", total_forms_dec);
 
         $(form_div).parent().parent().parent().remove();
     }
 
-    </script>
+</script>
 {% endblock %}
 
 
@@ -286,278 +335,308 @@
 {% endblock %}
 
 {% block sidebar %}
-<!-- Sidebar -->
-	{{ context_launcher | safe }}
-<!-- /#sidebar-wrapper -->
+<div class="rdrf-clinical-sidebar-source">
+    {{ context_launcher | safe }}
+</div>
 {% endblock %}
 
 {% block formbtns %}
-	<div class="btn-group" role="group" aria-label="...">
-		<button id="submit-btn" type="submit" class="btn btn-success" form="main-form" value="Save">
-			<span class="fa fa-save" aria-hidden="true"></span> {% trans "Save" %}
-		</button>
+<div class="rdrf-form-actions" role="group" aria-label="{% trans 'Form actions' %}">
+    <a href="" class="btn btn-danger rdrf-form-actions__cancel">{% trans "Cancel" %}</a>
+    <button id="submit-btn" type="submit" class="btn btn-success rdrf-form-actions__save" form="main-form" value="Save">
+        {% trans "Save and exit" %}
+    </button>
 
-		<a href="" class="btn btn-danger">
-			<span class="fa fa-times" aria-hidden="true"></span> {% trans "Cancel" %}
-		</a>
-
-		{% if show_print_button %}
-			<button type="button" class="btn btn-secondary" onclick="window.print();">
-				<span class="fa fa-print" aria-hidden="true"></span> {% trans "Print" %}
-			</button>
-		{% endif %}
-	</div>
+    {% if show_print_button %}
+    <button type="button" class="btn btn-secondary" onclick="window.print();">
+        <span class="fa fa-print" aria-hidden="true"></span> {% trans "Print" %}
+    </button>
+    {% endif %}
+</div>
 {% endblock %}
 
 {% block content %}
-    {{ block.super }}
+{{ block.super }}
 
-	<a class="previous-form d-none d-md-inline-block" href="{{ previous_form_link }}">
-		<span class="fa fa-chevron-left" aria-hidden="true"></span>
-	</a>
+<nav class="rdrf-module-nav d-print-none" data-rdrf-module-nav aria-label="{% trans 'Modules' %}"></nav>
 
-	<a class="next-form d-none d-md-inline-block" href="{{ next_form_link }}">
-		<span class="fa fa-chevron-right" aria-hidden="true"></span>
-	</a>
+<a class="previous-form d-none d-md-inline-block" href="{{ previous_form_link }}">
+    <span class="fa fa-chevron-left" aria-hidden="true"></span>
+</a>
 
-    <div class="row">
-    <div class="col-md-12">
-        <form class="form-horizontal" id="main-form" novalidate enctype="multipart/form-data" method="post">{% csrf_token %}
-            {% if has_form_progress %}
-                <div class="well">
-                    <p class="text-muted"><i><strong>{% trans "Progress on this page" %}</strong></i></p>
-                    <div id="form-progress mb-2">
-                        <ul class="list-group">
-                            <li class="list-group-item d-flex">
+<a class="next-form d-none d-md-inline-block" href="{{ next_form_link }}">
+    <span class="fa fa-chevron-right" aria-hidden="true"></span>
+</a>
 
-                                <div class="progress flex-grow-1">
-                                    <div class="progress-bar" role="progressbar" aria-valuenow="{{form_progress|floatformat:'0'}}" aria-valuemin="0" aria-valuemax="100" style="width: {{form_progress|floatformat:'0'}}%;">
-                                      {{form_progress|floatformat:"0"}}%
-                                    </div>
-                                </div>
-
-                                <span class="badge bg-secondary" id="show-cdes-btn"><span class="fa fa-sort" aria-hidden="true"></span></span>
-                          </li>
-                        </ul>
-                    </div>
-                    <div id="form-progress-cdes">
-                        </br>
-                        <ul class="list-group">
-                            {% for fpc in form_progress_cdes.items %}
-                                <li class="list-group-item">
-                                    {% if fpc.1 %}
-                                        <img src='{% static 'images/tick.png'%}'>
-                                    {% elif fpc.1 == False %}
-                                        <img src='{% static 'images/cross.png'%}'>
-                                    {% endif %}
-                                    {{fpc.0|translate}}
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </div>
-            {% endif %}
+<div class="row rdrf-clinical-content">
+    <div class="col-lg-3 col-12 d-print-none">
+        <nav class="rdrf-subnav-rail rdrf-clinical-rail" data-rdrf-subnav aria-label="{% trans 'Form sections' %}">
+            {% for s in sections %}
+            <a class="rdrf-subnav-rail__item" href="#section_{{ s }}">{{ display_names|get_display_name:s|translate
+                }}</a>
+            {% endfor %}
+        </nav>
+    </div>
+    <div class="col-lg-9 col-12">
+        {% if has_form_progress %}
+        <div class="rdrf-card rdrf-form-progress-card d-print-none">
+            <div class="rdrf-card__title-row">
+                <span>{% trans "Progress on this page" %}</span>
+                <span class="d-flex align-items-center gap-2">
+                    <span>{{ form_progress|floatformat:"0" }}%</span>
+                    <span class="badge bg-secondary" id="show-cdes-btn" role="button" tabindex="0"
+                        aria-label="{% trans 'Show completion details' %}"><span class="fa fa-sort"
+                            aria-hidden="true"></span></span>
+                </span>
+            </div>
+            <div class="rdrf-progress" role="progressbar" aria-valuenow="{{ form_progress|floatformat:'0' }}"
+                aria-valuemin="0" aria-valuemax="100" aria-label="{% trans 'Progress on this page' %}">
+                <div class="rdrf-progress__bar" style="width: {{ form_progress|floatformat:'0' }}%;"></div>
+            </div>
+            <div id="form-progress-cdes">
+                <ul class="list-group mt-3">
+                    {% for fpc in form_progress_cdes.items %}
+                    <li class="list-group-item">
+                        {% if fpc.1 %}
+                        <img src='{% static ' images/tick.png'%}'>
+                        {% elif fpc.1 == False %}
+                        <img src='{% static ' images/cross.png'%}'>
+                        {% endif %}
+                        {{fpc.0|translate}}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+        <form class="form-horizontal" id="main-form" novalidate enctype="multipart/form-data" method="post">{%
+            csrf_token %}
             <input class="form-control" type="hidden" name="position">
 
             {% for s in sections %}
-                <div class="card collapsible" id="section_{{ s }}">
+            <div class="card collapsible rdrf-card rdrf-section-card" id="section_{{ s }}">
 
-                    <div class="card-header">
-                        {% if request.user.is_superuser and settings.DESIGN_MODE %}
-                            <a target="_blank" href="{% url 'admin:rdrf_section_change' section_ids|get_section_id:s %}"><strong data-name="{{s}}">{{display_names|get_display_name:s|translate}}</strong></a>
-                        {% else %}
-                            <strong data-name="{{s}}">{{display_names|get_display_name:s|translate}}</strong>
-                        {% endif %}
+                <div class="card-header rdrf-card__title-row">
+                    {% if request.user.is_superuser and settings.DESIGN_MODE %}
+                    <a target="_blank" href="{% url 'admin:rdrf_section_change' section_ids|get_section_id:s %}"><strong
+                            data-name="{{s}}">{{display_names|get_display_name:s|translate}}</strong></a>
+                    {% else %}
+                    <strong data-name="{{s}}">{{display_names|get_display_name:s|translate}}</strong>
+                    {% endif %}
 
-                        {% if forms|is_formset:s and not changes_since_version %}
-                            {% with formset=forms|get_form_object:s %}
-                                <a class="btn btn-info btn-xs float-end" onclick="add_form(this, '{{formset.prefix}}');">
-                                    <span class="fa fa-plus" aria-hidden="true"></span> {% trans "Add" %}
-                                </a>
-                            {% endwith %}
-                        {% endif %}
-                    </div>
+                    {% if forms|is_formset:s and not changes_since_version %}
+                    {% with formset=forms|get_form_object:s %}
+                    <a class="btn btn-outline-primary btn-sm float-end" onclick="add_form(this, '{{formset.prefix}}');">
+                        <span class="fa fa-plus" aria-hidden="true"></span> {% trans "Add" %}
+                    </a>
+                    {% endwith %}
+                    {% endif %}
+                </div>
 
-                    <div class="card-body">
-                         {% autoescape off %}
-                            {{ section_headers|lookup:s|translate }}
+                <div class="card-body">
+                    {% if section_headers|lookup:s %}
+                    <div class="rdrf-reference-block">
+                        {% autoescape off %}
+                        {{ section_headers|lookup:s|translate }}
                         {% endautoescape %}
+                    </div>
+                    {% endif %}
+                    <div class="rdrf-capture-block">
                         {% if forms|is_formset:s %}
-                            {% with formset=forms|get_form_object:s %}
-                                <div id="mgmt_{{formset.prefix}}">{{formset.management_form}}</div>
-                                <div style="display: none;" id="empty_{{formset.prefix}}">
+                        {% with formset=forms|get_form_object:s %}
+                        <div id="mgmt_{{formset.prefix}}">{{formset.management_form}}</div>
+                        <div style="display: none;" class="rdrf-multisection-entry" id="empty_{{formset.prefix}}">
+                            <div class="row">
+                                <div class="col-sm-9 offset-sm-3">
+                                    <a class="btn btn-outline-danger btn-sm float-end"
+                                        onclick="delete_form(this, '{{formset.prefix}}')">
+                                        <span class="fa fa-minus" aria-hidden="true"></span> {% trans "Remove" %}
+                                    </a>
+                                </div>
+                            </div>
+                            {% for element in formset.empty_form %}
+                            {% if element.errors %}
+                            <div class="row rdrf-cde-field has-error">
+                                {% else %}
+                                <div class="row rdrf-cde-field">
+                                    {% endif %}
+                                    {% if element.label == "Delete" %}
+                                    {% else %}
+                                    <label for="{{ element.auto_id}}" style="display: {{element.is_hidden|yesno:"
+                                        None,block"}}" class="col-sm-3 col-form-label">
+                                        {{ element.label }}
+                                        {% if element.field.required %}
+                                        <span class="fa fa-asterisk" style="color: red;" aria-hidden="true"></span>
+                                        {% endif %}
+                                        {% if element.field.important %}
+                                        <span class="fa fa-asterisk" style="color: green;" aria-hidden="true"></span>
+                                        {% endif %}
+                                    </label>
+                                    <div class="col-sm-9">
+                                        {{ element|safe }}
+                                        {% if not element.is_hidden %}
+                                        <small class="text-muted">
+                                            <i>{{ element.help_text }}</i>
+                                        </small>
+                                        {% endif %}
+                                        {% if element.errors %}
+                                        <span class="badge bg-danger">{{ element.errors.as_text }}</span>
+                                        {% endif %}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <div id="forms_{{formset.prefix}}">
+                                {% for f in formset.forms %}
+                                {% with index=forloop.counter0 %}
+                                <div class="rdrf-multisection-entry">
+                                    {% if f.was_deleted %}
                                     <div class="row">
-                                        <div class="col-sm-9 offset-sm-3">
-                                            <a class="btn btn-danger btn-xs float-end" onclick="delete_form(this, '{{formset.prefix}}')">
-                                                <span class="fa fa-minus" aria-hidden="true"></span> {% trans "Remove" %}
-                                            </a>
+                                        <div class="col-sm-12">
+                                            <div class="alert alert-danger text-center">{% trans "This form was deleted"
+                                                %}</div>
                                         </div>
                                     </div>
-                                    {% for element in formset.empty_form %}
-                                        {% if element.errors %}
-                                            <div class="row rdrf-cde-field has-error">
+                                    {% endif %}
+                                    {% for element in f %}
+                                    {% if element.errors %}
+                                    <div class="row rdrf-cde-field has-error invisibutton-container">
                                         {% else %}
-                                            <div class="row rdrf-cde-field">
-                                        {% endif %}
+                                        <div class="row rdrf-cde-field invisibutton-container">
+                                            {% endif %}
+                                            {% if changes_since_version and element.label == "Delete" %}
+                                            <div></div>
+                                            {% else %}
+                                            <label for="{{ element.auto_id}}"
+                                                style="display: {{element.is_hidden|yesno:" None,block"}}"
+                                                class="col-sm-3 col-form-label">
                                                 {% if element.label == "Delete" %}
+                                                {% trans "Mark for deletion" %}
                                                 {% else %}
-                                                    <label for="{{ element.auto_id}}" style="display: {{element.is_hidden|yesno:"None,block"}}" class="col-sm-3 col-form-label">
-                                                        {{ element.label }}
-                                                        {% if  element.field.required %}
-                                                            <span class="fa fa-asterisk" style="color: red;" aria-hidden="true"></span>
-                                                        {% endif %}
-                                                        {% if  element.field.important %}
-                                                            <span class="fa fa-asterisk" style="color: green;" aria-hidden="true"></span>
-                                                        {% endif %}
-                                                    </label>
-                                                    <div class="col-sm-9">
-                                                        {{ element|safe }}
-							                            {% if not element.is_hidden %}
-                                                            <small class="text-muted">
-                                                                <i>{{ element.help_text }}</i>
-                                                            </small>
-							                            {% endif %}
-                                                        {% if element.errors %}
-                                                            <span class="badge bg-danger">{{ element.errors.as_text }}</span>
-                                                        {% endif %}
-                                                    </div>
+                                                {% if element.field.cde.code and not CREATE_MODE and have_dynamic_data
+                                                %}
+                                                <a href="{% url 'registry_form_field_history' registry_code form_name patient_id s context_id element.field.cde.code index%}"
+                                                    onclick="rdrf_click_form_field_history(event, this)"
+                                                    class="btn btn-outline-secondary btn-xs invisibutton pull-left"
+                                                    data-bs-toggle="tooltip" title="View previous answers"
+                                                    aria-label="Previous answers">
+                                                    <i class="fa fa-clock-o" aria-hidden="true"></i>
+                                                </a>
+                                                {% endif %}
+                                                {{ element.label }}
+                                                {% if element.field.required %}
+                                                <span class="fa fa-asterisk" style="color: red;"
+                                                    aria-hidden="true"></span>
+                                                {% endif %}
+                                                {% if element.field.important %}
+                                                <span class="fa fa-asterisk" style="color: green;"
+                                                    aria-hidden="true"></span>
+                                                {% endif %}
+                                                {% endif %}
+                                            </label>
+                                            <div class="col-sm-9">
+                                                {% if not f.was_deleted and changes_since_version %}
+                                                <div title="{%trans " Previous value:"
+                                                    %}&nbsp;{{element.field.previous_value|array_item:index|default:_('Was
+                                                    not set previously')}}">
+                                                    {{ element|safe }}
+                                                </div>
+                                                {% else %}
+                                                {{ element|safe }}
+                                                {% endif %}
+                                                {% if not element.is_hidden %}
+                                                <small class="text-muted">
+                                                    <i>{{ element.help_text }}</i>
+                                                </small>
+                                                {% endif %}
+                                                {% if element.errors %}
+                                                <span class="badge bg-danger">{{ element.errors.as_text }}</span>
                                                 {% endif %}
                                             </div>
-                                    {% endfor %}
-                                </div>
-
-                                <div id="forms_{{formset.prefix}}">
-                                {% for f in formset.forms %}
-                                    {% with index=forloop.counter0 %}
-                                    <div>
-                                        {% if f.was_deleted %}
-                                            <div class="row">
-                                                <div class="col-sm-12">
-                                                    <div class="alert alert-danger text-center">{% trans "This form was deleted" %}</div>
-                                                </div>
-                                            </div>
-                                        {% endif %}
-                                        {% for element in f %}
-                                            {% if element.errors %}
-                                                <div class="row rdrf-cde-field has-error invisibutton-container">
-                                            {% else %}
-                                                <div class="row rdrf-cde-field invisibutton-container">
                                             {% endif %}
-                                                    {% if changes_since_version and element.label == "Delete" %}
-                                                        <div></div>
-                                                    {% else %}
-                                                        <label for="{{ element.auto_id}}" style="display: {{element.is_hidden|yesno:"None,block"}}" class="col-sm-3 col-form-label">
-                                                            {% if element.label == "Delete" %}
-                                                                {% trans "Mark for deletion" %}
-                                                            {% else %}
-                                                                {% if element.field.cde.code and not CREATE_MODE and have_dynamic_data %}
-                                                                    <a href="{% url 'registry_form_field_history' registry_code form_name patient_id s context_id element.field.cde.code index%}"
-                                                                    onclick="rdrf_click_form_field_history(event, this)"
-                                                                    class="btn btn-outline-secondary btn-xs invisibutton pull-left"
-                                                                    data-bs-toggle="tooltip" title="View previous answers"
-                                                                    aria-label="Previous answers">
-                                                                    <i class="fa fa-clock-o" aria-hidden="true"></i>
-                                                                    </a>
-                                                                {% endif %}
-                                                                {{ element.label }}
-                                                                {% if element.field.required %}
-                                                                    <span class="fa fa-asterisk" style="color: red;" aria-hidden="true"></span>
-                                                                {% endif %}
-                                                            {% if  element.field.important %}
-                                                                <span class="fa fa-asterisk" style="color: green;" aria-hidden="true"></span>
-                                                            {% endif %}
-                                                            {% endif %}
-                                                        </label>
-                                                        <div class="col-sm-9">
-                                                            {% if not f.was_deleted and changes_since_version %}
-                                                                <div title="{%trans "Previous value:" %}&nbsp;{{element.field.previous_value|array_item:index|default:_('Was not set previously')}}">
-                                                                    {{ element|safe }}
-                                                                </div>
-                                                            {% else %}
-                                                                {{ element|safe }}
-                                                            {% endif %}
-                                                            {% if not element.is_hidden %}
-                                                                <small class="text-muted">
-                                                                    <i>{{ element.help_text }}</i>
-                                                                </small>
-                                                            {% endif %}
-                                                            {% if element.errors %}
-                                                                <span class="badge bg-danger">{{ element.errors.as_text }}</span>
-                                                            {% endif %}
-                                                        </div>
-                                                    {% endif %}
-                                                </div>
+                                        </div>
                                         {% endfor %}
-                                        <p><hr style="border: solid 1px gray"></p>
+                                        <p>
+                                            <hr style="border: solid 1px gray">
+                                        </p>
                                     </div>
                                     {% endwith %}
-                                {% endfor %}
+                                    {% endfor %}
                                 </div>
-                            {% endwith%}
-                        {% else %}
-                            {% for field in forms|get_form_object:s %}
+                                {% endwith%}
+                                {% else %}
+                                {% for field in forms|get_form_object:s %}
                                 <div class="row rdrf-cde-field invisibutton-container">
                                     <label for="{{field.auto_id}}" class="col-sm-3 col-form-label">
                                         {% if field.field.cde.code and not CREATE_MODE and have_dynamic_data %}
                                         <a href="{% url 'registry_form_field_history' registry_code form_name patient_id s context_id field.field.cde.code %}"
-                                           onclick="rdrf_click_form_field_history(event, this)"
-                                           class="btn btn-outline-secondary btn-xs invisibutton pull-left"
-                                           data-bs-toggle="tooltip" title="View previous answers"
-                                           aria-label="Previous answers">
-                                          <i class="fa fa-clock-o" aria-hidden="true"></i>
+                                            onclick="rdrf_click_form_field_history(event, this)"
+                                            class="btn btn-outline-secondary btn-xs invisibutton pull-left"
+                                            data-bs-toggle="tooltip" title="View previous answers"
+                                            aria-label="Previous answers">
+                                            <i class="fa fa-clock-o" aria-hidden="true"></i>
                                         </a>
                                         {% endif %}
                                         {{field.label}}
-                                        {% if  field.field.required %}
-                                            <span class="fa fa-asterisk" style="color: red;" aria-hidden="true"></span>
+                                        {% if field.field.required %}
+                                        <span class="fa fa-asterisk" style="color: red;" aria-hidden="true"></span>
                                         {% endif %}
-                                        {% if  field.field.important %}
-                                           <span class="fa fa-asterisk" style="color: green;" aria-hidden="true"></span>
+                                        {% if field.field.important %}
+                                        <span class="fa fa-asterisk" style="color: green;" aria-hidden="true"></span>
                                         {% endif %}
                                     </label>
                                     <div class="col-sm-9">
                                         {% if changes_since_version %}
-                                        <div title="{% trans "Previous value:" %}{{field.field.previous_value|default_if_none:'Was not set previously'|default:'Was not set previously'}}">
+                                        <div title="{% trans " Previous value:"
+                                            %}{{field.field.previous_value|default_if_none:'Was not set
+                                            previously'|default:'Was not set previously'}}">
                                             {{field|safe}}
                                         </div>
                                         {% else %}
-                                            {{field|safe}}
+                                        {{field|safe}}
                                         {% endif %}
                                         <p class="text-muted"><i>{{field.help_text}}</i></p>
                                         {% if field.errors %}
-                                            <span class="badge bg-danger">{{field.errors.as_text}}</span>
+                                        <span class="badge bg-danger">{{field.errors.as_text}}</span>
                                         {% endif %}
                                     </div>
                                 </div>
-                            {% endfor %}
-                        {% endif %}
+                                {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
-                </div>
-            {% endfor %}
-        </div>
-    </form>
+                    {% endfor %}
+        </form>
+    </div>
+</div>
 
- </div>
-
-    <div id="sessionTimeoutModal" class="modal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-body">
-                    <p data-session-state="expiring">{% trans "Your session will expire in " %}<strong id="sessionExpiryTimeout">X seconds</strong>.</p>
-                    <p data-session-state="expired" class="d-none alert alert-danger">{% trans "Your session has expired." %}</p>
+<div id="sessionTimeoutModal" class="modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                <p data-session-state="expiring">{% trans "Your session will expire in " %}<strong
+                        id="sessionExpiryTimeout">X seconds</strong>.</p>
+                <p data-session-state="expired" class="d-none alert alert-danger">{% trans "Your session has expired."
+                    %}</p>
+            </div>
+            <div class="modal-footer">
+                <div data-session-state="expiring">
+                    <button id="continueWorkingBtn" type="button" class="btn btn-primary" data-bs-dismiss="modal">{%
+                        trans "Continue working" %}</button>
+                    <button id="logoutBtn" type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans
+                        "Logout" %}</button>
                 </div>
-                <div class="modal-footer">
-                    <div data-session-state="expiring">
-                        <button id="continueWorkingBtn" type="button" class="btn btn-primary" data-bs-dismiss="modal">{% trans "Continue working" %}</button>
-                        <button id="logoutBtn" type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Logout" %}</button>
-                    </div>
-                    <div data-session-state="expired" class="d-none">
-                        <button id="goToLoginBtn" type="button" class="btn btn-primary" data-bs-dismiss="modal">{% trans "Go to Login Page" %}</button>
-                    </div>
+                <div data-session-state="expired" class="d-none">
+                    <button id="goToLoginBtn" type="button" class="btn btn-primary" data-bs-dismiss="modal">{% trans "Go
+                        to Login Page" %}</button>
                 </div>
             </div>
         </div>
     </div>
+</div>
 <script type="text/javascript" src="{% static 'js/session_timeout_manager.js' %}"></script>
 <script>
 
@@ -570,13 +649,13 @@
 
         // Credit to https://www.joshwcomeau.com/snippets/javascript/debounce/
         const debounce = (callback, wait) => {
-          let timeoutId = null;
-          return (...args) => {
-            window.clearTimeout(timeoutId);
-            timeoutId = window.setTimeout(() => {
-              callback(...args);
-            }, wait);
-          };
+            let timeoutId = null;
+            return (...args) => {
+                window.clearTimeout(timeoutId);
+                timeoutId = window.setTimeout(() => {
+                    callback(...args);
+                }, wait);
+            };
         }
 
         const sessionNotifier = ModalSessionNotifier({
@@ -587,53 +666,53 @@
         const sessionManager = SessionManager(sessionNotifier, {
             session: {
                 maxAge: {{ SESSION_COOKIE_AGE }},
-                warningLeadTime: {{ SESSION_EXPIRY_WARNING_LEAD_TIME }},
-                refreshLeadTime: {{ SESSION_REFRESH_LEAD_TIME }}
+        warningLeadTime: {{ SESSION_EXPIRY_WARNING_LEAD_TIME }},
+        refreshLeadTime: {{ SESSION_REFRESH_LEAD_TIME }}
             },
-            urls: {
-                sessionRefresh: "{% url 'session_refresh' %}",
-                login: `{%  url 'two_factor:login' %}?next=${(window.location.pathname)}`,
-                logout: `{% url 'logout' %}?next=${(window.location.pathname)}`
-            }
+        urls: {
+        sessionRefresh: "{% url 'session_refresh' %}",
+        login: `{%  url 'two_factor:login' %}?next=${(window.location.pathname)}`,
+        logout: `{% url 'logout' %}?next=${(window.location.pathname)}`
+    }
         });
 
-        $("#continueWorkingBtn").on("click", function() {
-            sessionManager.restart();
-        });
+    $("#continueWorkingBtn").on("click", function () {
+        sessionManager.restart();
+    });
 
-        $("#logoutBtn").on("click", function() {
-            sessionManager.logout();
-        });
+    $("#logoutBtn").on("click", function () {
+        sessionManager.logout();
+    });
 
-        $("#goToLoginBtn").on("click", function() {
-            sessionManager.goToLoginPage();
-        });
+    $("#goToLoginBtn").on("click", function () {
+        sessionManager.goToLoginPage();
+    });
 
-        const handleFormChange = debounce((event) => {
-            sessionManager.restart();
-        }, 1000);
+    const handleFormChange = debounce((event) => {
+        sessionManager.restart();
+    }, 1000);
 
-        $("#main-form").on("change", handleFormChange);
-        $("#main-form :text, #main-form textarea").on("keypress", handleFormChange);
+    $("#main-form").on("change", handleFormChange);
+    $("#main-form :text, #main-form textarea").on("keypress", handleFormChange);
 
 
     });
 </script>
 
 {% if form.errors %}
-    {% for field in form %}
-        {% for error in field.errors %}
-            <div class="alert alert-danger">
-                <strong>{{ error|escape }}</strong>
-            </div>
-        {% endfor %}
-    {% endfor %}
+{% for field in form %}
+{% for error in field.errors %}
+<div class="alert alert-danger">
+    <strong>{{ error|escape }}</strong>
+</div>
+{% endfor %}
+{% endfor %}
 
-    {% for error in form.non_field_errors %}
-        <div class="alert alert-danger">
-            <strong>{{ error|escape }}</strong>
-        </div>
-    {% endfor %}
+{% for error in form.non_field_errors %}
+<div class="alert alert-danger">
+    <strong>{{ error|escape }}</strong>
+</div>
+{% endfor %}
 {% endif %}
 
 {% endblock %}

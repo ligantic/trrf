@@ -6,20 +6,34 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.dateparse import parse_datetime
-from django.utils.formats import date_format
+from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.views import View
-from registry.patients.models import ConsentValue, ParentGuardian, Patient
+from registry.patients.models import (
+    ConsentValue,
+    LongitudinalFollowupEntry,
+    LongitudinalFollowupQueueState,
+    ParentGuardian,
+    Patient,
+)
 from report.utils import get_graphql_result_value
 
 from rdrf.forms.progress.form_progress import FormProgress
+from rdrf.helpers.dashboard_status import cadence_label, module_status
+from rdrf.helpers.registry_features import RegistryFeatures
 from rdrf.helpers.utils import consent_status_for_patient
 from rdrf.models.definition.models import (
     ConsentQuestion,
     ContextFormGroup,
+    LongitudinalFollowup,
     RDRFContext,
     Registry,
     RegistryDashboard,
+)
+from rdrf.models.pro_instruments import (
+    PROInstrument,
+    PROInstrumentAdministration,
+    PROInstrumentStatus,
 )
 from rdrf.patients.query_data import query_patient
 
@@ -100,6 +114,24 @@ class ParentDashboard(object):
             return None
 
         form_progress = FormProgress(self.registry)
+        multi_context_group_ids = [
+            cfg.id for cfg in self._contexts if cfg.is_multiple
+        ]
+        followups = {
+            followup.context_form_group_id: followup
+            for followup in LongitudinalFollowup.objects.filter(
+                context_form_group_id__in=multi_context_group_ids
+            )
+        }
+        pending_entries = {}
+        for entry in LongitudinalFollowupEntry.objects.filter(
+            patient=self.patient,
+            state=LongitudinalFollowupQueueState.PENDING,
+            longitudinal_followup__context_form_group_id__in=multi_context_group_ids,
+        ).select_related("longitudinal_followup").order_by("send_at"):
+            pending_entries.setdefault(
+                entry.longitudinal_followup.context_form_group_id, entry
+            )
 
         modules_progress = defaultdict(dict)  # {'fixed': {}, 'multi': {}}
 
@@ -126,32 +158,100 @@ class ParentDashboard(object):
                     progress_dict["progress"] = form_progress.get_form_progress(
                         form, self.patient, context
                     )
+                    progress_dict["status"] = module_status(
+                        progress=progress_dict["progress"]
+                    )
                 elif cfg.is_multiple:
                     key = "multi"
                     last_completed = None
+                    progress = form_progress.get_form_progress(
+                        form, self.patient, context
+                    )
 
                     if context:
                         form_timestamp = self.patient.get_form_timestamp(
                             form, context
                         )
                         if form_timestamp:
-                            last_completed = date_format(
-                                parse_datetime(
-                                    self.patient.get_form_timestamp(
-                                        form, context
-                                    )
-                                ),
-                                format="d-m-Y",
-                            )
+                            last_completed = parse_datetime(form_timestamp)
 
                     progress_dict["link"] = cfg.get_add_action(self.patient)[0]
-                    progress_dict["last_completed"] = last_completed or None
+                    followup = followups.get(cfg.id)
+                    pending_entry = pending_entries.get(cfg.id)
+                    next_due = (
+                        pending_entry.send_at
+                        if pending_entry
+                        else (
+                            last_completed + followup.frequency
+                            if last_completed and followup
+                            else None
+                        )
+                    )
+                    progress_dict.update(
+                        {
+                            "progress": progress,
+                            "last_completed": last_completed,
+                            "next_due": next_due,
+                            "cadence": cadence_label(
+                                followup.frequency if followup else None
+                            ),
+                            "status": module_status(
+                                progress=progress,
+                                last_completed=last_completed,
+                                next_due=next_due,
+                                today=(
+                                    timezone.localtime().date()
+                                    if timezone.is_aware(timezone.now())
+                                    else timezone.now().date()
+                                ),
+                            ),
+                        }
+                    )
 
                 forms_progress.update({form: progress_dict})
             if key:
                 modules_progress[key].update({cfg: forms_progress})
 
         return modules_progress
+
+    def _get_pro_instruments(self):
+        if not self.registry.has_feature(RegistryFeatures.PRO_INSTRUMENTS):
+            return []
+
+        administrations = {}
+        for administration in PROInstrumentAdministration.objects.filter(
+            instrument__registry=self.registry,
+            patient_id=self.patient.pk,
+        ).order_by("-updated_at"):
+            administrations.setdefault(
+                administration.instrument_id, administration)
+
+        instruments = []
+        for instrument in PROInstrument.objects.filter(registry=self.registry).order_by(
+            "display_name"
+        ):
+            administration = administrations.get(instrument.pk)
+            status = (
+                administration.status
+                if administration
+                else PROInstrumentStatus.NOT_STARTED
+            )
+            instruments.append(
+                {
+                    "name": instrument.display_name,
+                    "url": reverse(
+                        "pro_instrument_shell",
+                        args=[
+                            self.registry.code,
+                            instrument.slug,
+                            self.patient.pk,
+                        ],
+                    ),
+                    "status_label": PROInstrumentStatus(status).label,
+                    "status_css": status.replace("_", "-"),
+                }
+            )
+        return instruments
 
     def _get_cde_data(self, cfg, form, section, cde):
         context = self._get_patient_context(cfg)
@@ -246,6 +346,7 @@ class ParentDashboard(object):
                 "consent": self._patient_consent_summary(),
                 "module_progress": self._get_module_progress(),
             },
+            "pro_instruments": self._get_pro_instruments(),
             "widgets": self._get_widget_summary(),
         }
 
@@ -309,6 +410,10 @@ class DashboardListView(BaseDashboardView):
 
 class ParentDashboardView(BaseDashboardView):
     @staticmethod
+    def _session_key(registry_code):
+        return f"selected_patient_{registry_code}"
+
+    @staticmethod
     def _get_patient(user, patients, requested_patient_id):
         if requested_patient_id:
             patient = get_object_or_404(Patient, pk=requested_patient_id)
@@ -321,8 +426,22 @@ class ParentDashboardView(BaseDashboardView):
             return patients[0]
         return None
 
+    @staticmethod
+    def _get_session_patient(patients, session_patient_id):
+        if session_patient_id is None:
+            return None
+        return next(
+            (
+                patient
+                for patient in patients
+                if patient.id == session_patient_id
+            ),
+            None,
+        )
+
     def get(self, request, registry_code):
-        dashboard = get_object_or_404(RegistryDashboard, registry=self.registry)
+        dashboard = get_object_or_404(
+            RegistryDashboard, registry=self.registry)
 
         patients = [
             patient
@@ -330,8 +449,21 @@ class ParentDashboardView(BaseDashboardView):
             if self.registry in patient.rdrf_registry.all()
         ]
 
+        session_key = self._session_key(self.registry.code)
         patient_id = request.GET.get("patient_id")
-        patient = self._get_patient(request.user, patients, patient_id)
+
+        if patient_id:
+            # Explicit switch: 404 if the id doesn't exist, 403 if it exists
+            # but isn't linked to this parent. Persist the selection.
+            patient = self._get_patient(request.user, patients, patient_id)
+            if patient:
+                request.session[session_key] = patient.id
+        else:
+            # Session-stored selection, only honoured if still authorised;
+            # otherwise silently fall back to the first linked participant.
+            patient = self._get_session_patient(
+                patients, request.session.get(session_key)
+            ) or self._get_patient(request.user, patients, None)
 
         context = {
             "parent": self.parent,

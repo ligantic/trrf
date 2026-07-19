@@ -1,0 +1,203 @@
+/* Global RDRF chrome overrides. Requires rdrf-tokens.css and Bootstrap 5.1. */
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-text-primary);
+}
+
+a {
+  color: var(--color-accent);
+}
+
+a:hover {
+  color: var(--color-accent-strong);
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.rdrf-breadcrumb {
+  align-items: center;
+  color: var(--color-text-secondary);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: .875rem;
+  font-weight: 500;
+  gap: var(--space-1);
+  line-height: 1.214;
+  margin-bottom: var(--space-3);
+}
+
+.rdrf-breadcrumb a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.rdrf-breadcrumb a:hover,
+.rdrf-breadcrumb a:focus-visible {
+  color: var(--color-accent-strong);
+  text-decoration: underline;
+}
+
+.rdrf-breadcrumb__separator {
+  color: var(--color-border-default);
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.rdrf-breadcrumb [aria-current="page"] {
+  color: var(--color-text-heading);
+}
+
+.rdrf-navbar {
+  background-color: var(--color-surface-primary);
+  border-bottom: 1px solid var(--color-border-subtle);
+  box-shadow: var(--elevation-base);
+  min-height: 4.625rem;
+  padding: var(--space-2) var(--space-8);
+}
+
+.rdrf-navbar__inner {
+  min-height: 3.25rem;
+  padding: 0;
+}
+
+.rdrf-navbar .navbar-brand {
+  align-items: center;
+  color: var(--color-accent-strong);
+  display: inline-flex;
+  font-size: .875rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.rdrf-navbar .project_logo {
+  height: 3.25rem;
+  max-width: 11.75rem;
+  object-fit: contain;
+  width: auto;
+}
+
+.rdrf-navbar .navbar-nav {
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.rdrf-navbar .navbar-nav .nav-link {
+  color: var(--color-accent-strong);
+  font-size: .875rem;
+  font-weight: 500;
+  padding: var(--space-2) 0;
+}
+
+@media (max-width: 767.98px) {
+  .rdrf-navbar {
+    min-height: auto;
+    padding: var(--space-2) var(--space-4);
+  }
+
+  .rdrf-navbar .navbar-nav {
+    align-items: stretch;
+    gap: 0;
+  }
+}
+
+.navbar:not(.rdrf-navbar) {
+  background-color: var(--color-surface-primary);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.navbar-light .navbar-brand,
+.navbar-light .navbar-nav .nav-link,
+.navbar-light .navbar-toggler,
+.navbar-light .navbar-toggler-icon {
+  color: var(--color-text-primary);
+}
+
+.navbar-light .navbar-nav .nav-link:hover,
+.navbar-light .navbar-nav .nav-link:focus,
+.navbar-light .navbar-nav .nav-link.active,
+.navbar-light .navbar-nav .show > .nav-link {
+  color: var(--color-accent);
+}
+
+.navbar-light .navbar-toggler {
+  border-color: var(--color-border-default);
+}
+
+.navbar .dropdown-menu {
+  background-color: var(--color-surface-primary);
+  border-color: var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--elevation-md);
+}
+
+.navbar .dropdown-item {
+  color: var(--color-text-primary);
+}
+
+.navbar .dropdown-item:hover,
+.navbar .dropdown-item:focus,
+.navbar .dropdown-item.active,
+.navbar .dropdown-item:active {
+  background-color: var(--color-accent-bg-subtle);
+  color: var(--color-accent);
+}
+
+.btn-primary,
+.btn-success {
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-surface-primary);
+}
+
+.btn-primary:hover,
+.btn-success:hover {
+  background-color: var(--color-accent-strong);
+  border-color: var(--color-accent-strong);
+  color: var(--color-surface-primary);
+}
+
+.btn-primary:focus,
+.btn-success:focus {
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 0.25rem var(--color-focus-ring);
+}
+
+.btn-primary:active,
+.btn-primary.active,
+.btn-success:active,
+.btn-success.active {
+  background-color: var(--color-accent-strong);
+  border-color: var(--color-accent-strong);
+}
+
+/* Anchor danger buttons are legacy Cancel links; button.btn-danger remains red for destructive submits. */
+a.btn-danger {
+  background-color: var(--color-surface-primary);
+  border-color: var(--color-border-default);
+  color: var(--color-text-primary);
+}
+
+a.btn-danger:hover,
+a.btn-danger:focus {
+  background-color: var(--color-surface-reference);
+  border-color: var(--color-text-secondary);
+  color: var(--color-text-primary);
+}
+
+a.btn-danger:focus {
+  box-shadow: 0 0 0 0.25rem var(--color-focus-ring);
+}
+
+.card {
+  border-color: var(--color-border-subtle);
+  border-radius: var(--radius-md);
+}

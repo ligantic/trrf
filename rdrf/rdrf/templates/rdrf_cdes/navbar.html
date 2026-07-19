@@ -4,8 +4,8 @@
 {% load project_title_link %}
 {% load i18n %}
 
-<nav class="navbar navbar-expand-md navbar-dark bg-dark">
-  <div class="container-fluid">
+<nav class="navbar navbar-expand-md navbar-light rdrf-navbar" aria-label="{% trans 'Primary navigation' %}">
+  <div class="container-fluid rdrf-navbar__inner">
       {% if show_sidebar_button %}
           <button type="button" class="btn" id="sidebar-button" aria-label="Toggle patient menu">
               <span class="fa fa-chevron-right navbar-left d-lg-none"></span>

@@ -31,6 +31,10 @@
     <link rel="stylesheet" type="text/css" href="{% static 'vendor/bootstrap-slider-11.0.2/css/bootstrap-slider.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/rdrf.css' %}" media="all">
     <link rel="stylesheet" type="text/css" href="{% static 'vendor/timepicki-2.0.1/css/timepicki.css' %}">
+    {# RDRF UX uplift theme (planning/THEME.md): tokens first, then components, then chrome #}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/rdrf-tokens.css' %}" media="all">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/rdrf-components.css' %}" media="all">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/rdrf-chrome.css' %}" media="all">
 
     {% include "localisation/in_context.html" %}
 

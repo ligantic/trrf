@@ -1,0 +1,112 @@
+/* Shared account settings layouts derived from RDRF settings frames. */
+.rdrf-settings-page {
+  margin: 0 auto;
+  max-width: 62rem;
+  padding: var(--space-6) var(--space-4) var(--space-8);
+}
+
+.rdrf-settings-header {
+  border-bottom: 1px solid var(--color-border-subtle);
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-5);
+}
+
+.rdrf-settings-breadcrumb {
+  margin-bottom: var(--space-3);
+}
+
+.rdrf-settings-header h1 {
+  color: var(--color-text-heading);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.rdrf-settings-header p {
+  color: var(--color-text-primary);
+  font-size: .875rem;
+  margin: var(--space-1) 0 0;
+}
+
+.rdrf-settings-form,
+.rdrf-settings-panel {
+  background-color: var(--color-surface-primary);
+}
+
+.rdrf-settings-field {
+  align-items: flex-start;
+  border-bottom: 1px solid var(--color-border-subtle);
+  margin: 0;
+  padding: var(--space-4) 0;
+}
+
+.rdrf-settings-field > label,
+.rdrf-settings-field > span:first-child {
+  color: var(--color-text-heading);
+  font-size: .875rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+.rdrf-settings-field .form-control,
+.rdrf-settings-field .form-select {
+  border-color: var(--color-border-default);
+  border-radius: var(--radius-sm);
+  box-shadow: none;
+}
+
+.rdrf-settings-field .form-control:focus,
+.rdrf-settings-field .form-select:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+.rdrf-settings-actions {
+  display: flex;
+  gap: var(--space-5);
+  justify-content: flex-end;
+  padding-top: var(--space-5);
+}
+
+.rdrf-settings-actions .btn {
+  border-radius: var(--radius-md);
+  box-shadow: var(--elevation-xs);
+  font-size: .875rem;
+  font-weight: 600;
+  padding: .5rem .875rem;
+}
+
+.rdrf-settings-panel {
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--elevation-xs);
+  margin-bottom: var(--space-5);
+  padding: var(--space-5);
+}
+
+.rdrf-settings-panel .alert {
+  background-color: var(--color-surface-reference);
+  border-color: var(--color-border-subtle);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+@media (max-width: 575.98px) {
+  .rdrf-settings-page {
+    padding: var(--space-5) var(--space-3);
+  }
+
+  .rdrf-settings-field > label,
+  .rdrf-settings-field > span:first-child {
+    margin-bottom: var(--space-2);
+  }
+
+  .rdrf-settings-actions {
+    justify-content: stretch;
+  }
+
+  .rdrf-settings-actions .btn {
+    flex: 1 1 0;
+  }
+}

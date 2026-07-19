@@ -1,0 +1,68 @@
+{% extends "rdrf_cdes/base.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block extrahead %}
+    <script type="text/javascript" src="{% static 'js/rdrf-subnav.js' %}"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/rdrf-pro.css' %}">
+{% endblock %}
+
+{% block content %}
+    <main class="rdrf-pro-page">
+    <header class="rdrf-pro-header">
+        <nav class="rdrf-breadcrumb rdrf-pro-breadcrumb" aria-label="{% trans 'Breadcrumb' %}">
+            <a href="{% url 'parent_dashboard' instrument.registry.code %}">{% trans 'Dashboard' %}</a>
+            <span class="rdrf-breadcrumb__separator" aria-hidden="true">›</span>
+            <a href="{{ shell_url }}">{{ instrument.display_name }}</a>
+            <span class="rdrf-breadcrumb__separator" aria-hidden="true">›</span>
+            <span aria-current="page">{{ section.display_name }}</span>
+        </nav>
+        <h1>{{ instrument.display_name }}</h1>
+        <p class="rdrf-participant-label">{{ patient }}</p>
+    </header>
+
+    <div class="rdrf-pro-layout">
+        <div>
+            <nav class="rdrf-subnav-rail" data-rdrf-subnav aria-label="{% trans 'Instrument parts' %}">
+                {% for part in parts %}
+                    <a class="rdrf-subnav-rail__item{% if part.current %} rdrf-subnav-rail__item--active{% endif %}"
+                       href="{{ part.url }}"
+                       {% if part.current %}aria-current="page"{% endif %}>
+                        {{ part.section.display_name }}
+                        <span class="rdrf-badge {{ part.status_css }}">{{ part.status_label }}</span>
+                    </a>
+                {% endfor %}
+            </nav>
+        </div>
+        <div>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                <div class="rdrf-card rdrf-section-card" id="section_{{ section.code }}">
+                    <div class="rdrf-card__title-row">
+                        <h2 class="h5">{{ section.display_name }}</h2>
+                    </div>
+                    {% if section.header %}
+                        <div class="rdrf-reference-block">{{ section.header|safe }}</div>
+                    {% endif %}
+                    <div class="rdrf-capture-block">
+                        {% for field in form %}
+                            <div class="mb-3">
+                                <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <div class="text-danger">{{ field.errors }}</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="rdrf-card__actions my-3">
+                    <button type="submit" name="save_continue" value="1" class="btn btn-primary">{% trans "Save and continue" %} &rarr;</button>
+                    <button type="submit" name="save_exit" value="1" class="btn btn-outline-secondary">{% trans "Save and exit" %}</button>
+                    <a href="{{ shell_url }}" class="btn btn-link">{% trans "Back to overview" %}</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    </main>
+{% endblock %}
