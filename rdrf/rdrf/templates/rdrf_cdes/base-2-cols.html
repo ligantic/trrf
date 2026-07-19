@@ -17,18 +17,21 @@
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 {% with registry_code|get_most_relevant_registry:request.user as relevant_registry %}
-<html {% if LANGUAGE_BIDI %}dir="rtl"{% endif %} xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" translate="{{ relevant_registry|get_translate_value }}">
+<html {% if LANGUAGE_BIDI %}dir="rtl" {% endif %} xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"
+    translate="{{ relevant_registry|get_translate_value }}">
 {% endwith %}
 
 <head>
-  <title>{% project_title %}</title>
+    <title>{% project_title %}</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="stylesheet" href="{% static 'vendor/bootstrap-5.1.0/css/' %}{% if LANGUAGE_BIDI %}bootstrap.rtl.min.css{% else %}bootstrap.min.css{% endif %}">
+    <link rel="stylesheet"
+        href="{% static 'vendor/bootstrap-5.1.0/css/' %}{% if LANGUAGE_BIDI %}bootstrap.rtl.min.css{% else %}bootstrap.min.css{% endif %}">
     <link rel="stylesheet" href="{% static 'css/bootstrap-overrides.css' %}">
     <link rel="stylesheet" href="{% static 'css/vendor/font-awesome.min.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'vendor/bootstrap-slider-11.0.2/css/bootstrap-slider.min.css' %}">
+    <link rel="stylesheet" type="text/css"
+        href="{% static 'vendor/bootstrap-slider-11.0.2/css/bootstrap-slider.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/rdrf.css' %}" media="all">
     <link rel="stylesheet" type="text/css" href="{% static 'vendor/timepicki-2.0.1/css/timepicki.css' %}">
     {# RDRF UX uplift theme (planning/THEME.md): tokens first, then components, then chrome #}
@@ -52,7 +55,8 @@
     {% endif %}
 
     <script type="text/javascript" src="{% static 'vendor/bootstrap-5.1.0/js/bootstrap.bundle.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'vendor/bootstrap-slider-11.0.2/js/bootstrap-slider.min.js' %}"></script>
+    <script type="text/javascript"
+        src="{% static 'vendor/bootstrap-slider-11.0.2/js/bootstrap-slider.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/vendor/underscore-1.13.1.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/calculated_field_plugin.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/rpc_module.js' %}"></script>
@@ -71,35 +75,36 @@
 
     <script>
         $(document).ready(function () {
-            var hasErrors = {{ error_messages|length }} > 0;
+            var hasErrors = {{ error_messages| length
+        }} > 0;
 
-            adjustContentTopPadding();
+        adjustContentTopPadding();
 
-            hide_empty_menu();
+        hide_empty_menu();
 
-            CollapsingPanels.setUp();
-            if (hasErrors) {
-                CollapsingPanels.expandAll();
-            } else {
-                CollapsingPanels.expandFirst();
+        CollapsingPanels.setUp();
+        if (hasErrors) {
+            CollapsingPanels.expandAll();
+        } else {
+            CollapsingPanels.expandFirst();
+        }
+
+        function toggleSidebar() {
+            $('#sidebar').toggleClass('sidebar-hide');
+            $('#sidebar-button').toggleClass('sidebar-active');
+            $('.blur').toggle();
+            var selectedLink = $('.selected-link');
+            if (selectedLink.length) {
+                selectedLink.parents('.card')[0].scrollIntoView();
             }
-
-            function toggleSidebar() {
-                $('#sidebar').toggleClass('sidebar-hide');
-                $('#sidebar-button').toggleClass('sidebar-active');
-                $('.blur').toggle();
-                var selectedLink = $('.selected-link');
-                if (selectedLink.length) {
-                    selectedLink.parents('.card')[0].scrollIntoView();
-                }
-            }
-            $("#sidebar-button").click(toggleSidebar);
-            $(".blur").click(toggleSidebar);
+        }
+        $("#sidebar-button").click(toggleSidebar);
+        $(".blur").click(toggleSidebar);
         });
     </script>
 
     {% if HIGHLIGHT_FORM_CHANGES_ENABLED %}
-        <script type="text/javascript" src="{% static 'js/highlight_changes.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/highlight_changes.js' %}"></script>
     {% endif %}
 
 </head>
@@ -107,25 +112,25 @@
 <body>
     <div class="blur"></div>
     <div id="wrap">
-    <div class="fixed-top">
-        {% include "rdrf_cdes/banner/_show_banner.html" %}
-        {% include "rdrf_cdes/navbar.html" with show_sidebar_button=True %}
-    </div>
+        <div class="fixed-top">
+            {% include "rdrf_cdes/banner/_show_banner.html" %}
+            {% include "rdrf_cdes/navbar.html" with show_sidebar_button=True %}
+        </div>
 
         {% if location %}
         <div class="banner">
             <!-- base 2 cols banner -->
             <div class="container-fluid my-2">
-                            <div class="row justify-content-end">
-                                <div class="col-xxl-5 col-md-6 d-print-none d-flex justify-content-md-end">
-                  {%if not changes_since_version %}
-                  <div class="btn-group align-self-md-center" role="group">
-                      {% block formbtns %}
-                      {% endblock %}
-                  </div>
-                  {% endif %}
+                <div class="row justify-content-end">
+                    <div class="col-xxl-5 col-md-6 d-print-none d-flex justify-content-md-end">
+                        {%if not changes_since_version %}
+                        <div class="btn-group align-self-md-center" role="group">
+                            {% block formbtns %}
+                            {% endblock %}
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
-              </div>
             </div>
         </div>
         {% endif %}
@@ -158,46 +163,50 @@
 
                     {% include 'rdrf_cdes/form_modal.html' %}
                     {% if header %}
-                        <div class="card card-info trrf-page-header">
-                            <div class="card-body">
-                                {% autoescape off %}
-                                    {{ header }}
-                                {% endautoescape %}
-                                {% if has_previous_data %}
-                                    <div class="btn-group">
-                                        <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            {% trans "View Changes Since" %}
-                                            <span class="caret"></span>
-                                        </button>
-                                        <ul class="dropdown-menu">
-                                            {% for version in previous_versions %}
-                                               <li><a class="dropdown-item" href="?changes_since_version={{version.id}}">{{version.name}}</a></li>
-                                            {% endfor %}
-                                        </ul>
-                                    </div>
-                                    {% if changes_since_version %}
-                                        <button type="button" id="exit-compare-mode-btn" class="btn btn-outline-secondary" >{% trans "Exit compare mode" %}</button>
-                                        <div class="alert alert-info" style="margin-top: 12px; margin-bottom: 0px">
-                                            <h4>{% trans "Compare mode" %}</h4>
-                                            <p>
-                                            {% blocktrans trimmed with since_version=selected_version_name %}
-                                            Displaying fields that changed since <strong>{{ since_version }}</strong>.
-                                            Please hover over the fields to see their previous value.
-                                            {% endblocktrans %}
-                                            </p>
-                                        </div>
-                                    {% endif %}
-                                {% endif %}
-                                {% if delete_form_url and not changes_since_version and is_multi_context %}
-                                    <div class="btn-group" role="group" aria-label="...">
-                                        <a class="btn btn-danger" href="" data-bs-toggle="modal" data-bs-target="#form_modal" target="_blank">
-                                            <span class="fa fa-times" aria-hidden="true"></span>
-                                            {% trans "Delete " %}
-                                        </a>
-                                    </div>
-                                {% endif %}
+                    <div class="card card-info trrf-page-header">
+                        <div class="card-body">
+                            {% autoescape off %}
+                            {{ header }}
+                            {% endautoescape %}
+                            {% if has_previous_data %}
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown"
+                                    aria-haspopup="true" aria-expanded="false">
+                                    {% trans "View Changes Since" %}
+                                    <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    {% for version in previous_versions %}
+                                    <li><a class="dropdown-item"
+                                            href="?changes_since_version={{version.id}}">{{version.name}}</a></li>
+                                    {% endfor %}
+                                </ul>
                             </div>
+                            {% if changes_since_version %}
+                            <button type="button" id="exit-compare-mode-btn" class="btn btn-outline-secondary">{% trans
+                                "Exit compare mode" %}</button>
+                            <div class="alert alert-info" style="margin-top: 12px; margin-bottom: 0px">
+                                <h4>{% trans "Compare mode" %}</h4>
+                                <p>
+                                    {% blocktrans trimmed with since_version=selected_version_name %}
+                                    Displaying fields that changed since <strong>{{ since_version }}</strong>.
+                                    Please hover over the fields to see their previous value.
+                                    {% endblocktrans %}
+                                </p>
+                            </div>
+                            {% endif %}
+                            {% endif %}
+                            {% if delete_form_url and not changes_since_version and is_multi_context %}
+                            <div class="btn-group" role="group" aria-label="...">
+                                <a class="btn btn-danger" href="" data-bs-toggle="modal" data-bs-target="#form_modal"
+                                    target="_blank">
+                                    <span class="fa fa-times" aria-hidden="true"></span>
+                                    {% trans "Delete " %}
+                                </a>
+                            </div>
+                            {% endif %}
                         </div>
+                    </div>
                     {% endif %}
                     {% endblock%}
                 </div>
@@ -209,9 +218,9 @@
     </div>
 
     <script type="text/javascript">
-        $(document).ready(function() {
-            $('#exit-compare-mode-btn').click(function() {
-                window.location.href=window.location.pathname;
+        $(document).ready(function () {
+            $('#exit-compare-mode-btn').click(function () {
+                window.location.href = window.location.pathname;
             });
         })
     </script>
