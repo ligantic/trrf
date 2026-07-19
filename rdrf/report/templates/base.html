@@ -35,8 +35,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/rdrf-chrome.css' %}" media="all">
     {% project_stylesheet as PSS %}
     {% if PSS %}
-    {% static "" as baseUrl %}
-    <link rel="stylesheet" type="text/css" href="{{ baseUrl }}/{{ PSS }}" media="all">
+    <link rel="stylesheet" type="text/css" href="{% static PSS %}" media="all">
     {% endif %}
     <script type="text/javascript" src="{% static 'js/rpc_module.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/rdrf.js' %}"></script>

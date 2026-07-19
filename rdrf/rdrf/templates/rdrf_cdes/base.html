@@ -42,8 +42,7 @@
 
     {% project_stylesheet as PSS %}
     {% if PSS %}
-    {% static "" as baseUrl %}
-    <link rel="stylesheet" type="text/css" href="{{ baseUrl }}/{{ PSS }}" media="all">
+    <link rel="stylesheet" type="text/css" href="{% static PSS %}" media="all">
     {% endif %}
 
     <script src="{% static 'js/vendor/jquery-3.5.1.min.js' %}"></script>
