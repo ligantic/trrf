@@ -15,7 +15,7 @@ DEFAULT_FROM_EMAIL=test@xxx.local
 
 FILE_STORAGE=FS
 
-TRRF_SITE_DOMAIN=localhost:8000
+TRRF_SITE_DOMAIN=localhost:18000
 TRRF_SITE_NAME="TRRF Local DEV"
 
 # https://developers.google.com/recaptcha/docs/faq

@@ -5,11 +5,14 @@ services:
       DEBUGPY: "1"
       DEBUGPY_PORT: "5678"
       DEBUGPY_WAIT_FOR_CLIENT: "0"
-      RUNSERVER_OPTS: "runserver 0.0.0.0:8000 --settings=rdrf.settings --noreload"
+      DJANGO_SETTINGS_MODULE: "angelman.settings"
+      PYTHONPATH: "/app/rdrf:/app/angelman"
+      RUNSERVER_OPTS: "runserver 0.0.0.0:8000 --settings=angelman.settings --noreload"
       SKIP_DJANGO_FIXTURES: "1"
-      TRRF_SITE_DOMAIN: "localhost:8000"
+      TRRF_SITE_DOMAIN: "localhost:18000"
     ports:
       - "5678:5678"
     volumes:
       - "${HOST_WORKSPACE_FOLDER:?HOST_WORKSPACE_FOLDER is required}/rdrf:/app"
+      - "${HOST_WORKSPACE_FOLDER:?HOST_WORKSPACE_FOLDER is required}/angelman:/app/angelman"
       - "${HOST_WORKSPACE_FOLDER:?HOST_WORKSPACE_FOLDER is required}/rdrf/data/dev:/data"

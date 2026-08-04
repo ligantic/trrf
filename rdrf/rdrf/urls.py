@@ -1,9 +1,13 @@
 import logging
+import re
 
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
+from django.contrib.staticfiles.views import serve as staticfiles_serve
 from django.urls import include, path, re_path
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import never_cache
 from django.views.generic.base import TemplateView
 from django.views.i18n import JavaScriptCatalog
 from report.schema import create_dynamic_schema
@@ -482,3 +486,12 @@ patterns += [
 ]
 
 urlpatterns = [u for u in patterns if u is not None]
+
+if settings.DEBUG:
+    static_url = re.escape(settings.STATIC_URL.lstrip("/"))
+    urlpatterns += [
+        re_path(
+            rf"^{static_url}(?P<path>.*)$",
+            never_cache(staticfiles_serve),
+        )
+    ]

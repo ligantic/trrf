@@ -1054,15 +1054,14 @@ class Importer(object):
         )
 
         def default_first(data):
-            default = None
-            lst = []
+            defaults = []
+            others = []
             for d in data["context_form_groups"]:
                 if d["is_default"]:
-                    default = d
+                    defaults.append(d)
                 else:
-                    lst.append(d)
-            lst.insert(0, default)
-            for d in lst:
+                    others.append(d)
+            for d in defaults + others:
                 yield d
 
         def get_form(name):

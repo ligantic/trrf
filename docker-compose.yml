@@ -7,11 +7,13 @@ volumes:
 
 services:
   devcontainer:
-    image: mcr.microsoft.com/devcontainers/python:3.12
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
     command: sleep infinity
     volumes:
-      - "${HOST_WORKSPACE_FOLDER:-..}:/workspaces/rdrf"
-    working_dir: /workspaces/rdrf/rdrf
+      - "../..:/workspaces/fast-au"
+    working_dir: /workspaces/fast-au/gasr/rdrf
     depends_on:
       - db
       - clinicaldb
@@ -23,7 +25,7 @@ services:
     volumes:
       - dev_db_data:/var/lib/postgresql/data
     ports:
-      - "5432"
+      - "18432:5432"
 
   clinicaldb:
     image: "postgres:${POSTGRES_VERSION}"
@@ -32,7 +34,7 @@ services:
     volumes:
       - dev_clinicaldb_data:/var/lib/postgresql/data
     ports:
-      - "5432"
+      - "18433:5432"
 
   smtp4dev:
     image: rnwood/smtp4dev:v3
@@ -42,9 +44,9 @@ services:
     volumes:
       - smtp4dev_data:/smtp4dev
     ports:
-      - "${SMTP4DEV_WEB_PORT:-15000}:80"
-      - "${SMTP4DEV_SMTP_PORT:-12525}:25"
-      - "${SMTP4DEV_IMAP_PORT:-13143}:143"
+      - "${SMTP4DEV_WEB_PORT:-18500}:80"
+      - "${SMTP4DEV_SMTP_PORT:-18525}:25"
+      - "${SMTP4DEV_IMAP_PORT:-18543}:143"
 
   runserver:
     build:
@@ -63,7 +65,7 @@ services:
       - "${HOST_WORKSPACE_FOLDER:-.}:/app"
       - "${HOST_WORKSPACE_FOLDER:-.}/data/dev/:/data"
     ports:
-      - "${TRRF_HOST_PORT:-8000}:8000"
+      - "${TRRF_HOST_PORT:-18000}:8000"
     depends_on:
       - db
       - clinicaldb
@@ -80,7 +82,7 @@ services:
       - "${HOST_WORKSPACE_FOLDER:-.}:/app"
       - "${HOST_WORKSPACE_FOLDER:-.}/data/dev/:/data"
     ports:
-      - "8001:8080"
+      - "18001:8080"
     depends_on:
       - db
       - clinicaldb
