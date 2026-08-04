@@ -1,15 +1,24 @@
 
-{% extends "two_factor/_base_focus.html" %}
+{% extends "rdrf_cdes/settings_base.html" %}
 {% load i18n %}
 
-{% block content %}
+{% block settings_breadcrumb %}
+<span class="rdrf-breadcrumb__separator" aria-hidden="true">/</span>
+<span aria-current="page">{% trans "Two-factor authentication" %}</span>
+{% endblock %}
+
+{% block settings_title %}{% trans "Settings" %}{% endblock %}
+
+{% block settings_description %}
+<p class="rdrf-settings-page__description">{% trans "Manage your account settings and security preferences." %}</p>
+{% endblock %}
+
+{% block settings_content %}
   <form action="" method="post">
     {% csrf_token %}
-      <div class="card">
-        <div class="card-header">{% trans "Disable Two-Factor Authentication" %}</div>
-        <div class="card-body">
-          <div class="row">
-            <div class="col-sm-12">
+    <div class="rdrf-settings-panel">
+      <h2 class="rdrf-settings-panel__title">{% trans "Disable Two-Factor Authentication" %}</h2>
+      <div class="alert alert-warning mt-3" role="alert">
               {% if user.require_2_fact_auth %}
                 <p>{% blocktrans %}You are about to disable two-factor authentication.
                 However, your account requires two-factor authentication to be set up.{% endblocktrans %}</p>
@@ -18,23 +27,20 @@
                 <p>{% blocktrans %}You are about to disable two-factor authentication. This compromises your account security.{% endblocktrans %}</p>
               {% endif %}
               <p>{% blocktrans %}Are you sure?{% endblocktrans %}
-            </div>
-          </div>
+      </div>
 
-          <div class="row">
-            <label class="form-check-label">
-              <input type="checkbox" class="form-check-input" name="understand" />
-              {% trans "Yes, I am sure" %}
-            </label>
-          </div>
-          <div class="row">
-            <div class="col-sm-12">
-              <button class="btn btn-danger" type="submit">{% trans "Disable" %}</button>
-            </div>
-          </div>
+      <div class="form-check mt-4">
+        <input type="checkbox" class="form-check-input" name="understand" id="id_understand" />
+        <label class="form-check-label" for="id_understand">{% trans "Yes, I am sure" %}</label>
+      </div>
+      {% if form.understand.errors %}
+      <div class="text-danger mt-2">{{ form.understand.errors }}</div>
+      {% endif %}
+      <div class="rdrf-settings-actions">
+        <a href="{% url 'login_router' %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
+        <button class="btn btn-danger" type="submit">{% trans "Disable" %}</button>
       </div>
     </div>
-
   </form>
 
 {% endblock %}

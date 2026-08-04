@@ -28,6 +28,34 @@ function adjustContentTopPadding(contentId = "content") {
   );
 }
 
+function initDisclosureToggles() {
+  $("[data-rdrf-disclosure-toggle]").each(function () {
+    var $trigger = $(this);
+    var targetId = $trigger.attr("aria-controls");
+    var $target = $(document.getElementById(targetId));
+
+    if (!$target.length) {
+      return;
+    }
+
+    function toggleDisclosure() {
+      var isVisible = $target.is(":visible");
+      $target.toggle(!isVisible);
+      $trigger.attr("aria-expanded", String(!isVisible));
+    }
+
+    $trigger.on("click", toggleDisclosure);
+    $trigger.on("keydown", function (event) {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        toggleDisclosure();
+      }
+    });
+  });
+}
+
+$(initDisclosureToggles);
+
 $(window).on("resize", function () {
   adjustContentTopPadding();
 });

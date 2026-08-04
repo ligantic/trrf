@@ -1,16 +1,24 @@
 
-{% extends "two_factor/_base_focus.html" %}
+{% extends "rdrf_cdes/settings_base.html" %}
 {% load i18n %}
 
-{% block content %}
-  <div class="card">
-    <div class="card-header">{% trans "Enable Two-Factor Authentication" %}</div>
-    <div class="card-body">
-      <div class="row">
-        <div class="col-sm-12">
-          {% blocktrans %}Congratulations, you've successfully enabled two-factor authentication.{% endblocktrans %}
-        </div>
-      </div>
+{% block settings_breadcrumb %}
+<span class="rdrf-breadcrumb__separator" aria-hidden="true">/</span>
+<span aria-current="page">{% trans "Two-factor authentication" %}</span>
+{% endblock %}
+
+{% block settings_title %}{% trans "Settings" %}{% endblock %}
+
+{% block settings_description %}
+<p class="rdrf-settings-page__description">{% trans "Manage your account settings and security preferences." %}</p>
+{% endblock %}
+
+{% block settings_content %}
+  <div class="rdrf-settings-panel">
+    <h2 class="rdrf-settings-panel__title">{% trans "Two-factor authentication enabled" %}</h2>
+    <p class="rdrf-settings-panel__description">{% blocktrans %}Congratulations, you've successfully enabled two-factor authentication.{% endblocktrans %}</p>
+    <div class="rdrf-settings-actions">
+      <a href="{% url 'login_router' %}" class="btn btn-primary">{% trans "Return to dashboard" %}</a>
     </div>
   </div>
 {% endblock %}

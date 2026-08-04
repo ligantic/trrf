@@ -22,10 +22,14 @@
                 {% block settings_navigation %}
                 {% url 'email_address_change' as email_address_change_url %}
                 {% url 'password_change' as password_change_url %}
-                {% url 'two_factor:setup' as two_factor_setup_url %}
+                {% if request.user.is_verified %}
+                {% url 'two_factor:disable' as two_factor_url %}
+                {% else %}
+                {% url 'two_factor:setup' as two_factor_url %}
+                {% endif %}
                 <a class="rdrf-settings-nav__link{% if request.path == email_address_change_url %} rdrf-settings-nav__link--active{% endif %}" href="{{ email_address_change_url }}"{% if request.path == email_address_change_url %} aria-current="page"{% endif %}>{% trans "Email address" %}</a>
                 <a class="rdrf-settings-nav__link{% if request.path == password_change_url %} rdrf-settings-nav__link--active{% endif %}" href="{{ password_change_url }}"{% if request.path == password_change_url %} aria-current="page"{% endif %}>{% trans "Password" %}</a>
-                <a class="rdrf-settings-nav__link{% if request.path == two_factor_setup_url %} rdrf-settings-nav__link--active{% endif %}" href="{{ two_factor_setup_url }}"{% if request.path == two_factor_setup_url %} aria-current="page"{% endif %}>{% trans "Two-factor authentication" %}</a>
+                <a class="rdrf-settings-nav__link{% if request.resolver_match.namespace == 'two_factor' %} rdrf-settings-nav__link--active{% endif %}" href="{{ two_factor_url }}"{% if request.resolver_match.namespace == 'two_factor' %} aria-current="page"{% endif %}>{% trans "Two-factor authentication" %}</a>
                 {% if request.user|has_subscribable_email %}
                 <a class="rdrf-settings-nav__link" href="{% url 'email_preferences' %}">{% trans "Email preferences" %}</a>
                 {% endif %}
