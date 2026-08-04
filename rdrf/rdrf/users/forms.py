@@ -40,7 +40,7 @@ class EmailChangeForm(Form):
     )
 
     new_email = EmailField(
-        label=_("New email / username"),
+        label=_("New email address"),
         max_length=254,
         widget=EmailInput(attrs={"autocomplete": "email", "autofocus": True}),
     )

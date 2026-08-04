@@ -1,11 +1,11 @@
-{% extends "rdrf_cdes/base.html" %}
+{% extends "rdrf_cdes/settings_base.html" %}
 {% load static %}
 {% load i18n %}
 {% load translate %}
 {% load add_attr %}
+{% load has_subscribable_email %}
 {% block extrahead %}
     {{ block.super }}
-  <link rel="stylesheet" type="text/css" href="{% static 'css/rdrf-settings.css' %}">
     <script>
       $(document).ready(function() {
         $('#btnDeleteEmailChangeRequest').on('click', function(e) {
@@ -24,13 +24,21 @@
       });
     </script>
 {% endblock %}
-{% block content %}
-  <main class="rdrf-settings-page">
-  <header class="rdrf-settings-header">
-    <nav class="rdrf-breadcrumb rdrf-settings-breadcrumb" aria-label="{% trans 'Breadcrumb' %}">{% trans 'Dashboard' %} › {% trans 'Settings' %} › {% trans 'Email' %}</nav>
-    <h1>{% trans "Email" %}</h1>
-    <p>{% trans "Update the email address used to access your account." %}</p>
-  </header>
+{% block settings_breadcrumb %}
+<span class="rdrf-breadcrumb__separator" aria-hidden="true">/</span>
+<span aria-current="page">{% trans "Email address" %}</span>
+{% endblock %}
+
+{% block settings_title %}{% trans "Settings" %}{% endblock %}
+
+{% block settings_description %}
+<p class="rdrf-settings-page__description">{% trans "Manage your account settings and security preferences." %}</p>
+{% endblock %}
+
+{% block settings_content %}
+  <div class="rdrf-settings-panel">
+    <h2 class="rdrf-settings-panel__title">{% trans "Email address" %}</h2>
+    <p class="rdrf-settings-panel__description">{% trans "Update the email address used to access your account." %}</p>
 
   {% include "rdrf_cdes/form_list_errors.html" %}
 
@@ -56,7 +64,7 @@
         </div>
     </div>
 
-    <div id="id_current_request" class="card">
+    <div id="id_current_request" class="card mb-4">
         <div class="card-header">
           {% if current_request.status == EmailChangeRequestStatus.PENDING %}
             <button class="btn btn-danger btn-sm float-end" data-bs-toggle="modal" data-bs-target="#deleteModal">{% trans "Cancel this request" %}</button>
@@ -112,7 +120,6 @@
     </div>
   {% endif %}
 
-  <div class="rdrf-settings-panel">
   <div class="alert alert-info" role="alert">
     <h6 class="alert-heading">
       {% trans "Important information" %} {% if form.current_user == form.user %}{% trans "about changing your email address" %}{% endif %}
@@ -133,72 +140,71 @@
       </li>
     </ol>
   </div>
-  </div>
 
-  <form class="rdrf-settings-form" method="post" id="emailchangerequest_form">
+  <form method="post" id="emailchangerequest_form">
     {% csrf_token %}
 
     {% if form.current_user != form.user and form.user.patient %}
-      <div class="mb-3 row">
-        <span class="col-sm-3 col-form-label">{% trans "Patient" %}:</span>
-        <div class="col-sm-9 mt-2">
+      <div class="rdrf-settings-field">
+        <span>{% trans "Patient" %}:</span>
+        <div>
           <a href="{% url 'patient_edit' form.user.my_registry.code form.user.patient.id %}">{{ form.user.patient }} ({{ form.user.my_registry.name }})</a>
         </div>
       </div>
     {% endif %}
 
-    <div class="rdrf-settings-field row">
-      <span class="col-sm-3 col-form-label">{% trans "Current email" %}:</span>
-      <div class="col-sm-9 mt-2" id="id_current_email">
+    <div class="rdrf-settings-field">
+      <span>{% trans "Current email" %}:</span>
+      <div id="id_current_email">
         {{ form.user.email }}
       </div>
     </div>
 
     {% if form.user.username != form.user.email %}
-      <div class="rdrf-settings-field row">
-        <span class="col-sm-3 col-form-label">{% trans "Current username" %}:</span>
-        <div class="col-sm-9 mt-2">
+      <div class="rdrf-settings-field">
+        <span>{% trans "Current username" %}:</span>
+        <div>
           {{ form.user.username }}
         </div>
       </div>
     {% endif %}
 
     {% if form.user.patient and form.user.patient.email != form.user.email %}
-      <div class="rdrf-settings-field row">
-        <span class="col-sm-3 col-form-label">{% trans "Current email (Patient)" %}:</span>
-        <div class="col-sm-9 mt-2">
+      <div class="rdrf-settings-field">
+        <span>{% trans "Current email (Patient)" %}:</span>
+        <div>
           {{ form.user.patient.email }}
         </div>
       </div>
     {% endif %}
 
-    <div class="rdrf-settings-field row">
-      <label for="{{ form.new_email.id_for_label }}" class="col-sm-3 col-form-label">{{ form.new_email.label_tag }}</label>
-      <div class="col-sm-9 mt-2">
+    <div class="rdrf-settings-field">
+      <label for="{{ form.new_email.id_for_label }}" class="form-label">{{ form.new_email.label }}</label>
+      <div>
         {{ form.new_email | add_attr:"class,form-control" }}
       </div>
     </div>
 
-    <div class="rdrf-settings-field row">
-      <label for="{{ form.new_email2.id_for_label }}" class="col-sm-3 col-form-label">{{ form.new_email2.label_tag }}</label>
-      <div class="col-sm-9 mt-2">
+    <div class="rdrf-settings-field">
+      <label for="{{ form.new_email2.id_for_label }}" class="form-label">{{ form.new_email2.label }}</label>
+      <div>
         {{ form.new_email2 | add_attr:"class,form-control" }}
       </div>
     </div>
 
     {% if form.current_password.field.required %}
-      <div class="rdrf-settings-field row">
-        <label for="{{ form.current_password.id_for_label }}" class="col-sm-3 col-form-label">{{ form.current_password.label_tag }}</label>
-        <div class="col-sm-9 mt-2">
+      <div class="rdrf-settings-field">
+        <label for="{{ form.current_password.id_for_label }}" class="form-label">{{ form.current_password.label }}</label>
+        <div>
           {{ form.current_password | add_attr:"class,form-control" }}
         </div>
       </div>
     {% endif %}
 
     {% if form.is_activation_optional %}
-      <div class="rdrf-settings-field row">
-        <span class="col-sm-3 col-form-label">{{ form.user_activation_required.label_tag }}</span>
-        <div class="col-sm-9 mt-2">
+      <div class="rdrf-settings-field">
+        <span>{{ form.user_activation_required.label }}</span>
+        <div>
           {% for radio in form.user_activation_required %}
             <div class="form-check ps-sm-0">
               {{ radio }}
@@ -209,9 +215,9 @@
     {% endif %}
 
     {% if not form.user.is_active %}
-      <div class="rdrf-settings-field row">
-        <span class="col-sm-3 col-form-label">{% trans "User status" %}:</span>
-        <div class="col-sm-9 mt-2">
+      <div class="rdrf-settings-field">
+        <span>{% trans "User status" %}:</span>
+        <div>
           <span class="badge bg-warning">{% trans "INACTIVE" %}</span>
           <div class="form-text">
             {% if form.is_activation_optional %}
@@ -232,6 +238,6 @@
       <button type="submit" class="btn btn-primary">{% trans "Initiate change of email address" %}</button>
     </div>
   </form>
-  </main>
+  </div>
 
 {% endblock %}

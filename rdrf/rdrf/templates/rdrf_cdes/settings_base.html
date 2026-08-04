@@ -1,0 +1,40 @@
+{% extends "rdrf_cdes/base.html" %}
+{% load i18n %}
+{% load has_subscribable_email %}
+
+{% block content %}
+<main class="rdrf-settings-page">
+    <nav class="rdrf-breadcrumb" aria-label="{% trans 'Breadcrumb' %}">
+        <a href="{% url 'login_router' %}">{% trans "Dashboard" %}</a>
+        <span class="rdrf-breadcrumb__separator" aria-hidden="true">/</span>
+        <span>{% trans "Settings" %}</span>
+        {% block settings_breadcrumb %}{% endblock %}
+    </nav>
+
+    <header class="rdrf-settings-page__header">
+        <h1 class="rdrf-settings-page__title">{% block settings_title %}{% trans "Settings" %}{% endblock %}</h1>
+        {% block settings_description %}{% endblock %}
+    </header>
+
+    <div class="rdrf-settings-page__body">
+        <aside class="rdrf-settings-page__navigation">
+            <nav class="rdrf-settings-nav" aria-label="{% trans 'Settings navigation' %}">
+                {% block settings_navigation %}
+                {% url 'email_address_change' as email_address_change_url %}
+                {% url 'password_change' as password_change_url %}
+                {% url 'two_factor:setup' as two_factor_setup_url %}
+                <a class="rdrf-settings-nav__link{% if request.path == email_address_change_url %} rdrf-settings-nav__link--active{% endif %}" href="{{ email_address_change_url }}"{% if request.path == email_address_change_url %} aria-current="page"{% endif %}>{% trans "Email address" %}</a>
+                <a class="rdrf-settings-nav__link{% if request.path == password_change_url %} rdrf-settings-nav__link--active{% endif %}" href="{{ password_change_url }}"{% if request.path == password_change_url %} aria-current="page"{% endif %}>{% trans "Password" %}</a>
+                <a class="rdrf-settings-nav__link{% if request.path == two_factor_setup_url %} rdrf-settings-nav__link--active{% endif %}" href="{{ two_factor_setup_url }}"{% if request.path == two_factor_setup_url %} aria-current="page"{% endif %}>{% trans "Two-factor authentication" %}</a>
+                {% if request.user|has_subscribable_email %}
+                <a class="rdrf-settings-nav__link" href="{% url 'email_preferences' %}">{% trans "Email preferences" %}</a>
+                {% endif %}
+                {% endblock %}
+            </nav>
+        </aside>
+        <section class="rdrf-settings-page__content">
+            {% block settings_content %}{% endblock %}
+        </section>
+    </div>
+</main>
+{% endblock %}
