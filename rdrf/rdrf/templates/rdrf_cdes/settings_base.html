@@ -7,7 +7,7 @@
     <nav class="rdrf-breadcrumb" aria-label="{% trans 'Breadcrumb' %}">
         <a href="{% url 'login_router' %}">{% trans "Dashboard" %}</a>
         <span class="rdrf-breadcrumb__separator" aria-hidden="true">/</span>
-        <span>{% trans "Settings" %}</span>
+        <a href="{% url 'settings' %}">{% trans "Settings" %}</a>
         {% block settings_breadcrumb %}{% endblock %}
     </nav>
 

@@ -8,7 +8,7 @@ from django.contrib.staticfiles.views import serve as staticfiles_serve
 from django.urls import include, path, re_path
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
-from django.views.generic.base import TemplateView
+from django.views.generic.base import RedirectView, TemplateView
 from django.views.i18n import JavaScriptCatalog
 from report.schema import create_dynamic_schema
 from report.TrrfGraphQLView import TrrfGraphQLView
@@ -176,6 +176,11 @@ patterns += [
     # Kept the original urls commented out to have an easy view on which URLs are customised.
     # Login is done by two_factor:login included above
     re_path(r"^logout/?$", auth_views.LogoutView.as_view(), name="logout"),
+    path(
+        "settings/",
+        RedirectView.as_view(pattern_name="email_address_change"),
+        name="settings",
+    ),
     re_path(
         r"^password_change/?$",
         auth_views.PasswordChangeView.as_view(form_class=PasswordChangeForm),
