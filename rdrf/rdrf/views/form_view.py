@@ -553,6 +553,7 @@ class FormView(View):
         context["location"] = location_name(
             self.registry_form, self.rdrf_context
         )
+        context["show_page_header"] = True
         # we provide a "path" to the header field which contains an embedded Django template
         context["header"] = _(self.registry_form.header)
         context["settings"] = settings

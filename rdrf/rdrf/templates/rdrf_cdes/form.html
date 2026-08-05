@@ -344,10 +344,12 @@
 {% include "rdrf_cdes/clinical_form_actions.html" %}
 {% endblock %}
 
+{% block page_header_navigation %}
+<nav class="rdrf-module-nav d-print-none" data-rdrf-module-nav aria-label="{% trans 'Modules' %}"></nav>
+{% endblock %}
+
 {% block content %}
 {{ block.super }}
-
-<nav class="rdrf-module-nav d-print-none" data-rdrf-module-nav aria-label="{% trans 'Modules' %}"></nav>
 
 <a class="previous-form d-none d-md-inline-block" href="{{ previous_form_link }}">
     <span class="fa fa-chevron-left" aria-hidden="true"></span>
@@ -379,19 +381,15 @@
             <div class="modal-body">
                 <p data-session-state="expiring">{% trans "Your session will expire in " %}<strong
                         id="sessionExpiryTimeout">X seconds</strong>.</p>
-                <p data-session-state="expired" class="d-none alert alert-danger">{% trans "Your session has expired."
-                    %}</p>
+                <p data-session-state="expired" class="d-none alert alert-danger">{% trans "Your session has expired." %}</p>
             </div>
             <div class="modal-footer">
                 <div data-session-state="expiring">
-                    <button id="continueWorkingBtn" type="button" class="btn btn-primary" data-bs-dismiss="modal">{%
-                        trans "Continue working" %}</button>
-                    <button id="logoutBtn" type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans
-                        "Logout" %}</button>
+                    <button id="continueWorkingBtn" type="button" class="btn btn-primary" data-bs-dismiss="modal">{% trans "Continue working" %}</button>
+                    <button id="logoutBtn" type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Logout" %}</button>
                 </div>
                 <div data-session-state="expired" class="d-none">
-                    <button id="goToLoginBtn" type="button" class="btn btn-primary" data-bs-dismiss="modal">{% trans "Go
-                        to Login Page" %}</button>
+                    <button id="goToLoginBtn" type="button" class="btn btn-primary" data-bs-dismiss="modal">{% trans "Go to Login Page" %}</button>
                 </div>
             </div>
         </div>

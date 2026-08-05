@@ -160,12 +160,16 @@
                     {% block content %}
 
                     {% include 'rdrf_cdes/form_modal.html' %}
-                    {% if header %}
+                    {% if header or show_page_header %}
                         <div class="card card-info trrf-page-header">
                             <div class="card-body">
+                                {% block page_header_navigation %}
+                                {% endblock %}
+                                {% if header %}
                                 {% autoescape off %}
                                     {{ header }}
                                 {% endautoescape %}
+                                {% endif %}
                                 {% if has_previous_data %}
                                     <div class="btn-group">
                                         <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

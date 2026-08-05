@@ -177,6 +177,10 @@ class ClinicalFormPageTest(TestCase):
         # section card ids, and the horizontal module navigation shell.
         self.assertIn("rdrf-subnav-rail", content)
         self.assertIn("data-rdrf-module-nav", content)
+        self.assertRegex(
+            content,
+            r'(?s)class="card card-info trrf-page-header".*data-rdrf-module-nav',
+        )
         self.assertIn('href="#section_CAP07SEC"', content)
         self.assertIn('href="#section_CAP07MULTI"', content)
         self.assertIn('id="section_CAP07SEC"', content)

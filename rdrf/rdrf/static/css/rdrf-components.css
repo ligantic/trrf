@@ -299,10 +299,11 @@
    present it as the design's horizontal module navigation. */
 .rdrf-module-nav {
   display: flex;
-  gap: var(--space-1);
+  align-items: center;
+  gap: 2px;
   overflow-x: auto;
   margin: 0 0 var(--space-6);
-  padding: var(--space-1);
+  padding: 2px;
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-md);
   background-color: var(--color-surface-reference);
@@ -311,10 +312,13 @@
 
 .rdrf-module-nav__item {
   flex: 0 0 auto;
-  padding: var(--space-3) var(--space-5);
+  min-height: 40px;
+  padding: 10px 16px;
   border-radius: var(--radius-sm);
   color: var(--color-text-secondary);
-  font-weight: 600;
+  font-size: .875rem;
+  font-weight: 500;
+  line-height: 18px;
   text-decoration: none;
   white-space: nowrap;
 }
@@ -331,8 +335,10 @@
 
 .rdrf-module-nav__item--active {
   background-color: var(--color-surface-primary);
+  border: 1px solid var(--color-border-default);
   box-shadow: var(--elevation-xs);
   color: var(--color-accent-strong);
+  padding: 9px 15px;
 }
 
 #sidebar.rdrf-clinical-sidebar-replaced {
