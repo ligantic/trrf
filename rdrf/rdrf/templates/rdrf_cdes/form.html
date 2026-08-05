@@ -341,18 +341,7 @@
 {% endblock %}
 
 {% block formbtns %}
-<div class="rdrf-form-actions" role="group" aria-label="{% trans 'Form actions' %}">
-    <a href="" class="btn btn-danger rdrf-form-actions__cancel">{% trans "Cancel" %}</a>
-    <button id="submit-btn" type="submit" class="btn btn-success rdrf-form-actions__save" form="main-form" value="Save">
-        {% trans "Save and exit" %}
-    </button>
-
-    {% if show_print_button %}
-    <button type="button" class="btn btn-secondary" onclick="window.print();">
-        <span class="fa fa-print" aria-hidden="true"></span> {% trans "Print" %}
-    </button>
-    {% endif %}
-</div>
+{% include "rdrf_cdes/clinical_form_actions.html" %}
 {% endblock %}
 
 {% block content %}
@@ -370,125 +359,16 @@
 
 <div class="row rdrf-clinical-content">
     <div class="col-lg-3 col-12 d-print-none">
-        <nav class="rdrf-subnav-rail rdrf-clinical-rail" data-rdrf-subnav aria-label="{% trans 'Form sections' %}">
-            {% for s in sections %}
-            <a class="rdrf-subnav-rail__item" href="#section_{{ s }}">{{ display_names|get_display_name:s|translate }}</a>
-            {% endfor %}
-        </nav>
+        {% include "rdrf_cdes/clinical_form_section_rail.html" %}
     </div>
     <div class="col-lg-9 col-12">
-        {% if has_form_progress %}
-        <div class="rdrf-card rdrf-form-progress-card d-print-none">
-            <div class="rdrf-card__title-row">
-                <span>{% trans "Progress on this page" %}</span>
-                <span class="d-flex align-items-center gap-2">
-                    <span>{{ form_progress|floatformat:"0" }}%</span>
-                    <span class="badge bg-secondary" id="show-cdes-btn" role="button" tabindex="0"
-                        aria-label="{% trans 'Show completion details' %}"><span class="fa fa-sort"
-                            aria-hidden="true"></span></span>
-                </span>
-            </div>
-            <div class="rdrf-progress" role="progressbar" aria-valuenow="{{ form_progress|floatformat:'0' }}"
-                aria-valuemin="0" aria-valuemax="100" aria-label="{% trans 'Progress on this page' %}">
-                <div class="rdrf-progress__bar" style="width: {{ form_progress|floatformat:'0' }}%;"></div>
-            </div>
-            <div id="form-progress-cdes">
-                <ul class="list-group mt-3">
-                    {% for fpc in form_progress_cdes.items %}
-                    <li class="list-group-item">
-                        {% if fpc.1 %}
-                        <img src='{% static ' images/tick.png'%}'>
-                        {% elif fpc.1 == False %}
-                        <img src='{% static ' images/cross.png'%}'>
-                        {% endif %}
-                        {{fpc.0|translate}}
-                    </li>
-                    {% endfor %}
-                </ul>
-            </div>
-        </div>
-        {% endif %}
+        {% include "rdrf_cdes/clinical_form_progress.html" %}
         <form class="form-horizontal" id="main-form" novalidate enctype="multipart/form-data" method="post">{% csrf_token %}
             <input class="form-control" type="hidden" name="position">
 
             {% for s in sections %}
-            <div class="card collapsible rdrf-card rdrf-section-card" id="section_{{ s }}">
-
-                <div class="card-header rdrf-card__title-row">
-                    {% if request.user.is_superuser and settings.DESIGN_MODE %}
-                    <a target="_blank" href="{% url 'admin:rdrf_section_change' section_ids|get_section_id:s %}"><strong
-                            data-name="{{s}}">{{display_names|get_display_name:s|translate}}</strong></a>
-                    {% else %}
-                    <strong data-name="{{s}}">{{display_names|get_display_name:s|translate}}</strong>
-                    {% endif %}
-
-                    {% if forms|is_formset:s and not changes_since_version %}
-                    {% with formset=forms|get_form_object:s %}
-                    <a class="btn btn-outline-primary btn-sm float-end" onclick="add_form(this, '{{formset.prefix}}');">
-                        <span class="fa fa-plus" aria-hidden="true"></span> {% trans "Add" %}
-                    </a>
-                    {% endwith %}
-                    {% endif %}
-                </div>
-
-                <div class="card-body">
-                    {% if section_headers|lookup:s %}
-                    <div class="rdrf-reference-block">
-                        {% autoescape off %}
-                        {{ section_headers|lookup:s|translate }}
-                        {% endautoescape %}
-                    </div>
-                    {% endif %}
-                    <div class="rdrf-capture-block">
-                        {% if forms|is_formset:s %}
-                        {% with formset=forms|get_form_object:s %}
-                        <div id="mgmt_{{formset.prefix}}">{{formset.management_form}}</div>
-                        <div style="display: none;" class="rdrf-multisection-entry" id="empty_{{formset.prefix}}">
-                            <div class="row">
-                                <div class="col-sm-9 offset-sm-3">
-                                    <a class="btn btn-outline-danger btn-sm float-end"
-                                        onclick="delete_form(this, '{{formset.prefix}}')">
-                                        <span class="fa fa-minus" aria-hidden="true"></span> {% trans "Remove" %}
-                                    </a>
-                                </div>
-                            </div>
-                            {% for element in formset.empty_form %}
-                            {% include "rdrf_cdes/clinical_form_empty_formset_field.html" %}
-                            {% endfor %}
-                            </div>
-
-                            <div id="forms_{{formset.prefix}}">
-                                {% for f in formset.forms %}
-                                {% with index=forloop.counter0 %}
-                                <div class="rdrf-multisection-entry">
-                                    {% if f.was_deleted %}
-                                    <div class="row">
-                                        <div class="col-sm-12">
-                                            <div class="alert alert-danger text-center">{% trans "This form was deleted"
-                                                %}</div>
-                                        </div>
-                                    </div>
-                                    {% endif %}
-                                    {% for element in f %}
-                                    {% include "rdrf_cdes/clinical_form_formset_field.html" %}
-                                    {% endfor %}
-                                        <p>
-                                            <hr style="border: solid 1px gray">
-                                        </p>
-                                    </div>
-                                    {% endwith %}
-                                    {% endfor %}
-                                </div>
-                                {% endwith%}
-                                {% else %}
-                                {% for field in forms|get_form_object:s %}
-                                {% include "rdrf_cdes/clinical_form_cde_field.html" with section_code=s %}
-                                {% endfor %}
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
+            {% include "rdrf_cdes/clinical_form_section.html" %}
+            {% endfor %}
         </form>
     </div>
 </div>

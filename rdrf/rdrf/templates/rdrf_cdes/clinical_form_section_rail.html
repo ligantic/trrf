@@ -1,0 +1,9 @@
+{% load get_display_name %}
+{% load i18n %}
+{% load translate %}
+
+<nav class="rdrf-subnav-rail rdrf-clinical-rail" data-rdrf-subnav aria-label="{% trans 'Form sections' %}">
+    {% for s in sections %}
+    <a class="rdrf-subnav-rail__item" href="#section_{{ s }}">{{ display_names|get_display_name:s|translate }}</a>
+    {% endfor %}
+</nav>

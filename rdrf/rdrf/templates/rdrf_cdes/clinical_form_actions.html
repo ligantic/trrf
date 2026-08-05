@@ -1,0 +1,14 @@
+{% load i18n %}
+
+<div class="rdrf-form-actions" role="group" aria-label="{% trans 'Form actions' %}">
+    <a href="" class="btn btn-danger rdrf-form-actions__cancel">{% trans "Cancel" %}</a>
+    <button id="submit-btn" type="submit" class="btn btn-success rdrf-form-actions__save" form="main-form" value="Save">
+        {% trans "Save and exit" %}
+    </button>
+
+    {% if show_print_button %}
+    <button type="button" class="btn btn-secondary" onclick="window.print();">
+        <span class="fa fa-print" aria-hidden="true"></span> {% trans "Print" %}
+    </button>
+    {% endif %}
+</div>

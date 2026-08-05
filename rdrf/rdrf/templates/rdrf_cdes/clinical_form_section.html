@@ -1,0 +1,82 @@
+{% load get_display_name %}
+{% load get_form_object %}
+{% load get_section_id %}
+{% load i18n admin_urls %}
+{% load is_formset %}
+{% load lookup %}
+{% load translate %}
+
+<div class="card collapsible rdrf-card rdrf-section-card" id="section_{{ s }}">
+    <div class="card-header rdrf-card__title-row">
+        {% if request.user.is_superuser and settings.DESIGN_MODE %}
+        <a target="_blank" href="{% url 'admin:rdrf_section_change' section_ids|get_section_id:s %}"><strong
+                data-name="{{s}}">{{display_names|get_display_name:s|translate}}</strong></a>
+        {% else %}
+        <strong data-name="{{s}}">{{display_names|get_display_name:s|translate}}</strong>
+        {% endif %}
+
+        {% if forms|is_formset:s and not changes_since_version %}
+        {% with formset=forms|get_form_object:s %}
+        <a class="btn btn-outline-primary btn-sm float-end" onclick="add_form(this, '{{formset.prefix}}');">
+            <span class="fa fa-plus" aria-hidden="true"></span> {% trans "Add" %}
+        </a>
+        {% endwith %}
+        {% endif %}
+    </div>
+
+    <div class="card-body">
+        {% if section_headers|lookup:s %}
+        <div class="rdrf-reference-block">
+            {% autoescape off %}
+            {{ section_headers|lookup:s|translate }}
+            {% endautoescape %}
+        </div>
+        {% endif %}
+        <div class="rdrf-capture-block">
+            {% if forms|is_formset:s %}
+            {% with formset=forms|get_form_object:s %}
+            <div id="mgmt_{{formset.prefix}}">{{formset.management_form}}</div>
+            <div style="display: none;" class="rdrf-multisection-entry" id="empty_{{formset.prefix}}">
+                <div class="row">
+                    <div class="col-sm-9 offset-sm-3">
+                        <a class="btn btn-outline-danger btn-sm float-end"
+                            onclick="delete_form(this, '{{formset.prefix}}')">
+                            <span class="fa fa-minus" aria-hidden="true"></span> {% trans "Remove" %}
+                        </a>
+                    </div>
+                </div>
+                {% for element in formset.empty_form %}
+                {% include "rdrf_cdes/clinical_form_empty_formset_field.html" %}
+                {% endfor %}
+            </div>
+
+            <div id="forms_{{formset.prefix}}">
+                {% for f in formset.forms %}
+                {% with index=forloop.counter0 %}
+                <div class="rdrf-multisection-entry">
+                    {% if f.was_deleted %}
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="alert alert-danger text-center">{% trans "This form was deleted" %}</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% for element in f %}
+                    {% include "rdrf_cdes/clinical_form_formset_field.html" %}
+                    {% endfor %}
+                    <p>
+                        <hr style="border: solid 1px gray">
+                    </p>
+                </div>
+                {% endwith %}
+                {% endfor %}
+            </div>
+            {% endwith %}
+            {% else %}
+            {% for field in forms|get_form_object:s %}
+            {% include "rdrf_cdes/clinical_form_cde_field.html" with section_code=s %}
+            {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+</div>

@@ -194,6 +194,18 @@ class ClinicalFormPageTest(TestCase):
         # complete_form_cdes configured => progress surfaced as rdrf-progress
         self.assertIn("rdrf-progress", content)
         self.assertIn('role="progressbar"', content)
+        self.assertIn('id="show-cdes-btn"', content)
+        self.assertIn('id="form-progress-cdes"', content)
+
+    def test_section_rail_rendering_contract(self):
+        content = self._get_page()
+
+        # Keep the sub-navigation selector and section anchors stable while
+        # the rail is extracted from the page template.
+        self.assertIn('data-rdrf-subnav', content)
+        self.assertIn('aria-label="Form sections"', content)
+        self.assertIn('href="#section_CAP07SEC"', content)
+        self.assertIn('href="#section_CAP07MULTI"', content)
 
     def test_multisection_renders_nested_entry_cards_with_add_remove(self):
         content = self._get_page()
@@ -213,6 +225,26 @@ class ClinicalFormPageTest(TestCase):
     def test_no_reference_block_without_section_header(self):
         content = self._get_page()
         self.assertNotIn('class="rdrf-reference-block"', content)
+
+    def test_section_shell_rendering_contract(self):
+        Section.objects.filter(code="CAP07SEC").update(
+            header="<p>Section guidance</p>"
+        )
+        content = self._get_page()
+
+        # Keep each section's card, title, configured reference content, and
+        # repeatable-section add hook stable while the section shell moves to
+        # a reusable renderer.
+        self.assertIn(
+            'class="card collapsible rdrf-card rdrf-section-card"', content
+        )
+        self.assertIn('data-name="CAP07SEC"', content)
+        self.assertIn("Hospitalisations", content)
+        self.assertIn("Section guidance", content)
+        self.assertIn('class="rdrf-capture-block"', content)
+        self.assertIn(
+            "add_form(this, 'formset_CAP07MULTI')", content
+        )
 
     def test_standard_field_rendering_contract(self):
         content = self._get_page()
