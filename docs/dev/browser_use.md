@@ -6,6 +6,16 @@ Use this runbook when opening the local TRRF registry in the built-in browser.
 
 Run the **Django: Prepare local database** task once, then start the registry with **Django: Run development server** or the **Django: Development server** launch configuration. Django runs in the devcontainer and listens on port `8000`.
 
+## Local Environment
+
+The tracked `.env.example` supplies non-secret development defaults, including
+smtp4dev. Copy it to `.env_local` for machine-specific overrides; `.env_local`
+is ignored by Git and is read by Docker Compose.
+
+The devcontainer includes direnv and the recommended VS Code extension. From
+the workspace root, run `direnv allow` once to load `.env.example` and then
+apply values from `rdrf/.env_local` when it exists.
+
 ## Open the Login Page
 
 Open `http://localhost:8000/account/login` in the built-in browser. VS Code forwards port `8000` from the devcontainer automatically.
