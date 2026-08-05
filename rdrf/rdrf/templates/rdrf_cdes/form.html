@@ -123,11 +123,11 @@
     }
 
     {% autoescape off %}
-    { { generated_declarations } }
+    {{ generated_declarations }}
     {% endautoescape %}
 
     {% autoescape off %}
-    { { visibility_handler } }
+    {{ visibility_handler }}
     {% endautoescape %}
 
     $(document).ready(function () {
@@ -202,13 +202,13 @@
         );
 
         {% autoescape off %}
-        { { generated_code } }
+        {{ generated_code }}
         {% endautoescape %}
     });
 
 
     {% autoescape off %}
-    { { change_targets } }
+    {{ change_targets }}
     {% endautoescape %}
 
     function attribute_replace($el, attribute_name, form_count) {
@@ -372,8 +372,7 @@
     <div class="col-lg-3 col-12 d-print-none">
         <nav class="rdrf-subnav-rail rdrf-clinical-rail" data-rdrf-subnav aria-label="{% trans 'Form sections' %}">
             {% for s in sections %}
-            <a class="rdrf-subnav-rail__item" href="#section_{{ s }}">{{ display_names|get_display_name:s|translate
-                }}</a>
+            <a class="rdrf-subnav-rail__item" href="#section_{{ s }}">{{ display_names|get_display_name:s|translate }}</a>
             {% endfor %}
         </nav>
     </div>
@@ -409,8 +408,7 @@
             </div>
         </div>
         {% endif %}
-        <form class="form-horizontal" id="main-form" novalidate enctype="multipart/form-data" method="post">{%
-            csrf_token %}
+        <form class="form-horizontal" id="main-form" novalidate enctype="multipart/form-data" method="post">{% csrf_token %}
             <input class="form-control" type="hidden" name="position">
 
             {% for s in sections %}
@@ -455,37 +453,8 @@
                                 </div>
                             </div>
                             {% for element in formset.empty_form %}
-                            {% if element.errors %}
-                            <div class="row rdrf-cde-field has-error">
-                                {% else %}
-                                <div class="row rdrf-cde-field">
-                                    {% endif %}
-                                    {% if element.label == "Delete" %}
-                                    {% else %}
-                                    <label for="{{ element.auto_id}}" style="display: {{element.is_hidden|yesno:"
-                                        None,block"}}" class="col-sm-3 col-form-label">
-                                        {{ element.label }}
-                                        {% if element.field.required %}
-                                        <span class="fa fa-asterisk" style="color: red;" aria-hidden="true"></span>
-                                        {% endif %}
-                                        {% if element.field.important %}
-                                        <span class="fa fa-asterisk" style="color: green;" aria-hidden="true"></span>
-                                        {% endif %}
-                                    </label>
-                                    <div class="col-sm-9">
-                                        {{ element|safe }}
-                                        {% if not element.is_hidden %}
-                                        <small class="text-muted">
-                                            <i>{{ element.help_text }}</i>
-                                        </small>
-                                        {% endif %}
-                                        {% if element.errors %}
-                                        <span class="badge bg-danger">{{ element.errors.as_text }}</span>
-                                        {% endif %}
-                                    </div>
-                                    {% endif %}
-                                </div>
-                                {% endfor %}
+                            {% include "rdrf_cdes/clinical_form_empty_formset_field.html" %}
+                            {% endfor %}
                             </div>
 
                             <div id="forms_{{formset.prefix}}">
@@ -501,62 +470,8 @@
                                     </div>
                                     {% endif %}
                                     {% for element in f %}
-                                    {% if element.errors %}
-                                    <div class="row rdrf-cde-field has-error invisibutton-container">
-                                        {% else %}
-                                        <div class="row rdrf-cde-field invisibutton-container">
-                                            {% endif %}
-                                            {% if changes_since_version and element.label == "Delete" %}
-                                            <div></div>
-                                            {% else %}
-                                            <label for="{{ element.auto_id}}"
-                                                style="display: {{element.is_hidden|yesno:" None,block"}}"
-                                                class="col-sm-3 col-form-label">
-                                                {% if element.label == "Delete" %}
-                                                {% trans "Mark for deletion" %}
-                                                {% else %}
-                                                {% if element.field.cde.code and not CREATE_MODE and have_dynamic_data
-                                                %}
-                                                <a href="{% url 'registry_form_field_history' registry_code form_name patient_id s context_id element.field.cde.code index%}"
-                                                    onclick="rdrf_click_form_field_history(event, this)"
-                                                    class="btn btn-outline-secondary btn-xs invisibutton pull-left"
-                                                    data-bs-toggle="tooltip" title="View previous answers"
-                                                    aria-label="Previous answers">
-                                                    <i class="fa fa-clock-o" aria-hidden="true"></i>
-                                                </a>
-                                                {% endif %}
-                                                {{ element.label }}
-                                                {% if element.field.required %}
-                                                <span class="fa fa-asterisk" style="color: red;"
-                                                    aria-hidden="true"></span>
-                                                {% endif %}
-                                                {% if element.field.important %}
-                                                <span class="fa fa-asterisk" style="color: green;"
-                                                    aria-hidden="true"></span>
-                                                {% endif %}
-                                                {% endif %}
-                                            </label>
-                                            <div class="col-sm-9">
-                                                {% if not f.was_deleted and changes_since_version %}
-                                                <div title="{%trans " Previous value:"
-                                                    %}&nbsp;{{element.field.previous_value|array_item:index|default:_('Was
-                                                    not set previously')}}">
-                                                    {{ element|safe }}
-                                                </div>
-                                                {% else %}
-                                                {{ element|safe }}
-                                                {% endif %}
-                                                {% if not element.is_hidden %}
-                                                <small class="text-muted">
-                                                    <i>{{ element.help_text }}</i>
-                                                </small>
-                                                {% endif %}
-                                                {% if element.errors %}
-                                                <span class="badge bg-danger">{{ element.errors.as_text }}</span>
-                                                {% endif %}
-                                            </div>
-                                        </div>
-                                        {% endfor %}
+                                    {% include "rdrf_cdes/clinical_form_formset_field.html" %}
+                                    {% endfor %}
                                         <p>
                                             <hr style="border: solid 1px gray">
                                         </p>
@@ -567,41 +482,7 @@
                                 {% endwith%}
                                 {% else %}
                                 {% for field in forms|get_form_object:s %}
-                                <div class="row rdrf-cde-field invisibutton-container">
-                                    <label for="{{field.auto_id}}" class="col-sm-3 col-form-label">
-                                        {% if field.field.cde.code and not CREATE_MODE and have_dynamic_data %}
-                                        <a href="{% url 'registry_form_field_history' registry_code form_name patient_id s context_id field.field.cde.code %}"
-                                            onclick="rdrf_click_form_field_history(event, this)"
-                                            class="btn btn-outline-secondary btn-xs invisibutton pull-left"
-                                            data-bs-toggle="tooltip" title="View previous answers"
-                                            aria-label="Previous answers">
-                                            <i class="fa fa-clock-o" aria-hidden="true"></i>
-                                        </a>
-                                        {% endif %}
-                                        {{field.label}}
-                                        {% if field.field.required %}
-                                        <span class="fa fa-asterisk" style="color: red;" aria-hidden="true"></span>
-                                        {% endif %}
-                                        {% if field.field.important %}
-                                        <span class="fa fa-asterisk" style="color: green;" aria-hidden="true"></span>
-                                        {% endif %}
-                                    </label>
-                                    <div class="col-sm-9">
-                                        {% if changes_since_version %}
-                                        <div title="{% trans " Previous value:"
-                                            %}{{field.field.previous_value|default_if_none:'Was not set
-                                            previously'|default:'Was not set previously'}}">
-                                            {{field|safe}}
-                                        </div>
-                                        {% else %}
-                                        {{field|safe}}
-                                        {% endif %}
-                                        <p class="text-muted"><i>{{field.help_text}}</i></p>
-                                        {% if field.errors %}
-                                        <span class="badge bg-danger">{{field.errors.as_text}}</span>
-                                        {% endif %}
-                                    </div>
-                                </div>
+                                {% include "rdrf_cdes/clinical_form_cde_field.html" with section_code=s %}
                                 {% endfor %}
                                 {% endif %}
                             </div>

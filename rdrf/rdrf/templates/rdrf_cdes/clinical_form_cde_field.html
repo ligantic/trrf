@@ -1,0 +1,35 @@
+{% load i18n %}
+
+<div class="row rdrf-cde-field invisibutton-container">
+    <label for="{{ field.auto_id }}" class="col-sm-3 col-form-label">
+        {% if field.field.cde.code and not CREATE_MODE and have_dynamic_data %}
+        <a href="{% url 'registry_form_field_history' registry_code form_name patient_id section_code context_id field.field.cde.code %}"
+            onclick="rdrf_click_form_field_history(event, this)"
+            class="btn btn-outline-secondary btn-xs invisibutton pull-left"
+            data-bs-toggle="tooltip" title="View previous answers"
+            aria-label="Previous answers">
+            <i class="fa fa-clock-o" aria-hidden="true"></i>
+        </a>
+        {% endif %}
+        {{ field.label }}
+        {% if field.field.required %}
+        <span class="fa fa-asterisk" style="color: red;" aria-hidden="true"></span>
+        {% endif %}
+        {% if field.field.important %}
+        <span class="fa fa-asterisk" style="color: green;" aria-hidden="true"></span>
+        {% endif %}
+    </label>
+    <div class="col-sm-9">
+        {% if changes_since_version %}
+        <div title="{% trans ' Previous value:' %}{{ field.field.previous_value|default_if_none:'Was not set previously'|default:'Was not set previously' }}">
+            {{ field|safe }}
+        </div>
+        {% else %}
+        {{ field|safe }}
+        {% endif %}
+        <p class="text-muted"><i>{{ field.help_text }}</i></p>
+        {% if field.errors %}
+        <span class="badge bg-danger">{{ field.errors.as_text }}</span>
+        {% endif %}
+    </div>
+</div>

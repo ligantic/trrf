@@ -213,3 +213,42 @@ class ClinicalFormPageTest(TestCase):
     def test_no_reference_block_without_section_header(self):
         content = self._get_page()
         self.assertNotIn('class="rdrf-reference-block"', content)
+
+    def test_standard_field_rendering_contract(self):
+        content = self._get_page()
+
+        # Keep the standard CDE row's label, control and structural hooks
+        # stable while the form renderer is split into partials.
+        self.assertIn('class="row rdrf-cde-field invisibutton-container"', content)
+        self.assertIn(
+            'for="id_ClinicalModule____CAP07SEC____CAP07Q1"', content
+        )
+        self.assertIn("Reason for hospitalisation", content)
+        self.assertIn('name="ClinicalModule____CAP07SEC____CAP07Q1"', content)
+        self.assertIn('class="col-sm-3 col-form-label"', content)
+        self.assertIn('class="col-sm-9"', content)
+
+    def test_repeatable_field_rendering_contract(self):
+        content = self._get_page()
+
+        # Keep the repeatable section's management form, empty-form template,
+        # and legacy add/remove hooks stable while its renderer is extracted.
+        prefix = "formset_CAP07MULTI"
+        self.assertIn(f'id="mgmt_{prefix}"', content)
+        self.assertIn(f'id="empty_{prefix}"', content)
+        self.assertIn(f'id="forms_{prefix}"', content)
+        self.assertIn(
+            f'name="{prefix}-__prefix__-ClinicalModule____CAP07MULTI____CAP07Q2"',
+            content,
+        )
+        self.assertIn('class="rdrf-multisection-entry"', content)
+        self.assertIn(f"delete_form(this, '{prefix}')", content)
+
+    def test_form_action_rendering_contract(self):
+        content = self._get_page()
+
+        self.assertIn('class="rdrf-form-actions"', content)
+        self.assertIn('id="submit-btn"', content)
+        self.assertIn('form="main-form"', content)
+        self.assertIn("Save and exit", content)
+        self.assertIn("Cancel", content)

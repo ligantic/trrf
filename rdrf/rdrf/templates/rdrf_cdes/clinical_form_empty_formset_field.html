@@ -1,0 +1,31 @@
+{% load i18n %}
+
+{% if element.errors %}
+<div class="row rdrf-cde-field has-error">
+{% else %}
+<div class="row rdrf-cde-field">
+{% endif %}
+    {% if element.label != "Delete" %}
+    <label for="{{ element.auto_id}}" style="display: {{element.is_hidden|yesno:"
+        None,block"}}" class="col-sm-3 col-form-label">
+        {{ element.label }}
+        {% if element.field.required %}
+        <span class="fa fa-asterisk" style="color: red;" aria-hidden="true"></span>
+        {% endif %}
+        {% if element.field.important %}
+        <span class="fa fa-asterisk" style="color: green;" aria-hidden="true"></span>
+        {% endif %}
+    </label>
+    <div class="col-sm-9">
+        {{ element|safe }}
+        {% if not element.is_hidden %}
+        <small class="text-muted">
+            <i>{{ element.help_text }}</i>
+        </small>
+        {% endif %}
+        {% if element.errors %}
+        <span class="badge bg-danger">{{ element.errors.as_text }}</span>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>

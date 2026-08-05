@@ -1,0 +1,52 @@
+{% load array_item i18n %}
+
+{% if element.errors %}
+<div class="row rdrf-cde-field has-error invisibutton-container">
+{% else %}
+<div class="row rdrf-cde-field invisibutton-container">
+{% endif %}
+    {% if changes_since_version and element.label == "Delete" %}
+    <div></div>
+    {% else %}
+    <label for="{{ element.auto_id}}" style="display: {{element.is_hidden|yesno:"
+        None,block"}}" class="col-sm-3 col-form-label">
+        {% if element.label == "Delete" %}
+        {% trans "Mark for deletion" %}
+        {% else %}
+        {% if element.field.cde.code and not CREATE_MODE and have_dynamic_data %}
+        <a href="{% url 'registry_form_field_history' registry_code form_name patient_id s context_id element.field.cde.code index%}"
+            onclick="rdrf_click_form_field_history(event, this)"
+            class="btn btn-outline-secondary btn-xs invisibutton pull-left"
+            data-bs-toggle="tooltip" title="View previous answers"
+            aria-label="Previous answers">
+            <i class="fa fa-clock-o" aria-hidden="true"></i>
+        </a>
+        {% endif %}
+        {{ element.label }}
+        {% if element.field.required %}
+        <span class="fa fa-asterisk" style="color: red;" aria-hidden="true"></span>
+        {% endif %}
+        {% if element.field.important %}
+        <span class="fa fa-asterisk" style="color: green;" aria-hidden="true"></span>
+        {% endif %}
+        {% endif %}
+    </label>
+    <div class="col-sm-9">
+        {% if not f.was_deleted and changes_since_version %}
+        <div title="{% trans " Previous value:" %}&nbsp;{{element.field.previous_value|array_item:index|default:_('Was not set previously')}}">
+            {{ element|safe }}
+        </div>
+        {% else %}
+        {{ element|safe }}
+        {% endif %}
+        {% if not element.is_hidden %}
+        <small class="text-muted">
+            <i>{{ element.help_text }}</i>
+        </small>
+        {% endif %}
+        {% if element.errors %}
+        <span class="badge bg-danger">{{ element.errors.as_text }}</span>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
