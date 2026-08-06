@@ -334,11 +334,10 @@
 {% block formlinks %}
 {% endblock %}
 
-{% block sidebar %}
-<div class="rdrf-clinical-sidebar-source">
-    {{ context_launcher | safe }}
-</div>
+{% block sidebar_column %}
 {% endblock %}
+
+{% block main_column_class %}col-12{% endblock %}
 
 {% block formbtns %}
 {% include "rdrf_cdes/clinical_form_actions.html" %}
@@ -346,6 +345,9 @@
 
 {% block page_header_navigation %}
 <nav class="rdrf-module-nav d-print-none" data-rdrf-module-nav aria-label="{% trans 'Modules' %}"></nav>
+<div class="d-none" data-rdrf-module-nav-source>
+    {{ context_launcher | safe }}
+</div>
 {% endblock %}
 
 {% block page_header_summary %}
@@ -369,7 +371,7 @@
 </a>
 
 <div class="row rdrf-clinical-content">
-    <div class="col-lg-3 col-12 d-print-none">
+    <div class="col-lg-3 d-none d-lg-block d-print-none">
         {% include "rdrf_cdes/clinical_form_section_rail.html" %}
     </div>
     <div class="col-lg-9 col-12">

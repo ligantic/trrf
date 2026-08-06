@@ -176,7 +176,14 @@ class ClinicalFormPageTest(TestCase):
         # REQ-07-01: section rail with an entry per section, anchored to the
         # section card ids, and the horizontal module navigation shell.
         self.assertIn("rdrf-subnav-rail", content)
+        self.assertIn('class="col-lg-3 d-none d-lg-block d-print-none"', content)
         self.assertIn("data-rdrf-module-nav", content)
+        self.assertNotIn('id="sidebar"', content)
+        self.assertNotIn('class="blur"', content)
+        self.assertNotIn("toggleSidebar", content)
+        self.assertNotIn("sidebar-button", content)
+        self.assertIn('data-rdrf-module-nav-source', content)
+        self.assertIn('class="col-12"', content)
         self.assertRegex(
             content,
             r'(?s)class="card card-info trrf-page-header".*data-rdrf-module-nav',

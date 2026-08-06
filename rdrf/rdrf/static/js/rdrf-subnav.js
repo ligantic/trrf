@@ -144,7 +144,7 @@
             document.querySelectorAll('[data-rdrf-module-nav]')
         ).forEach(function (nav) {
             if (nav.dataset.rdrfModuleNavReady === 'true') { return; }
-            var source = document.querySelector('#sidebar');
+            var source = document.querySelector('[data-rdrf-module-nav-source]');
             if (!source) { return; }
 
             Array.prototype.slice.call(
@@ -160,7 +160,6 @@
             });
 
             if (nav.children.length) {
-                source.classList.add('rdrf-clinical-sidebar-replaced');
                 nav.dataset.rdrfModuleNavReady = 'true';
             }
         });

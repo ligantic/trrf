@@ -137,13 +137,15 @@
             {% endif %}
 
             <div class="row">
-                <div id="sidebar" class="offset-xxl-1 col-xxl-2 col-lg-3 sidebar sidebar-hide">
-                    <div class="well p-4" style="background-color: #eeeeee;">
-                        {% block sidebar %}
-                        {% endblock %}
+                {% block sidebar_column %}
+                    <div id="sidebar" class="{% block sidebar_column_class %}offset-xxl-1 col-xxl-2 col-lg-3 sidebar sidebar-hide{% endblock %}">
+                        <div class="well p-4" style="background-color: #eeeeee;">
+                            {% block sidebar %}
+                            {% endblock %}
+                        </div>
                     </div>
-                </div>
-                <div class="col-xxl-8 col-lg-9">
+                {% endblock %}
+                <div class="{% block main_column_class %}col-xxl-8 col-lg-9{% endblock %}">
                     {% include "rdrf_cdes/alert_language_is_not_supported.html" %}
                     {% block content %}
 
