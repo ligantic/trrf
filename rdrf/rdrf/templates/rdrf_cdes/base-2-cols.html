@@ -151,7 +151,7 @@
 
                     {% include 'rdrf_cdes/form_modal.html' %}
                     {% if header or show_page_header %}
-                        <div class="card card-info trrf-page-header">
+                        <div class="card card-info trrf-page-header {% block page_header_class %}{% endblock %}">
                             <div class="card-body">
                                 {% block page_header_navigation %}
                                 {% endblock %}

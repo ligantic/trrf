@@ -13,7 +13,7 @@
                     <div class="rdrf-progress__bar" style="width: {{ form_progress|floatformat:'0' }}%;"></div>
                 </div>
             </div>
-            <span>{{ form_progress|floatformat:"0" }}%</span>
+            <span class="rdrf-form-progress-summary__value">{{ form_progress|floatformat:"0" }}%</span>
         </span>
         {% else %}
         <span>{% trans "Progress on this page" %}</span>

@@ -186,7 +186,7 @@ class ClinicalFormPageTest(TestCase):
         self.assertIn('class="col-12"', content)
         self.assertRegex(
             content,
-            r'(?s)class="card card-info trrf-page-header".*data-rdrf-module-nav',
+            r'(?s)class="card card-info trrf-page-header rdrf-clinical-page-header".*data-rdrf-module-nav',
         )
         self.assertRegex(
             content,
@@ -196,6 +196,7 @@ class ClinicalFormPageTest(TestCase):
             '<h1 class="rdrf-clinical-summary__title">Clinical Module</h1>',
             content,
         )
+        self.assertIn('class="rdrf-form-progress-summary__value">0%</span>', content)
         self.assertIn('href="#section_CAP07SEC"', content)
         self.assertIn('href="#section_CAP07MULTI"', content)
         self.assertIn('id="section_CAP07SEC"', content)
