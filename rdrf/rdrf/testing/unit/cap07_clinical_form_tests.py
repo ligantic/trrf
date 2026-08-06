@@ -181,6 +181,14 @@ class ClinicalFormPageTest(TestCase):
             content,
             r'(?s)class="card card-info trrf-page-header".*data-rdrf-module-nav',
         )
+        self.assertRegex(
+            content,
+            r'(?s)data-rdrf-module-nav.*rdrf-clinical-summary.*rdrf-form-progress-summary',
+        )
+        self.assertIn(
+            '<h1 class="rdrf-clinical-summary__title">Clinical Module</h1>',
+            content,
+        )
         self.assertIn('href="#section_CAP07SEC"', content)
         self.assertIn('href="#section_CAP07MULTI"', content)
         self.assertIn('id="section_CAP07SEC"', content)
@@ -198,8 +206,8 @@ class ClinicalFormPageTest(TestCase):
         # complete_form_cdes configured => progress surfaced as rdrf-progress
         self.assertIn("rdrf-progress", content)
         self.assertIn('role="progressbar"', content)
-        self.assertIn('id="show-cdes-btn"', content)
-        self.assertIn('id="form-progress-cdes"', content)
+        self.assertNotIn('id="show-cdes-btn"', content)
+        self.assertNotIn('id="form-progress-cdes"', content)
 
     def test_section_rail_rendering_contract(self):
         content = self._get_page()

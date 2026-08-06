@@ -348,6 +348,15 @@
 <nav class="rdrf-module-nav d-print-none" data-rdrf-module-nav aria-label="{% trans 'Modules' %}"></nav>
 {% endblock %}
 
+{% block page_header_summary %}
+<div class="rdrf-clinical-summary">
+    <div class="rdrf-clinical-summary__title-row">
+        <h1 class="rdrf-clinical-summary__title">{{ current_form_name }}</h1>
+        {% include "rdrf_cdes/clinical_form_progress.html" with in_header_summary=True %}
+    </div>
+</div>
+{% endblock %}
+
 {% block content %}
 {{ block.super }}
 
@@ -364,7 +373,6 @@
         {% include "rdrf_cdes/clinical_form_section_rail.html" %}
     </div>
     <div class="col-lg-9 col-12">
-        {% include "rdrf_cdes/clinical_form_progress.html" %}
         <form class="form-horizontal" id="main-form" novalidate enctype="multipart/form-data" method="post">{% csrf_token %}
             <input class="form-control" type="hidden" name="position">
 

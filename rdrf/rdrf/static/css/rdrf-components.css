@@ -359,6 +359,54 @@
   padding: 9px 15px;
 }
 
+.rdrf-clinical-summary {
+  margin-bottom: var(--space-5);
+}
+
+.rdrf-clinical-summary__title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+.rdrf-clinical-summary__title {
+  margin: 0;
+  color: var(--color-text-heading);
+  font-family: var(--font-body);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.rdrf-form-progress-summary {
+  flex: 0 1 20rem;
+  min-width: 12rem;
+}
+
+.rdrf-form-progress-summary .rdrf-card__title-row {
+  margin: 0;
+}
+
+.rdrf-form-progress-summary .rdrf-card__title-row > .d-flex {
+  width: 100%;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.rdrf-form-progress-summary__bar {
+  flex: 1 1 auto;
+  min-width: 5rem;
+}
+
+.rdrf-form-progress-summary .rdrf-progress {
+  display: block;
+  width: 100%;
+}
+
+.rdrf-form-progress-summary .rdrf-progress__bar {
+  display: block;
+}
+
 #sidebar.rdrf-clinical-sidebar-replaced {
   display: none;
 }
@@ -379,6 +427,20 @@
 
 @media (max-width: 991.98px) {
   .rdrf-module-nav { margin-inline: calc(var(--bs-gutter-x) * -0.5); }
+}
+
+@media (max-width: 575.98px) {
+  .rdrf-clinical-summary__title-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .rdrf-form-progress-summary {
+    width: 100%;
+    flex: 0 1 auto;
+    min-width: 0;
+  }
 }
 
 /* RTL support: base template flips dir="rtl"; mirror the accent border. */

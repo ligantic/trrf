@@ -3,8 +3,19 @@
 {% load translate %}
 
 {% if has_form_progress %}
-<div class="rdrf-card rdrf-form-progress-card d-print-none">
+<div class="{% if in_header_summary %}rdrf-form-progress-summary{% else %}rdrf-card rdrf-form-progress-card{% endif %} d-print-none">
     <div class="rdrf-card__title-row">
+        {% if in_header_summary %}
+        <span class="d-flex align-items-center gap-2">
+            <div class="rdrf-form-progress-summary__bar">
+                <div class="rdrf-progress" role="progressbar" aria-valuenow="{{ form_progress|floatformat:'0' }}"
+                    aria-valuemin="0" aria-valuemax="100" aria-label="{% trans 'Progress on this page' %}">
+                    <div class="rdrf-progress__bar" style="width: {{ form_progress|floatformat:'0' }}%;"></div>
+                </div>
+            </div>
+            <span>{{ form_progress|floatformat:"0" }}%</span>
+        </span>
+        {% else %}
         <span>{% trans "Progress on this page" %}</span>
         <span class="d-flex align-items-center gap-2">
             <span>{{ form_progress|floatformat:"0" }}%</span>
@@ -12,7 +23,9 @@
                 aria-label="{% trans 'Show completion details' %}"><span class="fa fa-sort"
                     aria-hidden="true"></span></span>
         </span>
+        {% endif %}
     </div>
+    {% if not in_header_summary %}
     <div class="rdrf-progress" role="progressbar" aria-valuenow="{{ form_progress|floatformat:'0' }}"
         aria-valuemin="0" aria-valuemax="100" aria-label="{% trans 'Progress on this page' %}">
         <div class="rdrf-progress__bar" style="width: {{ form_progress|floatformat:'0' }}%;"></div>
@@ -22,14 +35,15 @@
             {% for fpc in form_progress_cdes.items %}
             <li class="list-group-item">
                 {% if fpc.1 %}
-                <img src='{% static ' images/tick.png'%}'>
+                <img src='{% static 'images/tick.png'%}'>
                 {% elif fpc.1 == False %}
-                <img src='{% static ' images/cross.png'%}'>
+                <img src='{% static 'images/cross.png'%}'>
                 {% endif %}
                 {{fpc.0|translate}}
             </li>
             {% endfor %}
         </ul>
     </div>
+    {% endif %}
 </div>
 {% endif %}
