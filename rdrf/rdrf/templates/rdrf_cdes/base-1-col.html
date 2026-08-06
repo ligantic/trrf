@@ -16,7 +16,8 @@
 {% get_current_language_bidi as LANGUAGE_BIDI %}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 {% with registry_code|get_most_relevant_registry:request.user as relevant_registry %}
-<html {% if LANGUAGE_BIDI %}dir="rtl"{% endif %} xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" translate="{{ relevant_registry|get_translate_value }}" >
+<html {% if LANGUAGE_BIDI %}dir="rtl" {% endif %} xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"
+    translate="{{ relevant_registry|get_translate_value }}">
 {% endwith %}
 
 <head>
@@ -25,9 +26,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <link rel="stylesheet" href="{% static 'css/vendor/font-awesome.min.css' %}">
-    <link rel="stylesheet" href="{% static 'vendor/bootstrap-5.1.0/css/' %}{% if LANGUAGE_BIDI %}bootstrap.rtl.min.css{% else %}bootstrap.min.css{% endif %}">
+    <link rel="stylesheet"
+        href="{% static 'vendor/bootstrap-5.1.0/css/' %}{% if LANGUAGE_BIDI %}bootstrap.rtl.min.css{% else %}bootstrap.min.css{% endif %}">
     <link rel="stylesheet" href="{% static 'css/bootstrap-overrides.css' %}">
-    <link rel="stylesheet" type="text/css" href="{% static 'vendor/bootstrap-slider-11.0.2/css/bootstrap-slider.min.css' %}">
+    <link rel="stylesheet" type="text/css"
+        href="{% static 'vendor/bootstrap-slider-11.0.2/css/bootstrap-slider.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/rdrf.css' %}" media="all">
     {# RDRF UX uplift theme (planning/THEME.md): tokens first, then components, then chrome #}
     <link rel="stylesheet" type="text/css" href="{% static 'css/rdrf-tokens.css' %}" media="all">
@@ -50,7 +53,8 @@
     {% endif %}
 
     <script type="text/javascript" src="{% static 'vendor/bootstrap-5.1.0/js/bootstrap.bundle.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'vendor/bootstrap-slider-11.0.2/js/bootstrap-slider.min.js' %}"></script>
+    <script type="text/javascript"
+        src="{% static 'vendor/bootstrap-slider-11.0.2/js/bootstrap-slider.min.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/calculated_field_plugin.js' %}"></script>
     <script type="text/javascript" src="{% static 'js/vendor/underscore-1.13.1.min.js' %}"></script>
     <script type="text/javascript" src="{% url 'javascript-catalog' %}"></script>
@@ -85,15 +89,12 @@
         {% if location %}
         <div class="banner">
             <div class="container-fluid my-2">
-              <div class="row">
-                <div class="offset-xxl-1 col-xxl-5 col-md-6">
-                  {% include "rdrf_cdes/banner/_patient.html" %}
+                <div class="row justify-content-end">
+                    <div class="col-xxl-5 col-md-6 d-print-none d-flex justify-content-md-end">
+                        {% block formbtns %}
+                        {% endblock %}
+                    </div>
                 </div>
-                <div class="col-xxl-5 col-md-6 d-print-none mt-md-0 mt-3 d-flex justify-content-md-end">
-                    {% block formbtns %}
-                    {% endblock %}
-                </div>
-              </div>
             </div>
         </div>
         {% endif %}
@@ -104,7 +105,8 @@
                 <div class="row">
                     <div class="col-md-6 offset-md-3">
                         {% for message in messages %}
-                        <div {% if message.tags %} class="alert alert-{{ message.tags }}" {% endif %}>{{ message }}</div>
+                        <div {% if message.tags %} class="alert alert-{{ message.tags }}" {% endif %}>{{ message }}
+                        </div>
                         {% endfor %}
                     </div>
                 </div>

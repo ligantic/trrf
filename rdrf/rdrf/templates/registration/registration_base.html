@@ -7,7 +7,7 @@
 {% get_current_language as LANGUAGE_CODE %}
 
 {% with registry_code|get_most_relevant_registry:request.user as relevant_registry %}
-<html {% if LANGUAGE_BIDI %}dir="rtl"{% endif %} translate="{{ relevant_registry|get_translate_value }}">
+<html {% if LANGUAGE_BIDI %}dir="rtl" {% endif %} translate="{{ relevant_registry|get_translate_value }}">
 {% endwith %}
 
 <head>
@@ -15,7 +15,8 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="stylesheet" href="{% static 'vendor/bootstrap-5.1.0/css/' %}{% if LANGUAGE_BIDI %}bootstrap.rtl.min.css{% else %}bootstrap.min.css{% endif %}">
+    <link rel="stylesheet"
+        href="{% static 'vendor/bootstrap-5.1.0/css/' %}{% if LANGUAGE_BIDI %}bootstrap.rtl.min.css{% else %}bootstrap.min.css{% endif %}">
     <link rel="stylesheet" href="{% static 'css/bootstrap-overrides.css' %}">
     <link rel="stylesheet" href="{% static 'css/vendor/font-awesome.min.css' %}">
     <link rel="stylesheet" href="{% static 'css/jquery-1.13.2/themes/smoothness/jquery-ui.min.css' %}">
@@ -41,15 +42,18 @@
         body {
             background-color: #edeff1;
         }
+
         .error {
             color: red;
             font-style: italic;
             font-size: small;
         }
+
         .top-separator {
             border-top: dotted 1px #bbb;
             padding-top: 20px;
         }
+
         fieldset.radio-group legend {
             display: inline;
             float: none;
@@ -61,7 +65,7 @@
         $(window).on("resize", function () {
             adjustContentTopPadding("registration_base_container");
         });
-        $(document).ready(function() {
+        $(document).ready(function () {
             adjustContentTopPadding("registration_base_container");
             var registry_code = "{{registry_code}}";
 
@@ -78,7 +82,7 @@
 
             $("#registration-submit")
                 .prop("disabled", true)
-                .click(function() {
+                .click(function () {
                     var registration_form = $("#registration-form");
                     onBeforeSubmit();
                     if (registration_form.valid()) {
@@ -93,12 +97,12 @@
             $('[data-bs-toggle="tooltip"]').tooltip();
 
             // Mark up all required inputs automatically
-            $(":input[required]").each(function(i, input) {
+            $(":input[required]").each(function (i, input) {
                 let $target;
                 if ($(input).is(':radio')) {
-                  $target = $(input).closest('fieldset.radio-group').find('> legend');
+                    $target = $(input).closest('fieldset.radio-group').find('> legend');
                 } else {
-                  $target = $('label[for="' + $(input).attr('id') + '"]');
+                    $target = $('label[for="' + $(input).attr('id') + '"]');
                 }
 
                 if ($target && !($target.has('.required').length)) {
@@ -107,9 +111,9 @@
             });
 
             {% if embedded_view and form.non_field_errors or embedded_view and form.errors %}
-              // Scroll to top on page load if there are errors
-              // This behaviour isn't automatic with iframes and is especially useful when there are server-side errors after form submission
-              $("#registration_base_container")[0].scrollIntoView({behavior: 'smooth'});
+            // Scroll to top on page load if there are errors
+            // This behaviour isn't automatic with iframes and is especially useful when there are server-side errors after form submission
+            $("#registration_base_container")[0].scrollIntoView({ behavior: 'smooth' });
             {% endif %}
 
             {% block extra_js_init %}
@@ -128,7 +132,7 @@
         // Overwrite these in specific template if needed.
 
         // Custom code to be called if the validation fails (on the client-side)
-        function onValidationError() {}
+        function onValidationError() { }
 
         function onBeforeSubmit() {
             $("#id_email").val($("#id_username").val());
@@ -143,26 +147,21 @@
     <div class="fixed-top">
         {% include "rdrf_cdes/banner/_show_banner.html" %}
         {% if not embedded_view %}
-            {% include "rdrf_cdes/navbar.html" %}
+        {% include "rdrf_cdes/navbar.html" %}
         {% endif %}
     </div>
 
-    <div
-        id="registration_base_container"
-        {% if not embedded_view %}
-         class="container"
-        {% endif %}
-    >
+    <div id="registration_base_container" {% if not embedded_view %} class="container" {% endif %}>
 
         {% block form_instructions %}
         {% endblock %}
 
-        {%  include "rdrf_cdes/form_list_errors.html" %}
+        {% include "rdrf_cdes/form_list_errors.html" %}
         {% include "rdrf_cdes/alert_language_is_not_supported.html" %}
 
         <form id="registration-form" method="POST" autocomplete="off">
             {% block content %}
-                <p><em>{% trans "Required fields are marked with an asterisk (*)." %}</em></p>
+            <p><em>{% trans "Required fields are marked with an asterisk (*)." %}</em></p>
             {% endblock %}
         </form>
 

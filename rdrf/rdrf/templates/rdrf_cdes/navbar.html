@@ -6,27 +6,36 @@
 
 <nav class="navbar navbar-expand-md navbar-light rdrf-navbar" aria-label="{% trans 'Primary navigation' %}">
   <div class="container-fluid rdrf-navbar__inner">
-      {% if show_sidebar_button %}
-          <button type="button" class="btn" id="sidebar-button" aria-label="Toggle patient menu">
-              <span class="fa fa-chevron-right navbar-left d-lg-none"></span>
-          </button>
+    {% if show_sidebar_button %}
+    <button type="button" class="btn" id="sidebar-button" aria-label="Toggle patient menu">
+      <span class="fa fa-chevron-right navbar-left d-lg-none"></span>
+    </button>
+    {% endif %}
+    <a class="navbar-brand project_title" href="{% project_title_link %}">
+      {% project_logo as PL %}
+      {% project_title as PT %}
+      {% if PL %}
+      <img src="{% static PL %}" class="project_logo" alt="{{ PT }}">
+      {% elif PT %}
+      <span>{% project_title %}</span>
       {% endif %}
-      <a class="navbar-brand project_title" href="{% project_title_link %}">
-        {% project_logo as PL %}
-        {% project_title as PT %}
-        {% if PL %}
-          <img src="{% static PL %}" class="project_logo" alt="{% trans "Project logo" %}">
-          &nbsp;
-        {% endif %}
-        {% if PT %}
-          <span class="d-none d-lg-inline">{% project_title %}</span>
-        {% endif %}
-      </a>
-      <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar-collapsing-links" aria-controls="navbar-collapsing-links" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="fa fa-bars"></span>
-      </button>
+    </a>
+    {% if patient_link or patient %}
+    <div class="rdrf-navbar__participant">
+      {% if patient_link %}
+      {{ patient_link|safe }}
+      {% else %}
+      <span class="fa fa-user" aria-hidden="true"></span>
+      <span>{{ patient }}</span>
+      {% endif %}
+    </div>
+    {% endif %}
+    <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar-collapsing-links"
+      aria-controls="navbar-collapsing-links" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="fa fa-bars"></span>
+    </button>
     {% block navbar_links %}
-      {% include "rdrf_cdes/navbar_links.html" %}
+    {% include "rdrf_cdes/navbar_links.html" %}
     {% endblock %}
   </div>
 </nav>
