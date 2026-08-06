@@ -6,11 +6,6 @@
 
 <nav class="navbar navbar-expand-md navbar-light rdrf-navbar" aria-label="{% trans 'Primary navigation' %}">
   <div class="container-fluid rdrf-navbar__inner">
-    {% if show_sidebar_button %}
-    <button type="button" class="btn" id="sidebar-button" aria-label="Toggle patient menu">
-      <span class="fa fa-chevron-right navbar-left d-lg-none"></span>
-    </button>
-    {% endif %}
     <a class="navbar-brand project_title" href="{% project_title_link %}">
       {% project_logo as PL %}
       {% project_title as PT %}
