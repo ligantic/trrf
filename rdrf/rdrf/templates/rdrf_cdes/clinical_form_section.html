@@ -6,32 +6,37 @@
 {% load lookup %}
 {% load translate %}
 
-<div class="card collapsible rdrf-card rdrf-section-card" id="section_{{ s }}">
-    <div class="card-header rdrf-card__title-row">
+<section class="rdrf-section-card" id="section_{{ s }}">
+    <div class="rdrf-clinical-section-label">
+        <div class="rdrf-clinical-section-label__main">
+            <div class="rdrf-clinical-section-label__title-row">
         {% if request.user.is_superuser and settings.DESIGN_MODE %}
-        <a target="_blank" href="{% url 'admin:rdrf_section_change' section_ids|get_section_id:s %}"><strong
-                data-name="{{s}}">{{display_names|get_display_name:s|translate}}</strong></a>
+        <a class="rdrf-clinical-section-label__title" target="_blank" href="{% url 'admin:rdrf_section_change' section_ids|get_section_id:s %}"
+                data-name="{{s}}">{{display_names|get_display_name:s|translate}}</a>
         {% else %}
-        <strong data-name="{{s}}">{{display_names|get_display_name:s|translate}}</strong>
+        <strong class="rdrf-clinical-section-label__title" data-name="{{s}}">{{display_names|get_display_name:s|translate}}</strong>
         {% endif %}
 
         {% if forms|is_formset:s and not changes_since_version %}
         {% with formset=forms|get_form_object:s %}
-        <a class="btn btn-outline-primary btn-sm float-end" onclick="add_form(this, '{{formset.prefix}}');">
+        <a class="btn btn-outline-primary btn-sm rdrf-clinical-section-label__add" onclick="add_form(this, '{{formset.prefix}}');">
             <span class="fa fa-plus" aria-hidden="true"></span> {% trans "Add" %}
         </a>
         {% endwith %}
         {% endif %}
+            </div>
+
+            {% if section_headers|lookup:s %}
+            <div class="rdrf-clinical-section-label__supporting-text">
+                {% autoescape off %}
+                {{ section_headers|lookup:s|translate }}
+                {% endautoescape %}
+            </div>
+            {% endif %}
+        </div>
     </div>
 
-    <div class="card-body">
-        {% if section_headers|lookup:s %}
-        <div class="rdrf-reference-block">
-            {% autoescape off %}
-            {{ section_headers|lookup:s|translate }}
-            {% endautoescape %}
-        </div>
-        {% endif %}
+    <div class="rdrf-section-card__body">
         <div class="rdrf-capture-block">
             {% if forms|is_formset:s %}
             {% with formset=forms|get_form_object:s %}
@@ -79,4 +84,4 @@
             {% endif %}
         </div>
     </div>
-</div>
+</section>

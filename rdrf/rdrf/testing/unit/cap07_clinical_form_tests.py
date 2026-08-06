@@ -183,7 +183,7 @@ class ClinicalFormPageTest(TestCase):
         self.assertNotIn("toggleSidebar", content)
         self.assertNotIn("sidebar-button", content)
         self.assertIn('data-rdrf-module-nav-source', content)
-        self.assertIn('class="col-12"', content)
+        self.assertIn('class="col-12 rdrf-clinical-page"', content)
         self.assertRegex(
             content,
             r'(?s)class="card card-info trrf-page-header rdrf-clinical-page-header".*data-rdrf-module-nav',
@@ -224,6 +224,8 @@ class ClinicalFormPageTest(TestCase):
         # the rail is extracted from the page template.
         self.assertIn('data-rdrf-subnav', content)
         self.assertIn('aria-label="Form sections"', content)
+        self.assertIn('class="rdrf-clinical-rail__heading"', content)
+        self.assertIn('class="rdrf-clinical-rail__items"', content)
         self.assertIn('href="#section_CAP07SEC"', content)
         self.assertIn('href="#section_CAP07MULTI"', content)
 
@@ -234,17 +236,19 @@ class ClinicalFormPageTest(TestCase):
         self.assertIn("add_form(this,", content)
         self.assertIn("delete_form(this,", content)
 
-    def test_section_header_renders_in_reference_block(self):
+    def test_section_header_renders_as_supporting_text(self):
         Section.objects.filter(code="CAP07SEC").update(
             header="<p>Reasons in the last 12 months</p>"
         )
         content = self._get_page()
-        self.assertIn('class="rdrf-reference-block"', content)
+        self.assertIn(
+            'class="rdrf-clinical-section-label__supporting-text"', content
+        )
         self.assertIn("Reasons in the last 12 months", content)
 
     def test_no_reference_block_without_section_header(self):
         content = self._get_page()
-        self.assertNotIn('class="rdrf-reference-block"', content)
+        self.assertNotIn('class="rdrf-clinical-section-label__supporting-text"', content)
 
     def test_section_shell_rendering_contract(self):
         Section.objects.filter(code="CAP07SEC").update(
@@ -252,15 +256,17 @@ class ClinicalFormPageTest(TestCase):
         )
         content = self._get_page()
 
-        # Keep each section's card, title, configured reference content, and
-        # repeatable-section add hook stable while the section shell moves to
-        # a reusable renderer.
+        # Keep each section's anchor, title, configured supporting content,
+        # and repeatable-section add hook stable while its visual shell is
+        # rendered as a label-and-content composition.
         self.assertIn(
-            'class="card collapsible rdrf-card rdrf-section-card"', content
+            'class="rdrf-section-card"', content
         )
         self.assertIn('data-name="CAP07SEC"', content)
         self.assertIn("Hospitalisations", content)
         self.assertIn("Section guidance", content)
+        self.assertIn('class="rdrf-clinical-section-label__supporting-text"', content)
+        self.assertIn('class="rdrf-section-card__body"', content)
         self.assertIn('class="rdrf-capture-block"', content)
         self.assertIn(
             "add_form(this, 'formset_CAP07MULTI')", content

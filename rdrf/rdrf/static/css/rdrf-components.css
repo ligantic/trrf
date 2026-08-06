@@ -222,6 +222,56 @@
   font-weight: 600;
 }
 
+/* Editable clinical sections use a label-and-content composition rather than
+   the shared card component. This keeps the section identity separate from
+   its editable capture fields. */
+.rdrf-clinical-section-label {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border-subtle);
+  color: var(--color-text-heading);
+  font-family: "Work Sans", var(--font-body);
+}
+
+.rdrf-clinical-section-label__main {
+  max-width: 46rem;
+}
+
+.rdrf-clinical-section-label__title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.rdrf-clinical-section-label__title {
+  color: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+  text-decoration: none;
+}
+
+.rdrf-clinical-section-label__supporting-text {
+  margin-top: var(--space-2);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.rdrf-clinical-section-label__supporting-text > :first-child {
+  margin-top: 0;
+}
+
+.rdrf-clinical-section-label__supporting-text > :last-child {
+  margin-bottom: 0;
+}
+
+.rdrf-clinical-section-label__add {
+  margin-left: auto;
+}
+
 .rdrf-card__meta {
   color: var(--color-text-secondary);
   font-size: var(--text-xs-size);
@@ -289,7 +339,7 @@
   display: block;
   padding: var(--space-2) var(--space-4);
   border-left: 3px solid transparent;
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  border-radius: 0 var(--radius-  sm) var(--radius-sm) 0;
   color: var(--color-text-secondary);
   text-decoration: none;
   font-weight: 500;
@@ -318,9 +368,23 @@
    surfaces with its existing selected-state treatment. */
 .rdrf-clinical-rail {
   gap: var(--space-2);
-  padding: 0 var(--space-3) 0 var(--space-5);
-  border-left: 1px solid var(--color-border-subtle);
+  padding: 0 var(--space-5);
   font-family: "Work Sans", var(--font-body);
+}
+
+.rdrf-clinical-rail__heading {
+  color: var(--color-rail-heading, var(--color-text-heading));
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.rdrf-clinical-rail__items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  border-left: 1px solid var(--color-rail-guide, var(--color-border-subtle));
 }
 
 .rdrf-clinical-rail .rdrf-subnav-rail__item {
@@ -341,9 +405,9 @@
 .rdrf-clinical-rail .rdrf-subnav-rail__item--active {
   margin-left: -1px;
   padding-left: var(--space-2);
-  border-left: 2px solid var(--color-text-heading);
+  border-left: 2px solid var(--color-rail-heading, var(--color-text-heading));
   background-color: transparent;
-  color: var(--color-text-heading);
+  color: var(--color-rail-heading, var(--color-text-heading));
   font-weight: 500;
 }
 
@@ -396,6 +460,12 @@
 .rdrf-clinical-summary {
   margin-bottom: var(--space-5);
   font-family: "Work Sans", var(--font-body);
+}
+
+.rdrf-clinical-page {
+  max-width: 82rem;
+  margin: 0 auto;
+  padding-inline: var(--space-4);
 }
 
 .trrf-page-header.rdrf-clinical-page-header {

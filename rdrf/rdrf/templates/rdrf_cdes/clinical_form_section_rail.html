@@ -4,6 +4,13 @@
 
 <nav class="rdrf-subnav-rail rdrf-clinical-rail" data-rdrf-subnav aria-label="{% trans 'Form sections' %}">
     {% for s in sections %}
+    {% if forloop.first %}
+    <span class="rdrf-clinical-rail__heading">{{ display_names|get_display_name:s|translate }}</span>
+    <div class="rdrf-clinical-rail__items">
+    {% endif %}
     <a class="rdrf-subnav-rail__item" href="#section_{{ s }}">{{ display_names|get_display_name:s|translate }}</a>
+    {% if forloop.last %}
+    </div>
+    {% endif %}
     {% endfor %}
 </nav>

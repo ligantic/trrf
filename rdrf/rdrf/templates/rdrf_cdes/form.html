@@ -53,22 +53,15 @@
         }
     }
 
-    /* Section cards keep Bootstrap .card structure (CollapsingPanels
-           targets .card.collapsible > .card-header/.card-body), so let the
-           Bootstrap paddings govern inside the rdrf-card shell. */
+    /* Clinical sections use a label-and-content structure rather than a
+           Bootstrap card, keeping fields in their existing capture block. */
     .rdrf-section-card {
-        padding: 0;
         margin-bottom: 1.5rem;
         scroll-margin-top: var(--rdrf-sticky-offset, 6rem);
     }
 
-    .rdrf-section-card>.card-header {
-        background-color: transparent;
-        border-bottom: 1px solid var(--color-border-subtle);
-    }
-
-    .rdrf-section-card .rdrf-reference-block {
-        margin-bottom: 1rem;
+    .rdrf-section-card__body {
+        padding-top: 1.25rem;
     }
 
     .rdrf-section-card .rdrf-capture-block {
@@ -337,7 +330,7 @@
 {% block sidebar_column %}
 {% endblock %}
 
-{% block main_column_class %}col-12{% endblock %}
+{% block main_column_class %}col-12 rdrf-clinical-page{% endblock %}
 
 {% block page_header_class %}rdrf-clinical-page-header{% endblock %}
 
