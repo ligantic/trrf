@@ -646,6 +646,47 @@
   font-family: var(--font-body);
 }
 
+.rdrf-capture-block .rdrf-cde-field {
+  margin-bottom: var(--space-5);
+}
+
+.rdrf-capture-block .rdrf-cde-field > .col-form-label {
+  color: var(--color-text-heading);
+  font-family: "Work Sans", var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.rdrf-capture-block .rdrf-cde-field > .col-sm-9 > .text-muted,
+.rdrf-capture-block .rdrf-cde-field > .col-sm-9 > small.text-muted {
+  display: block;
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-secondary) !important;
+  font-family: "Work Sans", var(--font-body);
+  font-size: 13px;
+  font-style: normal;
+  line-height: 18px;
+}
+
+.rdrf-capture-block .rdrf-cde-field > .col-sm-9 > .text-muted > i,
+.rdrf-capture-block .rdrf-cde-field > .col-sm-9 > small.text-muted > i {
+  font-style: normal;
+}
+
+.rdrf-capture-block .rdrf-cde-field > .col-sm-9 > .badge.bg-danger {
+  display: inline-block;
+  margin-top: var(--space-2);
+  white-space: normal;
+  text-align: left;
+}
+
+@media (max-width: 575.98px) {
+  .rdrf-capture-block .rdrf-cde-field > .col-form-label {
+    padding-bottom: var(--space-1);
+  }
+}
+
 /* ==========================================================================
    Progress bar — slim, token-driven, for module/instrument progress
    (THEME.md §6 CAP-08 part navigator/progress).
