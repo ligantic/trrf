@@ -272,6 +272,24 @@
   margin-left: auto;
 }
 
+.rdrf-clinical-section-label__add,
+.rdrf-multisection-entry__remove {
+  align-items: center;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  font-family: "Work Sans", var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  gap: var(--space-1);
+  line-height: 18px;
+  min-height: 32px;
+  padding: 6px var(--space-3);
+}
+
+.rdrf-multisection-entry__remove {
+  margin-bottom: var(--space-4);
+}
+
 .rdrf-card__meta {
   color: var(--color-text-secondary);
   font-size: var(--text-xs-size);
@@ -545,15 +563,80 @@
 .rdrf-form-actions {
   display: inline-flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: var(--space-3);
 }
 
+.rdrf-form-actions--top {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--space-5);
+}
+
+.rdrf-form-actions--footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--space-6);
+  margin-bottom: var(--space-8);
+}
+
 .rdrf-form-actions__cancel,
-.rdrf-form-actions__save {
-  min-width: 7.5rem;
-  padding: var(--space-3) var(--space-5);
+.rdrf-form-actions__save,
+.rdrf-form-actions__print {
+  align-items: center;
   border-radius: var(--radius-md);
+  display: inline-flex;
+  font-family: "Work Sans", var(--font-body);
+  font-size: 14px;
   font-weight: 600;
+  justify-content: center;
+  line-height: 20px;
+  min-height: 40px;
+  min-width: 7.5rem;
+  padding: 10px var(--space-5);
+}
+
+.rdrf-form-actions__cancel {
+  background-color: var(--color-surface-reference);
+  border-color: rgba(155, 155, 155, 0.1);
+  box-shadow: var(--elevation-xs);
+  color: #3f3f46;
+}
+
+.rdrf-form-actions__cancel:hover,
+.rdrf-form-actions__cancel:focus {
+  background-color: var(--color-border-subtle);
+  border-color: rgba(155, 155, 155, 0.1);
+  color: var(--color-text-heading);
+}
+
+.rdrf-form-actions__save {
+  background-color: var(--color-accent);
+  border-color: rgba(155, 155, 155, 0.1);
+  box-shadow: var(--elevation-xs);
+}
+
+.rdrf-form-actions__save:hover,
+.rdrf-form-actions__save:focus {
+  background-color: var(--color-accent-strong);
+  border-color: rgba(155, 155, 155, 0.1);
+}
+
+.rdrf-form-actions__print {
+  background-color: var(--color-surface-primary);
+  border-color: var(--color-border-default);
+  color: var(--color-text-primary);
+}
+
+.rdrf-form-actions__print .fa {
+  margin-right: var(--space-1);
+}
+
+.rdrf-form-actions__print:hover,
+.rdrf-form-actions__print:focus {
+  background-color: var(--color-surface-reference);
+  border-color: var(--color-border-default);
+  color: var(--color-text-heading);
 }
 
 @media (max-width: 991.98px) {
@@ -571,6 +654,16 @@
     width: 100%;
     flex: 0 1 auto;
     min-width: 0;
+  }
+
+  .rdrf-form-actions {
+    display: flex;
+  }
+
+  .rdrf-form-actions__cancel,
+  .rdrf-form-actions__save,
+  .rdrf-form-actions__print {
+    flex: 1 1 auto;
   }
 }
 

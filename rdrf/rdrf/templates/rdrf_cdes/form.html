@@ -181,7 +181,7 @@
 
         $("#main-form").submit(function () {
             $(window).unbind("beforeunload");
-            $("#submit-btn").prop("disabled", true);
+            $("[data-rdrf-submit-btn]").prop("disabled", true);
         });
 
 
@@ -335,7 +335,6 @@
 {% block page_header_class %}rdrf-clinical-page-header{% endblock %}
 
 {% block formbtns %}
-{% include "rdrf_cdes/clinical_form_actions.html" %}
 {% endblock %}
 
 {% block page_header_navigation %}
@@ -373,9 +372,13 @@
         <form class="form-horizontal" id="main-form" novalidate enctype="multipart/form-data" method="post">{% csrf_token %}
             <input class="form-control" type="hidden" name="position">
 
+            {% include "rdrf_cdes/clinical_form_actions.html" with action_position="top" show_print_button=False %}
+
             {% for s in sections %}
             {% include "rdrf_cdes/clinical_form_section.html" %}
             {% endfor %}
+
+            {% include "rdrf_cdes/clinical_form_actions.html" with action_position="footer" %}
         </form>
     </div>
 </div>

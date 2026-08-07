@@ -305,8 +305,12 @@ class ClinicalFormPageTest(TestCase):
     def test_form_action_rendering_contract(self):
         content = self._get_page()
 
-        self.assertIn('class="rdrf-form-actions"', content)
-        self.assertIn('id="submit-btn"', content)
+        self.assertIn('class="rdrf-form-actions rdrf-form-actions--top"', content)
+        self.assertIn(
+            'class="rdrf-form-actions rdrf-form-actions--footer"', content
+        )
+        self.assertEqual(content.count('id="submit-btn"'), 1)
+        self.assertEqual(content.count('data-rdrf-submit-btn form="main-form"'), 2)
         self.assertIn('form="main-form"', content)
         self.assertIn("Save and exit", content)
         self.assertIn("Cancel", content)
