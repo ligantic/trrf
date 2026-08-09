@@ -284,7 +284,7 @@ class ClinicalFormPageTest(TestCase):
         self.assertIn("Reason for hospitalisation", content)
         self.assertIn('name="ClinicalModule____CAP07SEC____CAP07Q1"', content)
         self.assertIn('class="col-sm-3 col-form-label"', content)
-        self.assertIn('class="col-sm-9"', content)
+        self.assertIn('class="col-sm-9 rdrf-cde-field__control"', content)
 
     def test_repeatable_field_rendering_contract(self):
         content = self._get_page()

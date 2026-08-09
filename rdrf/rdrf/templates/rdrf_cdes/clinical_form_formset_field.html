@@ -31,7 +31,7 @@
         {% endif %}
         {% endif %}
     </label>
-    <div class="col-sm-9">
+    <div class="col-sm-9 rdrf-cde-field__control">
         {% if not f.was_deleted and changes_since_version %}
         <div title="{% trans " Previous value:" %}&nbsp;{{element.field.previous_value|array_item:index|default:_('Was not set previously')}}">
             {{ element|safe }}

@@ -19,7 +19,7 @@
         <span class="fa fa-asterisk" style="color: green;" aria-hidden="true"></span>
         {% endif %}
     </label>
-    <div class="col-sm-9">
+    <div class="col-sm-9 rdrf-cde-field__control">
         {% if changes_since_version %}
         <div title="{% trans ' Previous value:' %}{{ field.field.previous_value|default_if_none:'Was not set previously'|default:'Was not set previously' }}">
             {{ field|safe }}
