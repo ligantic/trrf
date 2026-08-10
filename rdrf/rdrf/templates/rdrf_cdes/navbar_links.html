@@ -6,6 +6,8 @@
 {% load project_title_link %}
 {% load get_language_settings %}
 {% load has_subscribable_email %}
+{% load get_most_relevant_registry %}
+{% load get_patient %}
 {% get_current_language as CURRENT_LANGUAGE %}
 {% get_language_settings as LANGUAGES %}
 
@@ -126,11 +128,14 @@
                             {% trans 'Admin Page' %}</a></li>
                         <li><hr class="dropdown-divider"></li>
                     {% endif %}
-                    {% if request.user.is_parent and registry_code and parent %}
-                        <li><a class="dropdown-item" href="{% url 'registry:parent_edit' registry_code parent.id %}"><span
+                    {% get_parent request.user as parent %}
+                    {% with registry_code|get_most_relevant_registry:request.user as relevant_registry %}
+                    {% if parent and relevant_registry %}
+                      <li><a class="dropdown-item" href="{% url 'registry:parent_edit' relevant_registry.code parent.id %}"><span
                                 class="fa fa-fw fa-wrench"></span>
-                            {% trans 'Account' %}</a></li>
+                        {% trans 'My details' %}</a></li>
                     {% endif %}
+                    {% endwith %}
                     <li><a class="dropdown-item" href="{% url 'email_address_change' %}"><span class="fa fa-fw fa-envelope"></span>
                         {% trans 'Change Email Address' %}</a></li>
                     <li><a class="dropdown-item" href="{% url 'password_change' %}"><span class="fa fa-fw fa-lock"></span>

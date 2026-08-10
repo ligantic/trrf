@@ -1,28 +1,17 @@
-{% extends "rdrf_cdes/base.html" %}
+{% extends "rdrf_cdes/settings_base.html" %}
 {% load static %}
 {% load i18n %}
 
 {% block extrahead %}
-    <link rel="stylesheet" type="text/css" href="{% static 'css/rdrf-settings.css' %}">
     {{ block.super }}
     <link rel="stylesheet" href="{% static 'css/jquery-1.13.2/themes/smoothness/jquery-ui.min.css' %}">
     <script>
         $(document).ready(function() {
             $(":input").not(':input[type=checkbox], :input[type=radio], :input[type=button], :input[type=submit], :input[type=reset]').addClass("form-control");
-            
-            $(document).find("input[name*='date']").each(function() {
-                var cal_group = $("<label for='"+$(this).prop("id")+"' class='input-group-addon btn'><span class='fa fa-calendar'></span></label>");
-                $(this).wrap("<div class='input-group'></div>");
-                cal_group.insertAfter($(this));
-                
-                $(this).datepicker({
-                    changeMonth: true,
-                    changeYear: true,
-                    dateFormat: 'yy-mm-dd',
-                    yearRange: '-120:+120'
-                });
+            const dateInputs = $("input[name*='date']").addClass("datepicker");
+            dateInputs.each(function() {
+                setUpDatePickers(this);
             });
-            
         });
         
         function select_country(obj) {
@@ -40,31 +29,34 @@
     </script>
 {% endblock %}
 
-{% block content %}
-    <main class="rdrf-settings-page">
-    <header class="rdrf-settings-header">
-        <nav class="rdrf-breadcrumb rdrf-settings-breadcrumb" aria-label="{% trans 'Breadcrumb' %}">{% trans 'Dashboard' %} › {% trans 'Settings' %} › {% trans 'My details' %}</nav>
-        <h1>{% trans 'Parent Details' %}</h1>
-        <p>{% trans 'Update your personal details here.' %}</p>
-    </header>
-    <form class="form-horizontal date-form rdrf-settings-form" method="POST">
+{% block settings_breadcrumb %}
+<span class="rdrf-breadcrumb__separator" aria-hidden="true">/</span>
+<span aria-current="page">{% trans "My details" %}</span>
+{% endblock %}
+
+{% block settings_description %}
+<p class="rdrf-settings-page__description">{% trans "Update your personal details here." %}</p>
+{% endblock %}
+
+{% block settings_content %}
+    <div class="rdrf-settings-panel">
+    <h2 class="rdrf-settings-panel__title">{% trans "My details" %}</h2>
+    <p class="rdrf-settings-panel__description">{% trans "Update your personal details here." %}</p>
+    <form class="date-form" method="post">
         {% csrf_token %}
         {% for field in parent_form %}
-            <div class="row rdrf-settings-field {% if field.errors %}has-error{% endif %}">
-                <label for="{{field.auto_id}}" class="col-md-3 offset-md-1 col-form-label">{% if field.field.required %}<span class="fa fa-asterisk" style="color: red" aria-hidden="true"></span>{% endif %} {{field.label}}</label>
-                <div class="col-md-6">
+            <div class="rdrf-settings-field {% if field.errors %}has-error{% endif %}">
+                <label for="{{ field.auto_id }}" class="form-label">{{ field.label }}</label>
+                <div>
                     {{ field }}
-                </div>
-                <div class="col-md-2">
-                    {% if field.errors %}<span class="badge bg-danger">{{field.errors.as_text}}</span>{% endif %}
+                    {% if field.errors %}{{ field.errors }}{% endif %}
                 </div>
             </div>
         {% endfor %}
-	    
         <div class="rdrf-settings-actions">
-            <a href="" class="btn btn-outline-secondary">{% trans 'Cancel' %}</a>
+            <a href="{% url 'registry:parent_page' registry_code %}" class="btn btn-outline-secondary">{% trans 'Cancel' %}</a>
             <input type="submit" class="btn btn-primary" value="{% trans 'Save' %}">
         </div>
     </form>
-    </main>
+    </div>
 {% endblock %}

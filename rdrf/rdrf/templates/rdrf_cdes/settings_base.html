@@ -1,6 +1,8 @@
 {% extends "rdrf_cdes/base.html" %}
 {% load i18n %}
 {% load has_subscribable_email %}
+{% load get_most_relevant_registry %}
+{% load get_patient %}
 
 {% block content %}
 <main class="rdrf-settings-page">
@@ -20,6 +22,8 @@
         <aside class="rdrf-settings-page__navigation">
             <nav class="rdrf-settings-nav" aria-label="{% trans 'Settings navigation' %}">
                 {% block settings_navigation %}
+                {% get_parent request.user as parent %}
+                {% with registry_code|get_most_relevant_registry:request.user as relevant_registry %}
                 {% url 'email_address_change' as email_address_change_url %}
                 {% url 'password_change' as password_change_url %}
                 {% if request.user.is_verified %}
@@ -27,12 +31,17 @@
                 {% else %}
                 {% url 'two_factor:setup' as two_factor_url %}
                 {% endif %}
+                {% if parent and relevant_registry %}
+                {% url 'registry:parent_edit' relevant_registry.code parent.id as parent_edit_url %}
+                <a class="rdrf-settings-nav__link{% if request.path == parent_edit_url %} rdrf-settings-nav__link--active{% endif %}" href="{{ parent_edit_url }}"{% if request.path == parent_edit_url %} aria-current="page"{% endif %}>{% trans "My details" %}</a>
+                {% endif %}
                 <a class="rdrf-settings-nav__link{% if request.path == email_address_change_url %} rdrf-settings-nav__link--active{% endif %}" href="{{ email_address_change_url }}"{% if request.path == email_address_change_url %} aria-current="page"{% endif %}>{% trans "Email address" %}</a>
                 <a class="rdrf-settings-nav__link{% if request.path == password_change_url %} rdrf-settings-nav__link--active{% endif %}" href="{{ password_change_url }}"{% if request.path == password_change_url %} aria-current="page"{% endif %}>{% trans "Password" %}</a>
                 <a class="rdrf-settings-nav__link{% if request.resolver_match.namespace == 'two_factor' %} rdrf-settings-nav__link--active{% endif %}" href="{{ two_factor_url }}"{% if request.resolver_match.namespace == 'two_factor' %} aria-current="page"{% endif %}>{% trans "Two-factor authentication" %}</a>
                 {% if request.user|has_subscribable_email %}
                 <a class="rdrf-settings-nav__link" href="{% url 'email_preferences' %}">{% trans "Email preferences" %}</a>
                 {% endif %}
+                {% endwith %}
                 {% endblock %}
             </nav>
         </aside>
