@@ -1,6 +1,6 @@
 {# Adapted from 'django/forms/widgets/multiple_input.html' #}
 {% with id=widget.attrs.id %}
-  <div{% if id %} id="{{ id }}"{% endif %} class="py-2 {% if widget.attrs.class %}{{ widget.attrs.class }}{% endif %}">
+  <div{% if id %} id="{{ id }}"{% endif %} class="rdrf-radio-group py-2 {% if widget.attrs.class %}{{ widget.attrs.class }}{% endif %}">
     {% for group, options, index in widget.optgroups %}
       {% for option in options %}
         <div class="form-check mb-0 {% if group %} ms-4 {% endif %}" data-option="{{ option.attrs.id }}">
