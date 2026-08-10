@@ -91,6 +91,9 @@
                    console.error("CDE calculation error", err);
                    context.result = "ERROR";
                }
+               if (typeof context.result === "number" && !Number.isFinite(context.result)) {
+                   context.result = "";
+               }
                $("#id_" + settings.prefix + settings.observer).val(context.result);
                $("#id_" + settings.prefix + settings.observer).trigger("rdrf_calculation_performed");
 
