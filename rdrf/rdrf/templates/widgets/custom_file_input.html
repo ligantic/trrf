@@ -1,7 +1,7 @@
 {% load i18n %}
 {% if widget.is_initial %}
     {{ widget.initial_text }}:
-    <span id="{{widget.virus_check_id}}_link">
+    <span id="{{widget.virus_check_id}}_link" class="rdrf-file-widget__existing-file">
         {% if widget.virus_check_result == 'clean' %}
             <a href="{{ widget.value.url }}" target="_blank" rel="noreferrer noopener">{{ widget.value }}</a>
         {% else %}
@@ -9,18 +9,18 @@
         {% endif %}
     </span>
     {% if not widget.required %}
-        <input type="checkbox" name="{{ widget.checkbox_name }}" id="{{ widget.checkbox_id }}">
+        <input type="checkbox" name="{{ widget.checkbox_name }}" id="{{ widget.checkbox_id }}" class="rdrf-file-widget__clear">
         <label for="{{ widget.checkbox_id }}">{{ widget.clear_checkbox_label }}</label>
     {% endif %}
-    <div class="alert alert-info" role="alert" id="{{widget.virus_check_id}}_scanning" style="display:none;">
+    <div class="alert alert-info rdrf-file-widget__status" role="alert" id="{{widget.virus_check_id}}_scanning" style="display:none;">
         <span class="fa fa-refresh fa-spin" aria-hidden="true"></span>
         {% trans "Virus check in progress. The file can't be downloaded before it is checked for viruses. Waiting for the scan to finish..." %}
     </div>
-    <div class="alert alert-danger" role="alert" id="{{widget.virus_check_id}}_infected" style="display:none;">
+    <div class="alert alert-danger rdrf-file-widget__status" role="alert" id="{{widget.virus_check_id}}_infected" style="display:none;">
         <span class="fa fa-exclamation-circle" aria-hidden="true"></span>
         {% trans "The file uploaded has been marked as infected by the virus checker! You can't download an infected file." %}
     </div>
-    <div class="alert alert-danger" role="alert" id="{{widget.virus_check_id}}_notfound" style="display:none;">
+    <div class="alert alert-danger rdrf-file-widget__status" role="alert" id="{{widget.virus_check_id}}_notfound" style="display:none;">
         <span class="fa fa-exclamation-circle" aria-hidden="true"></span>
         {% trans "The file is not found!" %}
     </div>

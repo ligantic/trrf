@@ -51,7 +51,11 @@
         </small>
         {% endif %}
         {% if element.errors %}
-        <span class="badge bg-danger">{{ element.errors.as_text }}</span>
+        <div class="rdrf-field-error" role="alert">
+            {% for error in element.errors %}
+            <div>{{ error }}</div>
+            {% endfor %}
+        </div>
         {% endif %}
     </div>
     {% endif %}
