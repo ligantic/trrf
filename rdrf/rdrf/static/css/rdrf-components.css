@@ -864,6 +864,99 @@
   flex: 0 0 5rem;
 }
 
+.rdrf-capture-block .rdrf-cde-slider {
+  align-items: center;
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: minmax(5rem, max-content) minmax(10rem, 1fr) minmax(5rem, max-content);
+  min-height: 40px;
+}
+
+.rdrf-capture-block .rdrf-cde-slider__label {
+  color: var(--color-text-primary);
+  font-family: "Work Sans", var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.rdrf-capture-block .rdrf-cde-slider__label--end {
+  text-align: right;
+}
+
+.rdrf-capture-block .rdrf-cde-slider__control .slider.slider-horizontal {
+  display: block;
+  height: 40px;
+  margin: 0;
+  width: 100%;
+}
+
+.rdrf-capture-block .rdrf-cde-slider__control .slider-track {
+  background: var(--color-border-subtle);
+  border-radius: 999px;
+  box-shadow: none;
+  height: 8px;
+  margin-top: -4px;
+}
+
+.rdrf-capture-block .rdrf-cde-slider__control .slider-selection {
+  background: var(--color-accent);
+  box-shadow: none;
+}
+
+.rdrf-capture-block .rdrf-cde-slider__control .slider-handle {
+  background: var(--color-accent);
+  border: 2px solid var(--color-surface-primary);
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgb(16 24 40 / 20%);
+  height: 20px;
+  margin-left: -10px;
+  margin-top: -10px;
+  opacity: 1;
+  top: 50%;
+  width: 20px;
+}
+
+.rdrf-capture-block .rdrf-cde-slider__control .slider-handle:focus-visible {
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+  outline: none;
+}
+
+.rdrf-capture-block .rdrf-cde-slider__control .tooltip {
+  bottom: calc(50% + 14px);
+  font-family: "Work Sans", var(--font-body);
+  margin: 0;
+  top: auto !important;
+}
+
+.rdrf-capture-block .rdrf-cde-slider__control .tooltip-inner {
+  background: var(--color-surface-primary);
+  border: 1px solid var(--color-border-default);
+  border-radius: 999px;
+  color: var(--color-accent-strong);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 18px;
+  min-width: 24px;
+  padding: 2px var(--space-2);
+}
+
+.rdrf-capture-block .rdrf-cde-slider__control .tooltip-arrow {
+  display: none;
+}
+
+@media (max-width: 575.98px) {
+  .rdrf-capture-block .rdrf-cde-slider {
+    gap: var(--space-2);
+    grid-template-columns: 1fr auto;
+  }
+
+  .rdrf-capture-block .rdrf-cde-slider__control {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
 #ui-datepicker-div.ui-datepicker {
   background-color: var(--color-surface-primary);
   border: 1px solid var(--color-border-default);

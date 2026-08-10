@@ -1,4 +1,4 @@
-from rdrf.forms.widgets.widgets import DurationWidgetHelper, TimeWidget
+from rdrf.forms.widgets.widgets import DurationWidget, DurationWidgetHelper, SliderWidget, TimeWidget
 
 
 def test_duration_compatibile_formats():
@@ -107,3 +107,14 @@ def test_time_widget_renders_meridian_for_12_hour_format():
     assert 'data-time-unit="meridian"' in rendered
     assert 'value="PM" selected' in rendered
     assert 'name="bedtime" class="time-widget" value="09:30 PM"' in rendered
+
+
+def test_slider_widget_renders_clinical_layout_hooks():
+    widget = SliderWidget(attrs={"min": 1, "max": 10, "left_label": "Very Bad", "right_label": "Very Good"})
+    rendered = widget.render("sleep_rating", "", {"id": "id_sleep_rating"})
+
+    assert 'class="rdrf-cde-slider__label rdrf-cde-slider__label--start">Very Bad' in rendered
+    assert 'class="rdrf-cde-slider__control"' in rendered
+    assert 'class="rdrf-cde-slider__label rdrf-cde-slider__label--end">Very Good' in rendered
+    assert 'id="id_sleep_rating" name="sleep_rating" value=""' in rendered
+    assert "bootstrapSlider" in rendered

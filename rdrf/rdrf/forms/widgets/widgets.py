@@ -646,13 +646,12 @@ class SliderWidget(widgets.TextInput):
 
         context = f"""
             <div class="rdrf-cde-slider">
-                <div style="float:left; margin-right:20px;"><b>{_(left_label)}</b></div>
-                <div style="float:left">
+                <span class="rdrf-cde-slider__label rdrf-cde-slider__label--start">{_(left_label)}</span>
+                <div class="rdrf-cde-slider__control">
                     <input type="hidden" id="{attrs["id"]}" name="{name}" value="{value}"/>
                 </div>
-                <div style="float:left;margin-left:20px;"><b>{_(right_label)}</b></div>
+                <span class="rdrf-cde-slider__label rdrf-cde-slider__label--end">{_(right_label)}</span>
             </div>
-            <br/>
             <script>
                 $(function() {{
                     $( "#{attrs["id"]}" ).bootstrapSlider({{
