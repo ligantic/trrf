@@ -90,7 +90,7 @@
 
 </head>
 
-<body>
+<body class="{% block body_class %}{% endblock %}">
     <div id="wrap">
     <div class="fixed-top">
         {% include "rdrf_cdes/banner/_show_banner.html" %}
@@ -98,6 +98,7 @@
     </div>
 
         {% if location %}
+        {% block patient_banner %}
         <div class="banner">
             <!-- base 2 cols banner -->
             <div class="container-fluid my-2">
@@ -116,6 +117,7 @@
               </div>
             </div>
         </div>
+        {% endblock %}
         {% endif %}
 
         <div id="content" class="container-fluid">

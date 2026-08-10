@@ -48,7 +48,11 @@
             <a href="#" class="nav-link dropdown-toggle" id="languageDropdownToggle" data-bs-toggle="dropdown"
                data-bs-auto-close="outside" role="button"
                aria-expanded="false">
-              <span class="fa fa-globe"></span> {% trans 'Language' %}<span class="caret"></span>
+              <span class="fa fa-globe" aria-hidden="true"></span>
+              {% for language_code, language_name in LANGUAGES %}
+                {% if language_code|lower == CURRENT_LANGUAGE %}{{ language_name }}{% endif %}
+              {% endfor %}
+              <span class="caret"></span>
             </a>
             <div id="languageDropdownMenu" class="dropdown-menu dropdown-menu-end">
               <form id="languageForm" class="px-3 py-2" method="post" action="{% url 'django_conf_urls:set_language' %}">
@@ -71,19 +75,13 @@
             {% block parent_menu %}
             {% endblock %}
 
-            {% if request.user.is_parent or request.user.is_patient %}
-              <li class="nav-item"><a class="nav-link" href="{{ request.user.default_page }}">
-                <span class="fa fa-home"></span>
-                {% trans "Home Page" %}</a>
-              </li>
-            {% endif %}
-
             {% block actions %}
             {% endblock %}
 
             {% block formlinks %}
             {% endblock %}
 
+            {% if request.user.menu_links|length > 1 %}
             <li class="nav-item dropdown">
                 <a href="#" class="nav-link dropdown-toggle" id="menuLinksDropdown" data-bs-toggle="dropdown" role="button"
                    aria-expanded="false">
@@ -97,6 +95,7 @@
                     {% endblock %}
                 </ul>
             </li>
+            {% endif %}
 
             {% if request.user.is_superuser %}
                 <li class="nav-item dropdown">
@@ -155,7 +154,7 @@
 
                 </ul>
             </li>
-        {% else %}
+        {% elif request.resolver_match.namespace != 'two_factor' or request.resolver_match.url_name != 'login' %}
             <li class="nav-item"><a class="nav-link" href="{% url 'two_factor:login' %}?next={% url 'login_router' %}"><span
                     class="fa fa-fw fa-sign-in"></span>
                 {% trans 'Log in' %}</a></li>

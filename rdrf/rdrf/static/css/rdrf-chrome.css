@@ -125,6 +125,27 @@ textarea:focus-visible {
   padding: var(--space-2) 0;
 }
 
+.rdrf-navbar .navbar-nav .dropdown-toggle {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--space-2);
+}
+
+.rdrf-navbar #languageDropdownToggle,
+.rdrf-navbar #authMenuDropdown {
+  color: var(--color-accent-strong);
+}
+
+.rdrf-navbar #languageDropdownToggle .caret,
+.rdrf-navbar #authMenuDropdown .caret {
+  margin-left: 0;
+}
+
+.rdrf-clinical-form-page .rdrf-navbar__participant,
+.rdrf-clinical-form-page .rdrf-navbar__home-link {
+  display: none;
+}
+
 @media (max-width: 767.98px) {
   .rdrf-navbar {
     min-height: auto;
