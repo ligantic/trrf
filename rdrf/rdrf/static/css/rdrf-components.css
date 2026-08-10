@@ -751,60 +751,44 @@
   line-height: 20px;
 }
 
-.rdrf-capture-block .rdrf-cde-field__control input.form-control:is(
-  [type="text"],
-  [type="email"],
-  [type="number"],
-  [type="url"],
-  [type="tel"],
-  [type="search"]
+.rdrf-capture-block .rdrf-cde-field__control :is(
+  input.form-control:is([type="text"], [type="email"], [type="number"], [type="url"], [type="tel"], [type="search"]),
+  textarea.form-control
 ):not(.cde-value-updated) {
   background-color: var(--color-surface-primary);
 }
 
-.rdrf-capture-block .rdrf-cde-field__control input.form-control:is(
-  [type="text"],
-  [type="email"],
-  [type="number"],
-  [type="url"],
-  [type="tel"],
-  [type="search"]
+.rdrf-capture-block .rdrf-cde-field__control textarea.form-control {
+  resize: vertical;
+}
+
+.rdrf-capture-block .rdrf-cde-field__control :is(
+  input.form-control:is([type="text"], [type="email"], [type="number"], [type="url"], [type="tel"], [type="search"]),
+  textarea.form-control
 ):not(:disabled):not([readonly]):hover {
   border-color: var(--color-accent);
 }
 
-.rdrf-capture-block .rdrf-cde-field__control input.form-control:is(
-  [type="text"],
-  [type="email"],
-  [type="number"],
-  [type="url"],
-  [type="tel"],
-  [type="search"]
+.rdrf-capture-block .rdrf-cde-field__control :is(
+  input.form-control:is([type="text"], [type="email"], [type="number"], [type="url"], [type="tel"], [type="search"]),
+  textarea.form-control
 ):focus-visible {
   border-color: var(--color-accent);
   outline: none;
   box-shadow: 0 0 0 3px var(--color-focus-ring);
 }
 
-.rdrf-capture-block .rdrf-cde-field__control input.form-control:is(
-  [type="text"],
-  [type="email"],
-  [type="number"],
-  [type="url"],
-  [type="tel"],
-  [type="search"]
+.rdrf-capture-block .rdrf-cde-field__control :is(
+  input.form-control:is([type="text"], [type="email"], [type="number"], [type="url"], [type="tel"], [type="search"]),
+  textarea.form-control
 )[readonly] {
   background-color: var(--color-surface-reference);
   color: var(--color-text-secondary);
 }
 
-.rdrf-capture-block .rdrf-cde-field__control input.form-control:is(
-  [type="text"],
-  [type="email"],
-  [type="number"],
-  [type="url"],
-  [type="tel"],
-  [type="search"]
+.rdrf-capture-block .rdrf-cde-field__control :is(
+  input.form-control:is([type="text"], [type="email"], [type="number"], [type="url"], [type="tel"], [type="search"]),
+  textarea.form-control
 ):disabled {
   background-color: var(--color-surface-reference);
   color: var(--color-text-secondary);
@@ -812,21 +796,13 @@
   opacity: 0.7;
 }
 
-.rdrf-capture-block .rdrf-cde-field.has-error .rdrf-cde-field__control input.form-control:is(
-  [type="text"],
-  [type="email"],
-  [type="number"],
-  [type="url"],
-  [type="tel"],
-  [type="search"]
+.rdrf-capture-block .rdrf-cde-field.has-error .rdrf-cde-field__control :is(
+  input.form-control:is([type="text"], [type="email"], [type="number"], [type="url"], [type="tel"], [type="search"]),
+  textarea.form-control
 ),
-.rdrf-capture-block .rdrf-cde-field__control input.form-control:is(
-  [type="text"],
-  [type="email"],
-  [type="number"],
-  [type="url"],
-  [type="tel"],
-  [type="search"]
+.rdrf-capture-block .rdrf-cde-field__control :is(
+  input.form-control:is([type="text"], [type="email"], [type="number"], [type="url"], [type="tel"], [type="search"]),
+  textarea.form-control
 ):invalid {
   border-color: var(--status-overdue-fg);
 }
@@ -852,6 +828,59 @@
   margin-top: var(--space-2);
   white-space: normal;
   text-align: left;
+}
+
+/* Django's CheckboxSelectMultiple keeps each option as an input/label pair.
+   The wrapper is supplied by the field partials so standalone checkboxes keep
+   their existing presentation and behaviour. */
+.rdrf-capture-block .rdrf-choice-group div[id^="id_"] {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.rdrf-capture-block .rdrf-choice-group div[id^="id_"] > div {
+  margin: 0;
+}
+
+.rdrf-capture-block .rdrf-choice-group div[id^="id_"] > div > label {
+  color: var(--color-text-primary);
+  cursor: pointer;
+  display: grid;
+  font-family: "Work Sans", var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  gap: 14px;
+  grid-template-columns: 16px minmax(0, 1fr);
+  line-height: 18px;
+  margin: 0;
+}
+
+.rdrf-capture-block .rdrf-choice-group input[type="checkbox"] {
+  accent-color: var(--color-accent);
+  flex: 0 0 16px;
+  height: 16px;
+  margin: 2px 0 0;
+  width: 16px;
+}
+
+.rdrf-capture-block .rdrf-choice-group input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.rdrf-capture-block .rdrf-choice-group input[type="checkbox"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.rdrf-capture-block .rdrf-choice-group label:has(> input[type="checkbox"]:disabled) {
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+}
+
+.rdrf-capture-block .rdrf-cde-field.has-error .rdrf-choice-group input[type="checkbox"] {
+  outline: 1px solid var(--status-overdue-fg);
+  outline-offset: 1px;
 }
 
 @media (max-width: 575.98px) {

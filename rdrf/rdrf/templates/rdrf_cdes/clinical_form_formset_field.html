@@ -32,12 +32,18 @@
         {% endif %}
     </label>
     <div class="col-sm-9 rdrf-cde-field__control">
+        {% if element.field.cde.allow_multiple %}
+        <div class="rdrf-choice-group">
+        {% endif %}
         {% if not f.was_deleted and changes_since_version %}
         <div title="{% trans " Previous value:" %}&nbsp;{{element.field.previous_value|array_item:index|default:_('Was not set previously')}}">
             {{ element|safe }}
         </div>
         {% else %}
         {{ element|safe }}
+        {% endif %}
+        {% if element.field.cde.allow_multiple %}
+        </div>
         {% endif %}
         {% if not element.is_hidden %}
         <small class="text-muted">

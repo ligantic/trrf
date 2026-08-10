@@ -20,12 +20,18 @@
         {% endif %}
     </label>
     <div class="col-sm-9 rdrf-cde-field__control">
+        {% if field.field.cde.allow_multiple %}
+        <div class="rdrf-choice-group">
+        {% endif %}
         {% if changes_since_version %}
         <div title="{% trans ' Previous value:' %}{{ field.field.previous_value|default_if_none:'Was not set previously'|default:'Was not set previously' }}">
             {{ field|safe }}
         </div>
         {% else %}
         {{ field|safe }}
+        {% endif %}
+        {% if field.field.cde.allow_multiple %}
+        </div>
         {% endif %}
         <p class="text-muted"><i>{{ field.help_text }}</i></p>
         {% if field.errors %}

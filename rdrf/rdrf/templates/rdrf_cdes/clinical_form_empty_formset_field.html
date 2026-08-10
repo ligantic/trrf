@@ -17,7 +17,13 @@
         {% endif %}
     </label>
     <div class="col-sm-9 rdrf-cde-field__control">
+        {% if element.field.cde.allow_multiple %}
+        <div class="rdrf-choice-group">
+        {% endif %}
         {{ element|safe }}
+        {% if element.field.cde.allow_multiple %}
+        </div>
+        {% endif %}
         {% if not element.is_hidden %}
         <small class="text-muted">
             <i>{{ element.help_text }}</i>
