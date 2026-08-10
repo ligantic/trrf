@@ -1,4 +1,4 @@
-from rdrf.forms.widgets.widgets import DurationWidget, DurationWidgetHelper, SliderWidget, TimeWidget
+from rdrf.forms.widgets.widgets import DurationWidget, DurationWidgetHelper, PositiveIntegerInput, SliderWidget, TimeWidget
 
 
 def test_duration_compatibile_formats():
@@ -118,3 +118,14 @@ def test_slider_widget_renders_clinical_layout_hooks():
     assert 'class="rdrf-cde-slider__label rdrf-cde-slider__label--end">Very Good' in rendered
     assert 'id="id_sleep_rating" name="sleep_rating" value=""' in rendered
     assert "bootstrapSlider" in rendered
+
+
+def test_positive_integer_input_renders_empty_form_control():
+    widget = PositiveIntegerInput()
+    widget._get_value_range = lambda name: (0, 2147483647)
+
+    rendered = widget.render("positive_integer", None, {"id": "id_positive_integer"})
+
+    assert 'value=""' in rendered
+    assert 'class="form-control"' in rendered
+    assert 'min="0" max="2147483647"' in rendered

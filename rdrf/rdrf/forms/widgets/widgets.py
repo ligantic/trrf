@@ -373,9 +373,10 @@ class PositiveIntegerInput(widgets.TextInput):
 
     def render(self, name, value, attrs, renderer=None):
         min_value, max_value = self._get_value_range(name)
+        value = "" if value is None else value
 
         return """
-            <input type="number" name="%s" id="id_%s" value="%s" min="%s" max="%s">
+            <input type="number" name="%s" id="id_%s" value="%s" min="%s" max="%s" class="form-control">
         """ % (name, name, value, min_value, max_value)
 
     def _get_value_range(self, cde_name):
