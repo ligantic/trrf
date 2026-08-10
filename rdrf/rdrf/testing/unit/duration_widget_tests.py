@@ -48,3 +48,41 @@ def test_current_default_format():
         }
     )
     assert helper.current_format_default() == "P0DT0H0M"
+
+
+def test_duration_unit_values():
+    helper = DurationWidgetHelper(
+        {
+            "years": True,
+            "months": True,
+            "days": True,
+            "hours": True,
+            "minutes": True,
+            "seconds": True,
+        }
+    )
+    assert helper.unit_values("P2Y3M4DT5H6M7S") == {
+        "years": "2",
+        "months": "3",
+        "days": "4",
+        "hours": "5",
+        "minutes": "6",
+        "seconds": "7",
+    }
+
+from rdrf.forms.widgets.widgets import DurationWidget
+
+def test_week_only_duration_unit_value():
+    helper = DurationWidgetHelper({"weeks_only": True})
+    assert helper.unit_values("P9W") == {"weeks": "9"}
+
+
+def test_duration_widget_renders_configured_unit_inputs():
+    widget = DurationWidget(attrs={"years": True, "months": True, "days": False})
+    rendered = widget.render("age", "P2Y3M", {"id": "id_age"})
+
+    assert 'id="id_age_years"' in rendered
+    assert 'id="id_age_months"' in rendered
+    assert 'data-duration-label="Years"' in rendered
+    assert 'name="age" value="P2Y3M"' in rendered
+    assert 'timeDurationPicker' not in rendered

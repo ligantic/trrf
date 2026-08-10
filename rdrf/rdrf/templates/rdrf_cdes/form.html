@@ -261,9 +261,6 @@
                 attribute_replace($(this), "input-name", form_count);
                 durationWidgets.push($(this));
             }
-            if ($(this).hasClass("duration-input")) {
-                durationInputs.push($(this));
-            }
         });
         new_form.find("script").each(function () {
             var replaced_script = $(this).html().replace(/__prefix__/g, form_count);

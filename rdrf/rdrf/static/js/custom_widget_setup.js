@@ -15,70 +15,43 @@ function setupTimepicker($target, hasAMPM, startTimeStr) {
 
 function setupDurationWidget(inputName, attributesStr) {
     var initAttrs = attributesStr.split(",");
-    var textInput = "#id_" + inputName + "_text";
-    var durationInput = "#id_" + inputName + "_duration";
-    var initParams = {
-        css: {
-            width:"200px"
-        },
-        defaultValue: function() {
-            return $(durationInput).val();
-        },
-        onSelect: function(element, seconds, duration, text) {
-            $(durationInput).val(duration);
-            $(textInput).val(text);
-            $(durationInput).trigger('change');
-        },
-        years: initAttrs[0] == "true",
-        months: initAttrs[1] == "true",
-        days: initAttrs[2] == "true",
-        hours: initAttrs[3] == "true",
-        minutes: initAttrs[4] == "true",
-        seconds: initAttrs[5] == "true",
-        weeks: initAttrs[6] == "true"
-    };
-    $(textInput).timeDurationPicker(initParams);
-    $(textInput).addClass("form-select");
-}
+  var durationInput = $("#id_" + inputName + "_duration");
+  var widget = durationInput.closest(".rdrf-duration-widget");
+  var units = ["years", "months", "days", "hours", "minutes", "seconds"];
+  var suffixes = {
+    years: "Y",
+    months: "M",
+    days: "D",
+    hours: "H",
+    minutes: "M",
+    seconds: "S"
+  };
 
-$.timeDurationPicker.langs.en_US = {
-  years: gettext("years"),
-  months: gettext("months"),
-  weeks: gettext("weeks"),
-  days: gettext("days"),
-  hours: gettext("hours"),
-  minutes: gettext("minutes"),
-  seconds: gettext("seconds"),
-  and: gettext("and"),
-  button_ok: gettext("ok"),
-  units: {
-    year: {
-      one: gettext("year"),
-      other: gettext("years")
-    },
-    month: {
-      one: gettext("month"),
-      other: gettext("months")
-    },
-    day: {
-      one: gettext("day"),
-      other: gettext("days")
-    },
-    hour: {
-      one: gettext("hour"),
-      other: gettext("hours")
-    },
-    minute: {
-      one: gettext("minute"),
-      other: gettext("minutes")
-    },
-    second: {
-      one: gettext("second"),
-      other: gettext("seconds")
-    },
-    week: {
-      one: gettext("week"),
-      other: gettext("weeks")
-    }
+  function unitValue(unit) {
+    var value = parseInt(widget.find('[data-duration-unit="' + unit + '"]').val(), 10);
+    return isNaN(value) ? 0 : value;
   }
+
+  function updateDuration() {
+    if (initAttrs[6] == "true") {
+      durationInput.val("P" + unitValue("weeks") + "W");
+    } else {
+      var date = "";
+      var time = "";
+      units.forEach(function(unit, index) {
+        if (initAttrs[index] == "true") {
+          var target = index < 3 ? "date" : "time";
+          if (target == "date") {
+            date += unitValue(unit) + suffixes[unit];
+          } else {
+            time += unitValue(unit) + suffixes[unit];
+          }
+        }
+      });
+      durationInput.val("P" + date + (time ? "T" + time : ""));
+    }
+    durationInput.trigger('change');
+  }
+
+  widget.find(".duration-input").on("input change", updateDuration);
 }

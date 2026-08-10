@@ -787,6 +787,54 @@
   color: var(--color-text-secondary);
 }
 
+.rdrf-capture-block .rdrf-duration-widget {
+  display: grid;
+  gap: var(--space-5);
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
+.rdrf-capture-block .rdrf-duration-widget__unit {
+  position: relative;
+}
+
+.rdrf-capture-block .rdrf-duration-widget__unit .duration-input.form-control {
+  appearance: textfield;
+  background-color: var(--color-surface-reference);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  font-family: "Work Sans", var(--font-body);
+  font-size: 14px;
+  height: 40px;
+  line-height: 20px;
+  padding: var(--space-2) 56px var(--space-2) var(--space-3);
+  width: 100% !important;
+}
+
+.rdrf-capture-block .rdrf-duration-widget__unit .duration-input.form-control::-webkit-inner-spin-button,
+.rdrf-capture-block .rdrf-duration-widget__unit .duration-input.form-control::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.rdrf-capture-block .rdrf-duration-widget__unit:has(.duration-input:not(:placeholder-shown))::after {
+  color: var(--color-text-secondary);
+  content: attr(data-duration-label);
+  font-family: "Work Sans", var(--font-body);
+  font-size: 13px;
+  line-height: 20px;
+  pointer-events: none;
+  position: absolute;
+  right: var(--space-3);
+  top: 10px;
+}
+
+.rdrf-capture-block .rdrf-duration-widget__unit .duration-input.form-control:focus-visible {
+  border-color: var(--color-accent);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
 .rdrf-capture-block .rdrf-cde-field__control :is(
   input.form-control:is([type="text"], [type="email"], [type="number"], [type="url"], [type="tel"], [type="search"]),
   textarea.form-control

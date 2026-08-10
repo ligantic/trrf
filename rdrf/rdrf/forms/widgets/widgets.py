@@ -890,12 +890,29 @@ class DurationWidgetHelper:
         else:
             return False
 
+    def unit_values(self, value):
+        if self._get_attribute("weeks_only"):
+            match = re.search(r"P(\d+)W", value)
+            return {"weeks": match.group(1) if match else "0"}
+
+        date_part, _, time_part = value.partition("T")
+
+        def get_value(part, suffix):
+            match = re.search(r"(\d+)" + suffix, part)
+            return match.group(1) if match else "0"
+
+        return {
+            "years": get_value(date_part, "Y"),
+            "months": get_value(date_part, "M"),
+            "days": get_value(date_part, "D"),
+            "hours": get_value(time_part, "H"),
+            "minutes": get_value(time_part, "M"),
+            "seconds": get_value(time_part, "S"),
+        }
+
 
 class DurationWidget(widgets.TextInput):
-    """
-    Time duration picker component used:
-    https://digaev.github.io/jquery-time-duration-picker/
-    """
+    """Renders configured ISO-8601 duration units as native number inputs."""
 
     @staticmethod
     def usable_for_types():
@@ -924,6 +941,25 @@ class DurationWidget(widgets.TextInput):
         )
         init_attrs = [widget_helper.get_attribute_js(name) for name in fields]
         init_attrs_str = ",".join(init_attrs)
+        unit_values = widget_helper.unit_values(value)
+        active_units = (
+            ("weeks",)
+            if widget_helper._get_attribute("weeks_only")
+            else tuple(
+                unit
+                for unit in fields[:-1]
+                if widget_helper._get_attribute(unit)
+            )
+        )
+        visible_inputs = "".join(
+            f'''
+                <div class="rdrf-duration-widget__unit" data-duration-label="{_(unit.capitalize())}">
+                    <label class="visually-hidden" for="id_{name}_{unit}">{_(unit.capitalize())}</label>
+                    <input id="id_{name}_{unit}" type="number" class="duration-input form-control" min="0" value="{unit_values[unit]}" placeholder="{_(unit.capitalize())}" data-duration-unit="{unit}" />
+                </div>
+            '''
+            for unit in active_units
+        )
         script = ""
         if _is_not_multisection_clone_base_widget(attrs):
             # Only attach the script if this is not the default
@@ -934,8 +970,10 @@ class DurationWidget(widgets.TextInput):
                 </script>
             """
         return f"""
-            <input id="id_{name}_text" type="text" class="duration-widget" value="{value}" input-name="{name}" init_attrs="{init_attrs_str}" readonly/>
-            <input id="id_{name}_duration" type="hidden" name="{name}" value="{value}"/>
+            <div class="rdrf-duration-widget">
+                {visible_inputs}
+                <input id="id_{name}_duration" type="hidden" class="duration-widget" name="{name}" value="{value}" input-name="{name}" init_attrs="{init_attrs_str}" />
+            </div>
             {script}
         """
 
