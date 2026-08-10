@@ -216,7 +216,7 @@ class DateWidget(widgets.TextInput):
                 return value
 
         output_val = conditional_escape(just_date(value) or "")
-        return f'<input type="text" name="{name}" id="id_{name}" value="{output_val}" class="datepicker">'
+        return f'<input type="text" name="{name}" id="id_{name}" value="{output_val}" class="datepicker form-control">'
 
 
 class CountryWidget(widgets.Select):
