@@ -740,6 +740,7 @@
 }
 
 .rdrf-capture-block .rdrf-cde-field {
+  align-items: flex-start;
   margin-bottom: var(--space-5);
 }
 
@@ -879,6 +880,42 @@
 }
 
 .rdrf-capture-block .rdrf-cde-field.has-error .rdrf-choice-group input[type="checkbox"] {
+  outline: 1px solid var(--status-overdue-fg);
+  outline-offset: 1px;
+}
+
+/* A single CheckboxSelectMultiple option acts as a confirmation control.
+   Keep it centered against its field question when that question wraps. */
+.rdrf-capture-block .rdrf-cde-field:has(.rdrf-choice-group div[id^="id_"] > div:only-child) {
+  align-items: center;
+}
+
+.rdrf-capture-block .rdrf-cde-field:has(.rdrf-choice-group div[id^="id_"] > div:only-child) .rdrf-cde-field__control > .text-muted:has(> i:empty) {
+  display: none;
+}
+
+/* Direct CheckboxInput widgets are used for independent confirmations and
+   repeatable-entry deletion. Keep them distinct from grouped choices and
+   file-widget clear controls. */
+.rdrf-capture-block .rdrf-standalone-checkbox > input[type="checkbox"] {
+  accent-color: var(--color-accent);
+  cursor: pointer;
+  height: 16px;
+  margin: 9px 0 0;
+  width: 16px;
+}
+
+.rdrf-capture-block .rdrf-standalone-checkbox > input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.rdrf-capture-block .rdrf-standalone-checkbox > input[type="checkbox"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.rdrf-capture-block .rdrf-cde-field.has-error .rdrf-standalone-checkbox > input[type="checkbox"] {
   outline: 1px solid var(--status-overdue-fg);
   outline-offset: 1px;
 }

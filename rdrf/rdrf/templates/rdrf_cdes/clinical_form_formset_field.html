@@ -31,7 +31,7 @@
         {% endif %}
         {% endif %}
     </label>
-    <div class="col-sm-9 rdrf-cde-field__control">
+    <div class="col-sm-9 rdrf-cde-field__control{% if element.field.widget.input_type == "checkbox" and not element.field.cde.allow_multiple %} rdrf-standalone-checkbox{% endif %}">
         {% if element.field.cde.allow_multiple %}
         <div class="rdrf-choice-group">
         {% endif %}

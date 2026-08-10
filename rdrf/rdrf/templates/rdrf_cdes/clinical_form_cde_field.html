@@ -19,7 +19,7 @@
         <span class="fa fa-asterisk" style="color: green;" aria-hidden="true"></span>
         {% endif %}
     </label>
-    <div class="col-sm-9 rdrf-cde-field__control">
+    <div class="col-sm-9 rdrf-cde-field__control{% if field.field.widget.input_type == "checkbox" and not field.field.cde.allow_multiple %} rdrf-standalone-checkbox{% endif %}">
         {% if field.field.cde.allow_multiple %}
         <div class="rdrf-choice-group">
         {% endif %}
