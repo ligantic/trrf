@@ -1,4 +1,4 @@
-from rdrf.forms.widgets.widgets import DurationWidgetHelper
+from rdrf.forms.widgets.widgets import DurationWidgetHelper, TimeWidget
 
 
 def test_duration_compatibile_formats():
@@ -86,3 +86,24 @@ def test_duration_widget_renders_configured_unit_inputs():
     assert 'data-duration-label="Years"' in rendered
     assert 'name="age" value="P2Y3M"' in rendered
     assert 'timeDurationPicker' not in rendered
+
+
+def test_time_widget_renders_24_hour_masked_input():
+    widget = TimeWidget(attrs={"format": "24hour"})
+    rendered = widget.render("bedtime", "21:30", {"id": "id_bedtime"})
+
+    assert 'data-time-min="0" data-time-max="23"' in rendered
+    assert 'id="id_bedtime_time"' in rendered
+    assert 'maxlength="5" pattern="[0-9]{2}:[0-9]{2}" placeholder="HH:MM" value="21:30"' in rendered
+    assert 'name="bedtime" class="time-widget" value="21:30"' in rendered
+    assert "timepicki" not in rendered
+
+
+def test_time_widget_renders_meridian_for_12_hour_format():
+    widget = TimeWidget(attrs={"format": "12hour"})
+    rendered = widget.render("bedtime", "21:30", {"id": "id_bedtime"})
+
+    assert 'data-time-min="1" data-time-max="12"' in rendered
+    assert 'data-time-unit="meridian"' in rendered
+    assert 'value="PM" selected' in rendered
+    assert 'name="bedtime" class="time-widget" value="09:30 PM"' in rendered

@@ -222,7 +222,7 @@
         new_form.removeAttr("id")
 
         var durationWidgets = [];
-        var timePickers = [];
+        var timeWidgets = [];
         var form_count = total_forms.val();
         new_form.find("label").each(function () {
             var forAttribute = $(this).attr('for');
@@ -255,8 +255,8 @@
                     buttonImageOnly: true,
                 });
             }
-            if ($(this).hasClass("timepicker")) {
-                timePickers.push($(this));
+            if ($(this).hasClass("time-widget")) {
+                timeWidgets.push($(this));
             } else if ($(this).hasClass("duration-widget")) {
                 attribute_replace($(this), "input-name", form_count);
                 durationWidgets.push($(this));
@@ -282,11 +282,8 @@
             el.data('pre', '');
         });
 
-        timePickers.forEach(function (el) {
-            var hasAMPM = el.attr('has_am_pm') == 'true';
-            setupTimepicker(el, hasAMPM, el.attr('start_time'));
-            // Add form-control class to timepicker inputs to fix alignment
-            el.parent().find(".timepicki-input").addClass("form-control");
+        timeWidgets.forEach(function (el) {
+            setupTimeWidget(el.attr('name'), el.closest('.rdrf-time-widget').data('has-am-pm'));
         });
 
         var targets = change_handler_targets();

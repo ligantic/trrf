@@ -52,7 +52,7 @@ label a:focus {
   text-decoration: underline;
 }
 
-/*Fix for conflicts between timepicki, datatables and bootstrap pagination classes*/
+/* Fix for conflicts between DataTables and Bootstrap pagination classes. */
 .pagination .page-item.next {
   background: none;
   margin: 0;

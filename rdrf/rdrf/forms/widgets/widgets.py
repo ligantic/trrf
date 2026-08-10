@@ -733,8 +733,7 @@ class TimeWidget(widgets.TextInput):
 
     def _parse_value(self, value, fmt):
         """
-        Parse the input time and transform it to the format
-        the timepicki widget expects
+        Parse the input time into the displayed unit fields.
         """
 
         def validate(hr, min, fmt):
@@ -779,17 +778,23 @@ class TimeWidget(widgets.TextInput):
         fmt = self.attrs.pop("format") if "format" in self.attrs else self.AMPM
         value, start_time = self._parse_value(value, fmt)
         has_am_pm = "true" if fmt == self.AMPM else "false"
-        start_time_str = ",".join([str(t) for t in start_time])
+        displayed_time = f"{start_time[0]:02d}:{start_time[1]:02d}" if start_time else ""
+        meridian = start_time[2] if fmt == self.AMPM and start_time else "AM"
         html = f"""
-            <input id="id_{name}" type="text" name="{name}" class="timepicker" has_am_pm="{has_am_pm}", start_time="{start_time_str}" value="{value}"/>
+            <div class="rdrf-time-widget" data-time-input-name="{name}" data-has-am-pm="{has_am_pm}">
+                <label class="visually-hidden" for="id_{name}_time">Time</label>
+                <input id="id_{name}_time" type="text" class="time-input form-control" data-time-min="{1 if fmt == self.AMPM else 0}" data-time-max="{12 if fmt == self.AMPM else 23}" inputmode="numeric" maxlength="5" pattern="[0-9]{{2}}:[0-9]{{2}}" placeholder="HH:MM" value="{displayed_time}">
+                {f'''<label class="visually-hidden" for="id_{name}_meridian">AM or PM</label><select id="id_{name}_meridian" class="time-input form-select" data-time-unit="meridian"><option value="AM" {"selected" if meridian == "AM" else ""}>AM</option><option value="PM" {"selected" if meridian == "PM" else ""}>PM</option></select>''' if fmt == self.AMPM else ""}
+                <input id="id_{name}" type="hidden" name="{name}" class="time-widget" value="{value}">
+            </div>
         """
         script = ""
         if _is_not_multisection_clone_base_widget(attrs):
             # Only attach the script if this is not the default
             # widget used for cloning in multisections
             script = f"""
-                <script type="text/javascript" class="timepicker-script">
-                    setupTimepicker($("#id_{name}"), {has_am_pm}, "{start_time_str}");
+                <script type="text/javascript" class="time-widget-script">
+                    setupTimeWidget("{name}", {has_am_pm});
                 </script>
             """
 

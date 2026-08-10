@@ -835,6 +835,35 @@
   box-shadow: 0 0 0 3px var(--color-focus-ring);
 }
 
+.rdrf-capture-block .rdrf-time-widget {
+  align-items: center;
+  display: flex;
+  gap: var(--space-5);
+}
+
+.rdrf-capture-block .rdrf-time-widget .time-input.form-control {
+  background-color: var(--color-surface-reference);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  font-family: "Work Sans", var(--font-body);
+  font-size: 14px;
+  height: 40px;
+  line-height: 20px;
+  padding: var(--space-2) var(--space-3);
+  width: 100% !important;
+}
+
+.rdrf-capture-block .rdrf-time-widget .time-input.form-control:focus-visible {
+  border-color: var(--color-accent);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+.rdrf-capture-block .rdrf-time-widget .time-input.form-select {
+  flex: 0 0 5rem;
+}
+
 #ui-datepicker-div.ui-datepicker {
   background-color: var(--color-surface-primary);
   border: 1px solid var(--color-border-default);

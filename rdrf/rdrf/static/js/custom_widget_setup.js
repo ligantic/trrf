@@ -1,16 +1,46 @@
-function setupTimepicker($target, hasAMPM, startTimeStr) {
-    var params = {
-        on_change: function() { $("#main-form").trigger('change'); },
-        show_meridian: hasAMPM,
-        min_hour_value: hasAMPM ? 1:0,
-        max_hour_value: hasAMPM ? 12:23
+function setupTimeWidget(inputName, hasAMPM) {
+  var timeInput = document.getElementById("id_" + inputName);
+  var widget = $(timeInput).closest(".rdrf-time-widget");
+
+  function applyMask(value) {
+    var parts = value.split(":");
+    if (parts.length > 1) {
+      var hours = parts[0].replace(/\D/g, "").slice(0, 2);
+      var minutes = parts[1].replace(/\D/g, "").slice(0, 2);
+      if (hours.length === 1 && minutes) {
+        hours = "0" + hours;
+      }
+      return hours + ":" + minutes;
     }
-    if (startTimeStr != "") {
-        params.start_time = startTimeStr.split(",").map(Number);
+
+    var digits = value.replace(/\D/g, "").slice(0, 4);
+    return digits.length > 2 ? digits.slice(0, 2) + ":" + digits.slice(2) : digits;
+  }
+
+  function updateTime() {
+    var time = widget.find(".time-input[type='text']").val();
+    var match = time.match(/^(\d{2}):(\d{2})$/);
+
+    if (!match || Number(match[1]) > Number(widget.find(".time-input[type='text']").data("time-max")) || Number(match[2]) > 59) {
+      $(timeInput).val("").trigger("change");
+      return;
     }
-    $target.timepicki(params);
-    $target.addClass("form-control");
-    $(".meridian .mer_tx input").css("padding","0px"); // fix padding for meridian display
+
+    var value = time;
+    if (hasAMPM) {
+      value += " " + widget.find('[data-time-unit="meridian"]').val();
+    }
+    $(timeInput).val(value).trigger("change");
+  }
+
+  widget.find(".time-input[type='text']").on("input", function () {
+    $(this).val(applyMask($(this).val()));
+    updateTime();
+  }).on("change blur", function () {
+    updateTime();
+  });
+
+  widget.find('[data-time-unit="meridian"]').on("change", updateTime);
 }
 
 function setupDurationWidget(inputName, attributesStr) {
