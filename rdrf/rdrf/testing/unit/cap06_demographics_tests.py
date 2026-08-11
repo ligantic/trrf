@@ -109,7 +109,7 @@ class DemographicsEditPageTest(TestCase):
             len(section_ids),
         )
 
-    def test_patient_identity_renders_in_navbar_not_banner(self):
+    def test_patient_identity_is_not_rendered_without_a_patient_link(self):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         content = response.content.decode()
@@ -118,8 +118,8 @@ class DemographicsEditPageTest(TestCase):
             r'<nav class="navbar.*?</nav>', content, flags=re.DOTALL
         )
         self.assertIsNotNone(navbar)
-        self.assertIn("rdrf-navbar__participant", navbar.group(0))
-        self.assertIn(str(self.patient), navbar.group(0))
+        self.assertNotIn("rdrf-navbar__participant", navbar.group(0))
+        self.assertNotIn(str(self.patient), navbar.group(0))
 
         banner = re.search(
             r'<div class="banner">.*?</div>\s*</div>',

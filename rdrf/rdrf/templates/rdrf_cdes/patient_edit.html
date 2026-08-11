@@ -479,7 +479,7 @@
                     <div style="display: none;" id="empty_{{form.prefix}}">
                         <div class="row">
                             <div class="col-sm-9 offset-sm-3">
-                                <a class="btn btn-danger btn-xs float-end"
+                                <a class="btn btn-outline-danger btn-sm float-end rdrf-multisection-entry__remove"
                                     onclick="delete_form(this, '{{form.prefix}}')">
                                     <span class="fa fa-minus" aria-hidden="true"></span> {% trans 'Remove' %}
                                 </a>
@@ -521,7 +521,7 @@
                                     <p class="demographics-section__description rdrf-clinical-section-label__supporting-text">{% trans "Update your patient's registry details here." %}</p>
                                     {% endif %}
                                 </div>
-                                <a class="btn btn-info btn-xs rdrf-clinical-section-label__add" onclick="add_form(this, '{{form.prefix}}')">
+                                <a class="btn btn-outline-primary btn-sm rdrf-clinical-section-label__add" onclick="add_form(this, '{{form.prefix}}')">
                                     <span class="fa fa-plus" aria-hidden="true"></span> {% trans 'Add' %}
                                 </a>
                             </div>

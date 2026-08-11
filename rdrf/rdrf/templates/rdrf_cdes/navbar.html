@@ -15,14 +15,9 @@
       <span>{% project_title %}</span>
       {% endif %}
     </a>
-    {% if patient_link or patient %}
+    {% if patient_link %}
     <div class="rdrf-navbar__participant">
-      {% if patient_link %}
       {{ patient_link|safe }}
-      {% else %}
-      <span class="fa fa-user" aria-hidden="true"></span>
-      <span>{{ patient }}</span>
-      {% endif %}
     </div>
     {% endif %}
     <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbar-collapsing-links"
