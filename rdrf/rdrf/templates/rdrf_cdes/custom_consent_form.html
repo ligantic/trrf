@@ -264,6 +264,23 @@
             width: 43.75rem;
         }
 
+        #main-form .rdrf-consent-section .ratio:has(video) {
+            --bs-aspect-ratio: 63.09%;
+            border: 1px solid var(--color-border-default);
+            border-radius: var(--radius-md);
+            box-shadow: var(--elevation-xs);
+            max-width: 43.75rem;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        #main-form .rdrf-consent-section .ratio:has(video) video {
+            height: 100% !important;
+            margin: 0;
+            object-fit: cover;
+            width: 100%;
+        }
+
         #main-form label {
             color: var(--color-text-heading);
             font-size: .875rem;

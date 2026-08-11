@@ -493,6 +493,127 @@
   border-radius: 0;
 }
 
+/* Demographics is a patient-level editor, but follows the same canvas,
+   section navigation, and capture rhythm as editable clinical forms. */
+.rdrf-demographics-page {
+  padding-bottom: var(--space-8);
+}
+
+.rdrf-demographics-page .demographics-page-header {
+  border-bottom: 1px solid var(--color-border-subtle);
+  margin-bottom: var(--space-6);
+  padding: var(--space-4) 0;
+}
+
+.rdrf-demographics-page .demographics-page-header h1 {
+  color: var(--color-text-heading);
+  font-family: "Work Sans", var(--font-body);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.rdrf-demographics-page .demographics-rail {
+  margin-bottom: 0;
+  padding: 0 var(--space-5);
+}
+
+.rdrf-demographics-page .demographics-section {
+  border: 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+  border-radius: 0;
+  box-shadow: none;
+  margin-bottom: var(--space-6);
+  padding: 0 0 var(--space-6);
+}
+
+.rdrf-demographics-page .demographics-section .rdrf-card__title-row {
+  align-items: flex-start;
+  border: 0;
+  margin-bottom: var(--space-5);
+  padding: 0;
+}
+
+.rdrf-demographics-page .demographics-section .rdrf-clinical-section-label {
+  display: block;
+  flex: 1 1 auto;
+  padding-bottom: var(--space-4);
+}
+
+.rdrf-demographics-page .demographics-section .form-control,
+.rdrf-demographics-page .demographics-section select {
+  background-color: var(--color-surface-primary);
+  border-color: var(--color-border-default);
+  border-radius: var(--radius-md);
+  font-family: "Work Sans", var(--font-body);
+  font-size: 14px;
+  line-height: 20px;
+  min-height: 40px;
+  padding: var(--space-2) var(--space-3);
+}
+
+.rdrf-demographics-page .demographics-section textarea.form-control {
+  min-height: 7rem;
+}
+
+.rdrf-demographics-page .demographics-section .col-form-label {
+  color: var(--color-text-heading);
+  font-family: "Work Sans", var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  padding-top: var(--space-2);
+}
+
+.rdrf-demographics-page .demographics-section div[id^="id_"]:has(input[type="checkbox"]) {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.rdrf-demographics-page .demographics-section div[id^="id_"]:has(input[type="checkbox"]) > div {
+  margin: 0;
+}
+
+.rdrf-demographics-page .demographics-section div[id^="id_"]:has(input[type="checkbox"]) label {
+  align-items: start;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  display: grid;
+  font-family: "Work Sans", var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  gap: 14px;
+  grid-template-columns: 16px minmax(0, 1fr);
+  line-height: 18px;
+  margin: 0;
+}
+
+.rdrf-demographics-page .demographics-section div[id^="id_"]:has(input[type="checkbox"]) input[type="checkbox"] {
+  accent-color: var(--color-accent);
+  height: 16px;
+  margin: 1px 0 0;
+  width: 16px;
+}
+
+.rdrf-demographics-page .demographics-section div[id^="id_"]:has(input[type="checkbox"]) input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.rdrf-demographics-page .demographics-form-actions {
+  gap: var(--space-3);
+}
+
+.rdrf-demographics-page .demographics-form-actions .rdrf-form-actions__cancel,
+.rdrf-demographics-page .demographics-form-actions .rdrf-form-actions__save {
+  font-family: "Work Sans", var(--font-body);
+  font-size: 14px;
+  line-height: 20px;
+  min-height: 40px;
+  min-width: 7.5rem;
+  padding: 10px var(--space-5);
+}
+
 .rdrf-clinical-summary__title-row {
   display: flex;
   align-items: center;

@@ -463,6 +463,11 @@ class PatientForm(forms.ModelForm):
                 self.fields[
                     "registered_clinicians"
                 ].label_from_instance = clinician_display_str
+                self.fields[
+                    "registered_clinicians"
+                ].widget = forms.CheckboxSelectMultiple(
+                    choices=self.fields["registered_clinicians"].choices
+                )
 
                 if instance and instance.registered_clinicians.exists():
                     clinician_wgs = set(
@@ -506,6 +511,9 @@ class PatientForm(forms.ModelForm):
             registries = registries.filter(id=self.registry_model.id)
         self.fields["rdrf_registry"].queryset = registries
         self.fields["rdrf_registry"].initial = [registries.first()]
+        self.fields["rdrf_registry"].widget = forms.CheckboxSelectMultiple(
+            choices=self.fields["rdrf_registry"].choices
+        )
 
         if hasattr(self, "user"):
             user = self.user
@@ -513,12 +521,13 @@ class PatientForm(forms.ModelForm):
             # user in the registry being edited
             if self._is_parent_editing_child(instance):
                 # see FKRP #472
-                self.fields["working_groups"].widget = forms.SelectMultiple(
-                    attrs={"readonly": "readonly"}
-                )
                 self.fields[
                     "working_groups"
                 ].queryset = instance.working_groups.all()
+                self.fields["working_groups"].widget = forms.CheckboxSelectMultiple(
+                    attrs={"readonly": "readonly"},
+                    choices=self.fields["working_groups"].choices,
+                )
             else:
                 working_groups_choices, additional_working_group_fields = (
                     working_group_fields(
@@ -532,6 +541,11 @@ class PatientForm(forms.ModelForm):
                 )
                 self.fields.update(additional_working_group_fields)
                 self.fields["working_groups"].choices = working_groups_choices
+                self.fields["working_groups"].widget = (
+                    forms.CheckboxSelectMultiple(
+                        choices=self.fields["working_groups"].choices
+                    )
+                )
                 if not has_displayable_working_groups(working_groups_choices):
                     self.fields["working_groups"].disabled = True
                     self.fields["working_groups"].required = False

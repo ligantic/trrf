@@ -379,6 +379,10 @@
 {% block sidebar %}
 {% endblock %}
 
+{% block patient_banner %}<div class="banner"></div>{% endblock %}
+
+{% block main_column_class %}col-12 rdrf-clinical-page rdrf-demographics-page{% endblock %}
+
 {% block formbtns %}
 {% endblock %}
 
@@ -404,7 +408,7 @@
 
         {{ family_linkage_panel|safe }}
 
-        <header class="demographics-page-header">
+        <header class="demographics-page-header rdrf-demographics-page-header">
             <nav class="rdrf-breadcrumb demographics-breadcrumb" aria-label="{% trans 'Breadcrumb' %}">
                 <a href="{% url 'parent_dashboard' registry_code %}">{% trans 'Dashboard' %}</a>
                 <span class="rdrf-breadcrumb__separator" aria-hidden="true">›</span>
@@ -426,23 +430,26 @@
     </div>
 </div>
 
-<div class="row">
-    <div class="col-lg-2 col-12 d-print-none">
+<div class="row rdrf-demographics-layout">
+    <div class="col-lg-3 d-none d-lg-block d-print-none">
         <!-- CAP-06 completeness indicator pending D-09 -->
-        <nav id="demographics-subnav" class="rdrf-subnav-rail demographics-rail" data-rdrf-subnav
+        <nav id="demographics-subnav" class="rdrf-subnav-rail rdrf-clinical-rail demographics-rail" data-rdrf-subnav
             aria-label="{% trans 'Demographics sections' %}">
-            {% for form, sections in forms %}
-            {% for name, section in sections %}
-            {% if name not in section_blacklist and name not in hidden_sectionlist %}
-            <a class="rdrf-subnav-rail__item"
-                href="#demographics-section-{{ forloop.parentloop.counter }}-{{ forloop.counter }}">{% trans name %}</a>
-            {% endif %}
-            {% endfor %}
-            {% endfor %}
+            <span class="rdrf-clinical-rail__heading">{% trans 'Demographics' %}</span>
+            <div class="rdrf-clinical-rail__items">
+                {% for form, sections in forms %}
+                {% for name, section in sections %}
+                {% if name not in section_blacklist and name not in hidden_sectionlist %}
+                <a class="rdrf-subnav-rail__item"
+                    href="#demographics-section-{{ forloop.parentloop.counter }}-{{ forloop.counter }}">{% trans name %}</a>
+                {% endif %}
+                {% endfor %}
+                {% endfor %}
+            </div>
         </nav>
     </div>
 
-    <div class="col-lg-10 col-12">
+    <div class="col-lg-9 col-12">
         <form class="form-horizontal" method="post" id="main-form" novalidate enctype="multipart/form-data">
 
             {% csrf_token %}
@@ -451,10 +458,10 @@
             deferred —
             cross-subsection validation dependencies unresolved.{% endcomment %}
             <div class="rdrf-form-actions demographics-form-actions demographics-form-actions--top d-print-none">
-                <a href="" class="btn btn-outline-secondary">
+                <a href="" class="btn btn-outline-secondary rdrf-form-actions__cancel">
                     {% trans 'Cancel' %}
                 </a>
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn btn-primary rdrf-form-actions__save">
                     {% trans "Save" %}
                 </button>
             </div>
@@ -488,10 +495,6 @@
                                 {% else %}
                                 <label for="{{ element.auto_id}}" class="col-sm-3 col-form-label">
                                     {{ element.label|translate}}
-                                    {% if element.field.required %}
-                                    <span class="fa fa-asterisk" style="color: red;" aria-hidden="true"></span><span
-                                        class="visually-hidden">{% trans "required" %}</span>
-                                    {% endif %}
                                 </label>
                                 <div class="col-sm-9">
                                     {{ element|safe }}
@@ -510,15 +513,15 @@
                             {% endfor %}
                         </div>
                         <section id="demographics-section-{{ forloop.parentloop.counter }}-{{ forloop.counter }}"
-                            class="rdrf-card demographics-section{% if forloop.parentloop.counter == 1 and forloop.counter == 1 %} demographics-section--first{% endif %}">
+                            class="rdrf-card demographics-section">
                             <div class="rdrf-card__title-row">
-                                <div>
-                                    <h3 class="h5 mb-0">{% trans name %}</h3>
+                                <div class="rdrf-clinical-section-label">
+                                    <h3 class="h5 mb-0 rdrf-clinical-section-label__title">{% trans name %}</h3>
                                     {% if name == "Registry" %}
-                                    <p class="demographics-section__description">{% trans "Update your patient's registry details here." %}</p>
+                                    <p class="demographics-section__description rdrf-clinical-section-label__supporting-text">{% trans "Update your patient's registry details here." %}</p>
                                     {% endif %}
                                 </div>
-                                <a class="btn btn-info btn-xs" onclick="add_form(this, '{{form.prefix}}')">
+                                <a class="btn btn-info btn-xs rdrf-clinical-section-label__add" onclick="add_form(this, '{{form.prefix}}')">
                                     <span class="fa fa-plus" aria-hidden="true"></span> {% trans 'Add' %}
                                 </a>
                             </div>
@@ -542,10 +545,6 @@
                                                 {% trans 'Mark for deletion' %}
                                                 {% else %}
                                                 {{ element.label|translate}}
-                                                {% if element.field.required %}
-                                                <span class="fa fa-asterisk" style="color: red;"
-                                                    aria-hidden="true"></span><span class="visually-hidden">{% trans "required" %}</span>
-                                                {% endif %}
                                                 {% endif %}
                                             </label>
                                             <div class="col-sm-9">
@@ -573,15 +572,15 @@
                         </section>
                         {% else %}
                         <section id="demographics-section-{{ forloop.parentloop.counter }}-{{ forloop.counter }}"
-                            class="rdrf-card demographics-section{% if forloop.parentloop.counter == 1 and forloop.counter == 1 %} demographics-section--first{% endif %}">
+                            class="rdrf-card demographics-section">
                             {% with link=section|get_information_link %}
                             {% with info_text_expression=section|get_info_text_expression %}
                             {% with doc="docs/"|add:link %}
                             <div class="rdrf-card__title-row">
-                                <div>
-                                    <h3 class="h5 mb-0">{% trans name %}</h3>
+                                <div class="rdrf-clinical-section-label">
+                                    <h3 class="h5 mb-0 rdrf-clinical-section-label__title">{% trans name %}</h3>
                                     {% if name == "Registry" %}
-                                    <p class="demographics-section__description">{% trans "Update your patient's registry details here." %}</p>
+                                    <p class="demographics-section__description rdrf-clinical-section-label__supporting-text">{% trans "Update your patient's registry details here." %}</p>
                                     {% endif %}
                                 </div>
                             </div>
@@ -607,19 +606,11 @@
                                     <label for="{{ element.auto_id}}" style="text-align: left"
                                         class="col-sm-11 col-form-label">
                                         {{ element.label|translate }}
-                                        {% if element.field.required %}
-                                        <span class="fa fa-asterisk" style="color: red;" aria-hidden="true"></span><span
-                                            class="visually-hidden">{% trans "required" %}</span>
-                                        {% endif %}
                                     </label>
                                     <div class="col-sm-1">
                                         {% else %}
                                         <label for="{{ element.auto_id}}" style="display: {{element.is_hidden|yesno:"None,block"}}" class="col-sm-3 col-form-label">
                                             {{ element.label|translate }}
-                                            {% if element.field.required %}
-                                            <span class="fa fa-asterisk" style="color: red;"
-                                                aria-hidden="true"></span><span class="visually-hidden">{% trans "required" %}</span>
-                                            {% endif %}
                                         </label>
                                         <div class="col-sm-9">
                                             {% endif %}
@@ -654,10 +645,10 @@
                 {% endfor %}
 
                 <div class="rdrf-form-actions demographics-form-actions demographics-form-actions--footer d-print-none">
-                    <a href="" class="btn btn-outline-secondary">
+                    <a href="" class="btn btn-outline-secondary rdrf-form-actions__cancel">
                         {% trans 'Cancel' %}
                     </a>
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-primary rdrf-form-actions__save">
                         {% trans "Save" %}
                     </button>
                 </div>

@@ -129,6 +129,14 @@ class DemographicsEditPageTest(TestCase):
         self.assertIsNotNone(banner)
         self.assertNotIn(str(self.patient), banner.group(0))
 
+    def test_registry_membership_renders_as_checkbox_group(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+
+        self.assertNotIn('<select name="rdrf_registry"', content)
+        self.assertIn('name="rdrf_registry"', content)
+
     def test_readonly_demographic_field_renders_readonly(self):
         self._add_field_rule("umrn", DemographicFields.READONLY)
         response = self.client.get(self.url)
