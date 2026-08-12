@@ -877,7 +877,7 @@
   input.form-control:is([type="text"], [type="email"], [type="number"], [type="url"], [type="tel"], [type="search"]),
   textarea.form-control
 ):not(.cde-value-updated) {
-  background-color: var(--color-surface-primary);
+  background-color: var(--color-surface-reference);
 }
 
 .rdrf-capture-block .rdrf-cde-field__control textarea.form-control {
@@ -921,7 +921,7 @@
 .rdrf-capture-block .rdrf-duration-widget__unit .duration-input.form-control {
   appearance: textfield;
   background-color: var(--color-surface-reference);
-  border: 1px solid var(--color-border-default);
+  border: 1px solid var(--color-input-border, var(--color-border-default));
   border-radius: var(--radius-md);
   color: var(--color-text-primary);
   font-family: "Work Sans", var(--font-body);
@@ -964,7 +964,7 @@
 
 .rdrf-capture-block .rdrf-time-widget .time-input.form-control {
   background-color: var(--color-surface-reference);
-  border: 1px solid var(--color-border-default);
+  border: 1px solid var(--color-input-border, var(--color-border-default));
   border-radius: var(--radius-md);
   color: var(--color-text-primary);
   font-family: "Work Sans", var(--font-body);
