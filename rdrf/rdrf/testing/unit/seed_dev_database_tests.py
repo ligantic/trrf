@@ -10,6 +10,7 @@ from django.utils import timezone
 from registry.groups.models import CustomUser
 from registry.patients.models import LongitudinalFollowupEntry, Patient
 
+from rdrf.helpers.cde_data_types import CDEDataTypes
 from rdrf.models.definition.models import (
     ClinicalData,
     CommonDataElement,
@@ -20,6 +21,7 @@ from rdrf.models.definition.models import (
     RegistryForm,
     Section,
 )
+from rdrf.services.io.dev_seed import DevelopmentScenarioSeeder
 
 
 @override_settings(PRODUCTION=False)
@@ -33,7 +35,7 @@ class SeedDevDatabaseTests(TestCase):
             version="1.0",
             metadata_json='{"features": ["contexts", "longitudinal_followups"]}',
         )
-        cde = CommonDataElement.objects.create(
+        self.cde = CommonDataElement.objects.create(
             code="SeedCDE",
             name="Seed value",
             abbreviated_name="Seed value",
@@ -43,7 +45,7 @@ class SeedDevDatabaseTests(TestCase):
             code="SeedSection",
             display_name="Seed section",
             abbreviated_name="Seed section",
-            elements=cde.code,
+            elements=self.cde.code,
         )
         form = RegistryForm.objects.create(
             registry=self.registry,
@@ -135,3 +137,22 @@ class SeedDevDatabaseTests(TestCase):
         self.assertEqual(alerts.count(), 2)
         self.assertEqual(alerts.filter(send_at__lte=timezone.now()).count(), 1)
         self.assertEqual(alerts.filter(send_at__gt=timezone.now()).count(), 1)
+
+    def test_formats_duration_values_for_configured_units(self):
+        self.cde.datatype = CDEDataTypes.DURATION
+        self.cde.widget_name = "DurationWidget"
+
+        self.cde.widget_settings = '{"years": true, "months": true}'
+        self.assertEqual(
+            DevelopmentScenarioSeeder._duration_value(self.cde, 3), "P3Y0M"
+        )
+
+        self.cde.widget_settings = '{"hours": true}'
+        self.assertEqual(
+            DevelopmentScenarioSeeder._duration_value(self.cde, 3), "PT3H"
+        )
+
+        self.cde.widget_settings = '{"weeks_only": true}'
+        self.assertEqual(
+            DevelopmentScenarioSeeder._duration_value(self.cde, 3), "P3W"
+        )

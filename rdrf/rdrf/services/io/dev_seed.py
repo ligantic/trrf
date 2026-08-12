@@ -1,4 +1,5 @@
 import datetime
+import json
 from dataclasses import dataclass
 
 from django.contrib.auth.models import Group
@@ -207,13 +208,44 @@ class DevelopmentScenarioSeeder:
             value = {
                 CDEDataTypes.BOOL: True,
                 CDEDataTypes.DATE: f"2025-01-{sequence:02d}",
-                CDEDataTypes.DURATION: str(sequence),
+                CDEDataTypes.DURATION: self._duration_value(cde, sequence),
                 CDEDataTypes.EMAIL: f"history-{sequence}@example.test",
                 CDEDataTypes.FLOAT: float(sequence),
                 CDEDataTypes.INTEGER: sequence,
                 CDEDataTypes.TIME: "09:00",
             }.get(cde.datatype, f"Synthetic history {sequence}")
         return [value] if cde.allow_multiple else value
+
+    @staticmethod
+    def _duration_value(cde, sequence):
+        try:
+            settings = json.loads(cde.widget_settings or "{}")
+        except (TypeError, json.JSONDecodeError):
+            settings = {}
+
+        if settings.get("weeks_only"):
+            return f"P{sequence}W"
+
+        units = (
+            ("years", "Y", False),
+            ("months", "M", False),
+            ("days", "D", False),
+            ("hours", "H", True),
+            ("minutes", "M", True),
+            ("seconds", "S", True),
+        )
+        active_units = [unit for unit in units if settings.get(unit[0])]
+        if not active_units:
+            return f"P{sequence}Y"
+
+        values = []
+        for index, (_, suffix, is_time) in enumerate(active_units):
+            value = sequence if index == 0 else 0
+            values.append((f"{value}{suffix}", is_time))
+
+        date_values = "".join(value for value, is_time in values if not is_time)
+        time_values = "".join(value for value, is_time in values if is_time)
+        return f"P{date_values}{'T' if time_values else ''}{time_values}"
 
     def _seed_alert(self, patient, scenario):
         LongitudinalFollowupEntry.objects.filter(
