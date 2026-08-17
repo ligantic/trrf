@@ -1561,54 +1561,59 @@
 .rdrf-progress__bar--due-soon { background-color: var(--status-due-soon-fg); }
 .rdrf-progress__bar--overdue { background-color: var(--status-overdue-fg); }
 
-/* ==========================================================================
-   Participant switcher — segmented control (CAP-05, frame 113:448).
-   Full-page navigation links; the active participant carries an accent
-   surface. When only one participant is linked, use .rdrf-participant-label
-   (static, non-interactive) instead.
+/* ===========================================================================
+   Participant switcher — segmented control (dashboard frame 133:738).
+   Full-page navigation links; the active participant is lifted above the
+   neutral chooser surface. When only one participant is linked, use
+   .rdrf-participant-label (static, non-interactive) instead.
    ========================================================================== */
 .rdrf-segmented {
   display: inline-flex;
   align-items: stretch;
-  gap: var(--space-1);
-  padding: var(--space-1);
-  background-color: var(--color-surface-reference);
-  border: 1px solid var(--color-border-subtle);
+  gap: 2px;
+  background-color: var(--color-surface-segmented);
+  border: 1px solid var(--color-border-default);
   border-radius: var(--radius-md);
+  box-shadow: var(--elevation-xs);
   font-family: var(--font-body);
 }
 
 .rdrf-segmented__option {
   display: inline-flex;
   align-items: center;
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-sm);
-  color: var(--color-text-secondary);
+  padding: 10px var(--space-4);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  font-size: .875rem;
+  line-height: 1.125rem;
   text-decoration: none;
   font-weight: 500;
   white-space: nowrap;
 }
 
 .rdrf-segmented__option:hover {
-  background-color: var(--color-accent-bg-hover);
-  color: var(--color-accent);
+  background-color: var(--color-surface-primary);
+  color: var(--color-text-heading);
 }
 
 .rdrf-segmented__option:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px var(--color-focus-ring);
-  color: var(--color-accent);
+  color: var(--color-text-heading);
 }
 
 .rdrf-segmented__option--active {
-  background-color: var(--color-accent);
-  color: var(--color-surface-primary);
-  font-weight: 600;
+  background-color: var(--color-surface-primary);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--elevation-xs);
+  color: var(--color-text-heading);
+  font-weight: 500;
 }
 
 .rdrf-segmented__option--active:hover {
-  background-color: var(--color-accent-strong);
-  color: var(--color-surface-primary);
+  background-color: var(--color-surface-primary);
+  color: var(--color-text-heading);
 }
 
 /* Single linked participant: static label, no switch affordance */
