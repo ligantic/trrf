@@ -3,36 +3,55 @@
 {% load i18n %}
 
   {% block card_header %}
-    {% if not widget.title %}
-      <h2 class="h5 mb-0">{% trans "Consents" %}</h2>
-    {% else %}
-      {{ block.super }}
-    {% endif %}
-
-    <span class="rdrf-badge {% if consent_status.valid %}rdrf-badge--complete{% else %}rdrf-badge--not-started{% endif %}">
-      {% if consent_status.valid %}
-        {% trans "Complete" %}
+    <div class="rdrf-consents-card__heading">
+      {% if not widget.title %}
+        <h2 class="h5 mb-0">{% trans "Consents" %}</h2>
       {% else %}
-        {% trans "Incomplete" %}
+        {{ block.super }}
       {% endif %}
-    </span>
+      {% if consent_status.last_updated %}
+        <p class="rdrf-consents-card__updated mb-0">
+          {% blocktrans with last_updated=consent_status.last_updated|date:"j F Y" %}Consents last updated: {{ last_updated }}{% endblocktrans %}
+        </p>
+      {% endif %}
+      <p class="rdrf-consents-card__intro mb-0">{% trans "Review and manage your consents." %}</p>
+    </div>
+    <a href="{% url 'consent_form_view' registry.code patient.id %}" class="btn btn-primary btn-sm rdrf-consents-card__manage d-print-none">{% trans "Manage Consents" %}</a>
   {% endblock %}
 
   {% block card_body_text %}
-    {% if not consent_status.valid %}
-      <p class="alert alert-danger">
-        {% trans "Patient consent must be completed to enable access to the registry." %}
-      </p>
+    <span class="rdrf-badge rdrf-badge--{{ consent_status.status_css }} rdrf-consents-card__status">{{ consent_status.status_label }}</span>
+    {% if consent_status.not_completed %}
+      <section class="rdrf-consents-card__group">
+        <h3>{% trans "Not completed" %}</h3>
+        <ul class="list-unstyled mb-0">
+          {% for question in consent_status.not_completed %}
+            <li class="rdrf-consents-card__question rdrf-consents-card__question--not-completed"><span class="fa fa-circle-o" aria-hidden="true"></span>{{ question }}</li>
+          {% endfor %}
+        </ul>
+      </section>
     {% endif %}
-    <p>
-      {% blocktrans trimmed with completed=consent_status.completed total=consent_status.total %}
-        You have approved {{ completed }} out of {{ total }} consents.
-      {% endblocktrans %}
-    </p>
+    {% if consent_status.consented %}
+      <section class="rdrf-consents-card__group">
+        <h3>{% trans "I consent to:" %}</h3>
+        <ul class="list-unstyled mb-0">
+          {% for question in consent_status.consented %}
+            <li class="rdrf-consents-card__question rdrf-consents-card__question--consented"><span class="fa fa-check-circle-o" aria-hidden="true"></span>{{ question }}</li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endif %}
+    {% if consent_status.not_consented %}
+      <section class="rdrf-consents-card__group">
+        <h3>{% trans "I do not consent to:" %}</h3>
+        <ul class="list-unstyled mb-0">
+          {% for question in consent_status.not_consented %}
+            <li class="rdrf-consents-card__question rdrf-consents-card__question--not-consented"><span class="fa fa-times-circle-o" aria-hidden="true"></span>{{ question }}</li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% endif %}
   {% endblock %}
 
   {% block card_links %}
-    <ul class="list-unstyled mb-0 d-print-none">
-      <li><a href="{% url 'consent_form_view' registry.code patient.id %}" class="card-link">{% trans "View/change consents" %}</a></li>
-    </ul>
   {% endblock %}

@@ -329,13 +329,23 @@ class ParentDashboardTest(RDRFTestCase):
             code="S1",
             validation_rule="cq1 and cq3",
         )
-        cq1 = ConsentQuestion.objects.create(section=sec1, code="cq1")
-        cq2 = ConsentQuestion.objects.create(section=sec1, code="cq2")
-        cq3 = ConsentQuestion.objects.create(section=sec1, code="cq3")
-        cq4 = ConsentQuestion.objects.create(section=sec1, code="cq4")
+        cq1 = ConsentQuestion.objects.create(
+            section=sec1, code="cq1", question_label="1. Consent 1"
+        )
+        cq2 = ConsentQuestion.objects.create(
+            section=sec1, code="cq2", question_label="Consent 2"
+        )
+        cq3 = ConsentQuestion.objects.create(
+            section=sec1, code="cq3", question_label="Consent 3"
+        )
+        cq4 = ConsentQuestion.objects.create(
+            section=sec1, code="cq4", question_label="Consent 4"
+        )
 
         p1 = create_valid_patient()
         p2 = create_valid_patient()
+        p3 = create_valid_patient()
+        p4 = create_valid_patient()
 
         ConsentValue.objects.create(
             patient=p1, consent_question=cq1, answer=True
@@ -357,17 +367,59 @@ class ParentDashboardTest(RDRFTestCase):
             patient=p2, consent_question=cq4, answer=False
         )
 
+        for question in (cq1, cq2, cq3, cq4):
+            ConsentValue.objects.create(
+            patient=p4,
+            consent_question=question,
+            answer=False,
+            last_update=datetime(2026, 3, 13).date()
+            if question == cq1
+            else None,
+            )
+
         parent_dashboard = ParentDashboard(self._request(), self.dashboard, p1)
+        summary = parent_dashboard._patient_consent_summary()
+        self.assertTrue(summary["valid"])
+        self.assertEqual(summary["completed"], 3)
+        self.assertEqual(summary["total"], 4)
+        self.assertEqual(summary["status_css"], "in-progress")
         self.assertEqual(
-            parent_dashboard._patient_consent_summary(),
-            {"valid": True, "completed": 3, "total": 4},
+            summary["consented"], ["Consent 1", "Consent 2", "Consent 3"]
         )
+        self.assertEqual(summary["not_consented"], [])
+        self.assertEqual(summary["not_completed"], ["Consent 4"])
 
         parent_dashboard = ParentDashboard(self._request(), self.dashboard, p2)
-        self.assertEqual(
-            parent_dashboard._patient_consent_summary(),
-            {"valid": False, "completed": 1, "total": 4},
-        )
+        summary = parent_dashboard._patient_consent_summary()
+        self.assertFalse(summary["valid"])
+        self.assertEqual(summary["completed"], 3)
+        self.assertEqual(summary["status_css"], "in-progress")
+        self.assertEqual(summary["consented"], ["Consent 1"])
+        self.assertEqual(summary["not_consented"], ["Consent 3", "Consent 4"])
+        self.assertEqual(summary["not_completed"], ["Consent 2"])
+
+        parent_dashboard = ParentDashboard(self._request(), self.dashboard, p3)
+        summary = parent_dashboard._patient_consent_summary()
+        self.assertEqual(summary["completed"], 0)
+        self.assertEqual(summary["status_css"], "not-started")
+        self.assertEqual(summary["not_completed"], [
+            "Consent 1",
+            "Consent 2",
+            "Consent 3",
+            "Consent 4",
+        ])
+
+        parent_dashboard = ParentDashboard(self._request(), self.dashboard, p4)
+        summary = parent_dashboard._patient_consent_summary()
+        self.assertEqual(summary["completed"], 4)
+        self.assertEqual(summary["status_css"], "complete")
+        self.assertEqual(summary["last_updated"], datetime(2026, 3, 13).date())
+        self.assertEqual(summary["not_consented"], [
+            "Consent 1",
+            "Consent 2",
+            "Consent 3",
+            "Consent 4",
+        ])
 
     def test_get_module_progress(self):
         cfg1 = ContextFormGroup.objects.create(

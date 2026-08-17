@@ -1,4 +1,5 @@
 import logging
+import re
 from collections import defaultdict
 
 from django.core.exceptions import PermissionDenied
@@ -92,21 +93,60 @@ class ParentDashboard(object):
         return None
 
     def _patient_consent_summary(self):
-        registry_consent_questions = ConsentQuestion.objects.filter(
-            section__registry=self.registry
+        registry_consent_questions = list(
+            ConsentQuestion.objects.filter(section__registry=self.registry)
+            .order_by("section__code", "position", "pk")
         )
-        patient_consents = ConsentValue.objects.filter(
+        patient_consents = list(ConsentValue.objects.filter(
             patient=self.patient,
-            answer=True,
             consent_question__section__registry=self.registry,
-        )
+        ).select_related("consent_question"))
+        consent_answers = {
+            consent.consent_question_id: consent for consent in patient_consents
+        }
+        consented = []
+        not_consented = []
+        not_completed = []
+
+        for question in registry_consent_questions:
+            question_label = re.sub(
+                r"^\s*\d+\.\s+", "", question.question_label
+            )
+            consent = consent_answers.get(question.pk)
+            if consent is None:
+                not_completed.append(question_label)
+            elif consent.answer:
+                consented.append(question_label)
+            else:
+                not_consented.append(question_label)
+
+        completed = len(consent_answers)
+        total = len(registry_consent_questions)
+        if completed == 0:
+            status_css = "not-started"
+            status_label = _("Not started")
+        elif completed == total:
+            status_css = "complete"
+            status_label = _("Complete")
+        else:
+            status_css = "in-progress"
+            status_label = _("In progress")
 
         return {
             "valid": consent_status_for_patient(
                 self.registry.code, self.patient
             ),
-            "completed": patient_consents.count(),
-            "total": registry_consent_questions.count(),
+            "completed": completed,
+            "total": total,
+            "status_css": status_css,
+            "status_label": status_label,
+            "consented": consented,
+            "not_consented": not_consented,
+            "not_completed": not_completed,
+            "last_updated": max(
+                (consent.last_update for consent in patient_consents if consent.last_update),
+                default=None,
+            ),
         }
 
     def _get_module_progress(self):
