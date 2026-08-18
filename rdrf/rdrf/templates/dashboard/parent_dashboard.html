@@ -294,7 +294,9 @@
     {% for plugin in dashboard.registry_plugins.primary %}
       {% include plugin.template with plugin=plugin widget=plugin.widget %}
     {% endfor %}
+    {% if not dashboard.registry_plugins.primary %}
     {% include "dashboard/widget/demographics.html" with widget=dashboard.widgets.demographics primary=True %}
+    {% endif %}
 
     {% include "dashboard/widget/module_progress.html" with widget=dashboard.widgets.module_progress %}
   </div>
