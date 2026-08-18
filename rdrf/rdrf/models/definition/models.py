@@ -2356,6 +2356,7 @@ class RegistryDashboardWidget(models.Model):
     WIDGET_CHOICES = (
         ("demographics", _("Demographics")),
         ("clinical_data", _("Clinical Data")),
+        ("registry_plugin", _("Registry plugin")),
         ("consents", _("Consent")),
         ("module_progress", _("Module Progress")),
     )
@@ -2366,11 +2367,12 @@ class RegistryDashboardWidget(models.Model):
     widget_type = models.CharField(
         choices=WIDGET_CHOICES, blank=False, null=False, max_length=50
     )
+    provider = models.CharField(blank=True, max_length=100)
     title = models.CharField(blank=True, max_length=100)
     free_text = models.CharField(blank=True, max_length=255)
 
     class Meta:
-        unique_together = (("registry_dashboard", "widget_type"),)
+        unique_together = (("registry_dashboard", "widget_type", "provider"),)
 
 
 class RegistryDashboardDemographicData(models.Model):

@@ -878,6 +878,7 @@ class Exporter:
                 "widgets": [
                     {
                         "widget_type": widget.widget_type,
+                        "provider": widget.provider,
                         "title": widget.title,
                         "free_text": widget.free_text,
                         "demographics": [

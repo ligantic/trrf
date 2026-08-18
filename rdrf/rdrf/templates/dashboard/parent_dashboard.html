@@ -291,6 +291,9 @@
 <div class="rdrf-dashboard__grid d-print-block">
   {% if dashboard.patient_status.consent.valid %}
   <div class="rdrf-dashboard__primary">
+    {% for plugin in dashboard.registry_plugins.primary %}
+      {% include plugin.template with plugin=plugin widget=plugin.widget %}
+    {% endfor %}
     {% include "dashboard/widget/demographics.html" with widget=dashboard.widgets.demographics primary=True %}
 
     {% include "dashboard/widget/module_progress.html" with widget=dashboard.widgets.module_progress %}
@@ -298,6 +301,9 @@
   {% endif %}
 
   <aside class="rdrf-dashboard__secondary">
+    {% for plugin in dashboard.registry_plugins.secondary %}
+      {% include plugin.template with plugin=plugin widget=plugin.widget %}
+    {% endfor %}
     {% if dashboard.widgets.clinical_data %}
       {% include "dashboard/widget/clinical_data.html" with widget=dashboard.widgets.clinical_data %}
     {% endif %}

@@ -4,6 +4,7 @@ from datetime import datetime
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
 from django.test import TestCase
+from django.test.utils import override_settings
 from registry.groups import GROUPS as RDRF_GROUPS
 from registry.groups.models import CustomUser
 from registry.patients.models import ConsentValue, ParentGuardian, Patient
@@ -27,6 +28,14 @@ from rdrf.models.pro_instruments import (
 )
 from rdrf.testing.unit.tests import RDRFTestCase
 from rdrf.views.dashboard_view import ParentDashboard, ParentDashboardView
+
+
+def snapshot_provider(dashboard, widget):
+    return {
+        "placement": "secondary",
+        "template": "registry/test_snapshot.html",
+        "summary": dashboard.registry.code,
+    }
 
 
 def create_valid_patient(id=None, registry=None):
@@ -721,6 +730,32 @@ class ParentDashboardTest(RDRFTestCase):
                     "value": "+61412123456",
                 },
             },
+        )
+
+    @override_settings(
+        REGISTRY_DASHBOARD_WIDGET_PROVIDERS={
+            "test_snapshot": "rdrf.testing.unit.dashboard_tests.snapshot_provider"
+        }
+    )
+    def test_get_registry_plugin(self):
+        widget = self.dashboard.widgets.create(
+            widget_type="registry_plugin", provider="test_snapshot"
+        )
+        patient = create_valid_patient(registry=self.registry)
+        parent_dashboard = ParentDashboard(self._request(), self.dashboard, patient)
+
+        plugins = parent_dashboard._get_registry_plugins()
+
+        self.assertEqual(
+            plugins["secondary"],
+            [
+                {
+                    "placement": "secondary",
+                    "template": "registry/test_snapshot.html",
+                    "summary": "TEST",
+                    "widget": {"title": "", "free_text": ""},
+                }
+            ],
         )
 
 

@@ -2,10 +2,12 @@ import logging
 import re
 from collections import defaultdict
 
+from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.module_loading import import_string
 from django.utils.dateparse import parse_datetime
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -346,6 +348,31 @@ class ParentDashboard(object):
 
         return {}
 
+    def _get_registry_plugin(self, widget):
+        provider_path = getattr(
+            settings, "REGISTRY_DASHBOARD_WIDGET_PROVIDERS", {}
+        ).get(widget.provider)
+        if not provider_path:
+            logger.warning(
+                "No dashboard widget provider configured for '%s'", widget.provider
+            )
+            return None
+
+        plugin = import_string(provider_path)(self, widget)
+        plugin["widget"] = {
+            "title": _(widget.title),
+            "free_text": _(widget.free_text),
+        }
+        return plugin
+
+    def _get_registry_plugins(self):
+        plugins = defaultdict(list)
+        for widget in self.dashboard.widgets.filter(widget_type="registry_plugin"):
+            plugin = self._get_registry_plugin(widget)
+            if plugin:
+                plugins[plugin.get("placement", "secondary")].append(plugin)
+        return plugins
+
     def _get_widget_summary(self):
         return {
             widget.widget_type: {
@@ -375,7 +402,7 @@ class ParentDashboard(object):
                 ],
                 "demographic_data": self._get_demographic_data(widget),
             }
-            for widget in self.dashboard.widgets.all()
+            for widget in self.dashboard.widgets.exclude(widget_type="registry_plugin")
         }
 
     def template(self):
@@ -388,6 +415,7 @@ class ParentDashboard(object):
             },
             "pro_instruments": self._get_pro_instruments(),
             "widgets": self._get_widget_summary(),
+            "registry_plugins": self._get_registry_plugins(),
         }
 
 

@@ -1472,6 +1472,7 @@ class Importer(object):
                 widget = RegistryDashboardWidget.objects.create(
                     registry_dashboard=dashboard,
                     widget_type=widget_dict["widget_type"],
+                    provider=widget_dict.get("provider", ""),
                     title=widget_dict["title"],
                     free_text=widget_dict["free_text"],
                 )
