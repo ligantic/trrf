@@ -3,7 +3,7 @@
 {% load i18n %}
 
 {% block card_header %}
-  <h2 class="h5 mb-0">{% trans "Modules" %}</h2>
+  <h2 class="rdrf-modules-panel__title mb-0">{% trans "Modules" %}</h2>
 {% endblock %}
 
 {% block card_class %} rdrf-modules-panel{% endblock %}
@@ -16,7 +16,7 @@
       <table class="table table-sm align-middle mb-0">
         <thead>
           <tr>
-            <th scope="col">{% trans "Module" %}</th>
+            <th scope="col">{% trans "Modules" %}</th>
             <th scope="col">{% trans "Status" %}</th>
             <th scope="col">{% trans "Last completed" %}</th>
             <th scope="col">{% trans "Next due" %}</th>
@@ -31,7 +31,10 @@
             {% for cfg, forms in fixed_module_progress.items %}
               {% for form, form_dict in forms.items %}
                 <tr>
-                  <th scope="row">{{ form.nice_name }}</th>
+                  <th scope="row">
+                    {{ form.nice_name }}
+                    <span class="rdrf-modules-panel__meta">{% trans "One-off module" %}</span>
+                  </th>
                   <td>
                     <span class="rdrf-badge rdrf-badge--{{ form_dict.status }}">
                       {% if form_dict.status == "complete" %}{% trans "Complete" %}{% elif form_dict.status == "in-progress" %}{% trans "In progress" %}{% else %}{% trans "Not started" %}{% endif %}
@@ -57,7 +60,7 @@
                   </th>
                   <td>
                     <span class="rdrf-badge rdrf-badge--{{ form_dict.status }}">
-                      {% if form_dict.status == "overdue" %}{% trans "Overdue" %}{% elif form_dict.status == "due-now" %}{% trans "Due now" %}{% elif form_dict.status == "due-soon" %}{% trans "Due soon" %}{% elif form_dict.status == "complete" %}{% trans "Complete" %}{% else %}{% trans "Not started" %}{% endif %}
+                      {% if form_dict.status == "overdue" %}{% trans "Overdue" %}{% elif form_dict.status == "due-now" %}{% trans "Due now" %}{% elif form_dict.status == "due-soon" %}{% trans "Due soon" %}{% elif form_dict.status == "complete" %}{% trans "Complete" %}{% elif form_dict.status == "in-progress" %}{% trans "In progress" %}{% else %}{% trans "Not started" %}{% endif %}
                     </span>
                   </td>
                   <td>{% if form_dict.last_completed %}{{ form_dict.last_completed|date:"DATE_FORMAT" }}{% else %}{% trans "-" %}{% endif %}</td>
