@@ -44,14 +44,6 @@
     margin: var(--space-3) 0 0;
   }
 
-  .rdrf-dashboard__intro {
-    color: var(--color-text-primary);
-    font-family: "Work Sans", var(--font-body);
-    font-size: 1rem;
-    line-height: 1.5rem;
-    margin: var(--space-1) 0 0;
-  }
-
   .rdrf-dashboard__header-footer {
     align-items: center;
     border-top: 1px solid var(--color-border-subtle);
@@ -133,6 +125,11 @@
     padding-top: var(--space-4);
   }
 
+  .rdrf-consents-card__group:first-of-type {
+    border-top: 0;
+    margin-top: 0;
+  }
+
   .rdrf-consents-card__group h3 {
     color: var(--color-text-heading);
     font-size: .875rem;
@@ -144,6 +141,7 @@
   .rdrf-consents-card__question {
     align-items: flex-start;
     display: flex;
+    font-size: .875rem;
     gap: var(--space-2);
     line-height: 1.4;
   }
@@ -266,7 +264,6 @@
   <header class="rdrf-dashboard__header">
     <nav class="rdrf-breadcrumb rdrf-dashboard__breadcrumb" aria-label="{% trans 'Breadcrumb' %}"><span aria-current="page">{% trans "Dashboard" %}</span></nav>
     <h1 class="rdrf-dashboard__title">{% blocktrans with first_name=parent.first_name %}Welcome back, {{ first_name }}{% endblocktrans %}</h1>
-    <p class="rdrf-dashboard__intro">{% trans "Track, manage and record your patients." %}</p>
 
     <div class="rdrf-dashboard__header-footer">
 {% if patients|length > 1 %}
@@ -277,7 +274,7 @@
     {% if tab_patient == dashboard.patient %}aria-current="page"{% endif %}>{{ tab_patient }}</a>
   {% endfor %}
 </nav>
-{% elif dashboard.patient %}
+{% elif dashboard.patient and not dashboard.registry_plugins.primary %}
       <p class="rdrf-participant-label d-print-none">{{ dashboard.patient }}</p>
 {% endif %}
       <button type="button" class="rdrf-dashboard__print d-print-none" onclick="window.print();" title="{% trans 'Print' %}" aria-label="{% trans 'Print' %}">

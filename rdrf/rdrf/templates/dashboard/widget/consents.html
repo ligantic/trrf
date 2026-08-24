@@ -20,7 +20,6 @@
   {% endblock %}
 
   {% block card_body_text %}
-    <span class="rdrf-badge rdrf-badge--{{ consent_status.status_css }} rdrf-consents-card__status">{{ consent_status.status_label }}</span>
     {% if consent_status.not_completed %}
       <section class="rdrf-consents-card__group">
         <h3>{% trans "Not completed" %}</h3>
@@ -54,4 +53,7 @@
   {% endblock %}
 
   {% block card_links %}
+  {% endblock %}
+
+  {% block card_meta %}
   {% endblock %}

@@ -1,6 +1,9 @@
+from collections import namedtuple
 from datetime import date, datetime, timedelta, timezone
+from types import SimpleNamespace
 
 from django.test import SimpleTestCase
+from django.template.loader import get_template
 
 from rdrf.helpers.dashboard_status import (
     STATUS_COMPLETE,
@@ -59,3 +62,40 @@ class DashboardModuleStatusTest(SimpleTestCase):
     def test_cadence_label(self):
         self.assertEqual(cadence_label(timedelta(days=730)), "Every 2 years")
         self.assertEqual(cadence_label(timedelta(days=14)), "Every 2 weeks")
+
+    def test_longitudinal_module_actions_follow_status(self):
+        Form = namedtuple("Form", "nice_name")
+        form_data = {
+            Form("Overdue"): {
+                "status": STATUS_OVERDUE,
+                "link": "/start-overdue",
+            },
+            Form("Due soon"): {
+                "status": STATUS_DUE_SOON,
+                "link": "/start-due-soon",
+            },
+            Form("In progress"): {
+                "status": STATUS_IN_PROGRESS,
+                "link": "/continue",
+            },
+            Form("Complete"): {
+                "status": STATUS_COMPLETE,
+                "link": "/completed",
+            },
+        }
+        dashboard = SimpleNamespace(
+            patient_status=SimpleNamespace(
+                module_progress={"fixed": {}, "multi": {"cfg": form_data}}
+            )
+        )
+
+        content = get_template("dashboard/widget/module_progress.html").render(
+            {"dashboard": dashboard}
+        )
+
+        self.assertIn('href="/start-overdue"', content)
+        self.assertIn('href="/start-due-soon"', content)
+        self.assertIn('href="/continue"', content)
+        self.assertIn("Start", content)
+        self.assertIn("Continue", content)
+        self.assertNotIn('href="/completed"', content)
