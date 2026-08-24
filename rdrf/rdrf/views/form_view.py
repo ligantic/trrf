@@ -589,7 +589,9 @@ class FormView(View):
         context["context_launcher"] = context_launcher.html
 
         if request.user.is_parent:
-            context["parent"] = ParentGuardian.objects.get(user=request.user)
+            context["parent"] = ParentGuardian.objects.filter(
+                user=request.user, patient=patient_model
+            ).first()
 
         context["my_contexts_url"] = patient_model.get_contexts_url(
             self.registry
@@ -1075,7 +1077,9 @@ class FormView(View):
         }
 
         if request.user.is_parent:
-            context["parent"] = ParentGuardian.objects.get(user=request.user)
+            context["parent"] = ParentGuardian.objects.filter(
+                user=request.user, patient=patient
+            ).first()
 
         form_progress_map = progress_dict.get(
             self.registry_form.name + "_form_progress", {}
@@ -1634,10 +1638,9 @@ class CustomConsentFormView(View):
             None,
         )
 
-        try:
-            parent = ParentGuardian.objects.get(user=request.user)
-        except ParentGuardian.DoesNotExist:
-            parent = None
+        parent = ParentGuardian.objects.filter(
+            user=request.user, patient=patient_model
+        ).first()
 
         context_launcher = RDRFContextLauncherComponent(
             request.user,
@@ -1916,10 +1919,9 @@ class CustomConsentFormView(View):
                 self._get_success_url(registry_model, patient_model)
             )
         else:
-            try:
-                parent = ParentGuardian.objects.get(user=request.user)
-            except ParentGuardian.DoesNotExist:
-                parent = None
+            parent = ParentGuardian.objects.filter(
+                user=request.user, patient=patient_model
+            ).first()
 
             context = dict(
                 {

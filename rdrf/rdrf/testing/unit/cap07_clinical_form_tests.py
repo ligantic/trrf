@@ -20,7 +20,7 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from registry.groups import GROUPS as RDRF_GROUPS
 from registry.groups.models import CustomUser
-from registry.patients.models import Patient
+from registry.patients.models import ParentGuardian, Patient
 
 from rdrf.db.contexts_api import RDRFContextManager
 from rdrf.forms.dynamic.fields import FileTypeRestrictedFileField
@@ -216,6 +216,17 @@ class ClinicalFormPageTest(TestCase):
         self.assertIn('role="progressbar"', content)
         self.assertNotIn('id="show-cdes-btn"', content)
         self.assertNotIn('id="form-progress-cdes"', content)
+
+    def test_parent_with_multiple_guardian_records_can_view_form(self):
+        self.user.add_group(RDRF_GROUPS.PARENT)
+        parent_for_patient = ParentGuardian.objects.create(user=self.user)
+        parent_for_patient.patient.add(self.patient)
+        ParentGuardian.objects.create(user=self.user)
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["parent"], parent_for_patient)
 
     def test_section_rail_rendering_contract(self):
         content = self._get_page()

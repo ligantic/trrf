@@ -652,11 +652,9 @@ class PatientForm(forms.ModelForm):
     def _is_parent_editing_child(self, patient_model):
         # see FKRP #472
         if patient_model is not None and hasattr(self, "user"):
-            try:
-                parent_guardian = ParentGuardian.objects.get(user=self.user)
-                return patient_model in parent_guardian.children
-            except ParentGuardian.DoesNotExist:
-                pass
+            return ParentGuardian.objects.filter(
+                user=self.user, patient=patient_model
+            ).exists()
 
     def _get_registry_specific_data(self, patient_model):
         if patient_model is None:

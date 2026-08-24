@@ -953,13 +953,9 @@ def is_authorised(user, patient_model):
     if patient_model.user and patient_model.user.id == user.id:
         return True
     # user is parent of patient
-    try:
-        pg = ParentGuardian.objects.get(user=user)
-        if pg.user and pg.user.id == user.id:
-            if patient_model.id in [p.id for p in pg.children]:
-                return True
-    except ParentGuardian.DoesNotExist:
-        pass
+    for parent_guardian in ParentGuardian.objects.filter(user=user):
+        if patient_model.id in [p.id for p in parent_guardian.children]:
+            return True
 
     # otherwise, is the user in (some of) the same working group(s)
 

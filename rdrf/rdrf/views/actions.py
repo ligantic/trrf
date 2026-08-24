@@ -65,15 +65,11 @@ class Action:
         except Patient.DoesNotExist:
             pass
 
-        try:
-            parent = ParentGuardian.objects.get(user=self.user)
-            # what to do if there is more than one child
-            # for now we take the first
-            children = parent.children
+        for parent_guardian in ParentGuardian.objects.filter(user=self.user):
+            # What to do if there is more than one child? For now take the first.
+            children = parent_guardian.children
             if children:
                 return children[0]
-        except ParentGuardian.DoesNotExist:
-            pass
 
         raise Http404(_("No patients found. Please create a patient"))
 

@@ -196,11 +196,13 @@ class ClinicianFormView(View):
         self.request = request
         self.user = request.user
         self.message = None
+        self.patient_model = get_object_or_404(Patient, pk=patient_id)
         if self.user.is_parent:
-            self.parent = ParentGuardian.objects.get(user=self.user)
+            self.parent = ParentGuardian.objects.filter(
+                user=self.user, patient=self.patient_model
+            ).first()
         else:
             self.parent = None
-        self.patient_model = get_object_or_404(Patient, pk=patient_id)
 
         security_check_user_patient(self.user, self.patient_model)
         self.registry_model = get_object_or_404(Registry, code=registry_code)

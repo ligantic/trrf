@@ -2,6 +2,7 @@ import logging
 
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.generic.base import View
@@ -48,12 +49,18 @@ class BaseParentView(View):
         if not user_allowed:
             raise PermissionDenied
         if "parent_id" not in kwargs:
-            self.parent = get_object_or_404(ParentGuardian, user=user)
+            self.parent = ParentGuardian.objects.filter(user=user).order_by(
+                "pk"
+            ).first()
+            if not self.parent:
+                raise Http404
         else:
             passed_in_parent = get_object_or_404(
                 ParentGuardian, pk=kwargs["parent_id"]
             )
-            self.parent = ParentGuardian.objects.filter(user=user).first()
+            self.parent = ParentGuardian.objects.filter(user=user).order_by(
+                "pk"
+            ).first()
             if not self.parent and user.is_parent:
                 raise PermissionDenied
             if self.parent.id != passed_in_parent.id:

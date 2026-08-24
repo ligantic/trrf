@@ -16,6 +16,7 @@ from registry.groups import GROUPS as RDRF_GROUPS
 from registry.groups.models import CustomUser
 from registry.patients.models import ParentGuardian, Patient
 
+from rdrf.helpers.utils import is_authorised
 from rdrf.models.definition.models import Registry, RegistryDashboard
 
 AUTH_BACKEND = "django.contrib.auth.backends.ModelBackend"
@@ -91,6 +92,21 @@ class ParentDashboardCaregiverAccessTest(TestCase):
             self.dashboard_url, {"patient_id": nonexistent_id}
         )
         self.assertEqual(response.status_code, 404)
+
+    def test_second_guardian_record_grants_access_to_its_child(self):
+        secondary_parent = ParentGuardian.objects.create(user=self.user)
+        secondary_parent.patient.add(self.child_b)
+
+        self.assertTrue(is_authorised(self.user, self.child_b))
+
+    def test_parent_page_allows_duplicate_guardian_records(self):
+        ParentGuardian.objects.create(user=self.user)
+
+        response = self.client.get(
+            reverse("registry:parent_page", args=[self.registry.code])
+        )
+
+        self.assertEqual(response.status_code, 200)
 
     def test_default_selection_is_first_linked_participant(self):
         response = self.client.get(self.dashboard_url)

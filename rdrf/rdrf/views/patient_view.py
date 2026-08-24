@@ -236,9 +236,9 @@ class PatientFormMixin:
         )
 
         if self.request.user.is_parent:
-            kwargs["parent"] = ParentGuardian.objects.get(
-                user=self.request.user
-            )
+            kwargs["parent"] = ParentGuardian.objects.filter(
+                user=self.request.user, patient=patient
+            ).first()
         return kwargs
 
     def _extract_error_messages(self, form_pairs):
@@ -816,7 +816,9 @@ class PatientEditView(PatientFormMixin, View):
         context["previous_form_link"] = wizard.previous_link
 
         if request.user.is_parent:
-            context["parent"] = ParentGuardian.objects.get(user=request.user)
+            context["parent"] = ParentGuardian.objects.filter(
+                user=request.user, patient=patient
+            ).first()
 
         context["hidden_sectionlist"] = self._hidden_sections(
             request.user, registry_model, form_sections
@@ -971,7 +973,9 @@ class PatientEditView(PatientFormMixin, View):
         )
 
         if request.user.is_parent:
-            context["parent"] = ParentGuardian.objects.get(user=request.user)
+            context["parent"] = ParentGuardian.objects.filter(
+                user=request.user, patient=patient
+            ).first()
         fth = FormTitleHelper(registry_model, "Demographics")
         context["form_title"] = fth.title_for_user(request.user)
         xray_recorder.end_subsegment()
