@@ -2,8 +2,8 @@ from collections import namedtuple
 from datetime import date, datetime, timedelta, timezone
 from types import SimpleNamespace
 
-from django.test import SimpleTestCase
 from django.template.loader import get_template
+from django.test import SimpleTestCase
 
 from rdrf.helpers.dashboard_status import (
     STATUS_COMPLETE,
@@ -82,6 +82,11 @@ class DashboardModuleStatusTest(SimpleTestCase):
                 "status": STATUS_COMPLETE,
                 "link": "/completed",
             },
+            Form("Complete scheduled"): {
+                "status": STATUS_COMPLETE,
+                "link": "/completed-scheduled",
+                "next_due": date(2026, 12, 1),
+            },
         }
         dashboard = SimpleNamespace(
             patient_status=SimpleNamespace(
@@ -98,4 +103,6 @@ class DashboardModuleStatusTest(SimpleTestCase):
         self.assertIn('href="/continue"', content)
         self.assertIn("Start", content)
         self.assertIn("Continue", content)
-        self.assertNotIn('href="/completed"', content)
+        self.assertIn('href="/completed"', content)
+        self.assertIn("Edit", content)
+        self.assertNotIn('href="/completed-scheduled"', content)

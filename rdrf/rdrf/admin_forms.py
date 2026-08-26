@@ -24,6 +24,7 @@ from rdrf.helpers.constants import (
     PATIENT_DOCTOR_SECTION_NAME,
     PATIENT_NEXT_OF_KIN_SECTION_NAME,
     PATIENT_RELATIVE_SECTION_NAME,
+    PATIENT_REGISTRY_SECTION_NAME,
     PATIENT_STAGE_SECTION_NAME,
 )
 from rdrf.models.definition.models import (
@@ -125,6 +126,7 @@ class DemographicFieldsAdminForm(ModelForm):
         PATIENT_NEXT_OF_KIN_SECTION_NAME,
         PATIENT_STAGE_SECTION_NAME,
         PATIENT_RELATIVE_SECTION_NAME,
+        PATIENT_REGISTRY_SECTION_NAME,
     ]
 
     def __init__(self, *args, **kwargs):

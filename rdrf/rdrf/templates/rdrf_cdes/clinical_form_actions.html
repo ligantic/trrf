@@ -1,7 +1,7 @@
 {% load i18n %}
 
 <div class="rdrf-form-actions{% if action_position %} rdrf-form-actions--{{ action_position }}{% endif %}" role="group" aria-label="{% trans 'Form actions' %}">
-    <a href="" class="btn btn-secondary rdrf-form-actions__cancel">{% trans "Cancel" %}</a>
+    <a href="{{ cancel_link|default:'' }}" class="btn btn-secondary rdrf-form-actions__cancel">{% trans "Cancel" %}</a>
     <button {% if action_position != "footer" %}id="submit-btn" {% endif %}type="submit" class="btn btn-primary rdrf-form-actions__save" data-rdrf-submit-btn form="main-form" value="Save">
         {% trans "Save and exit" %}
     </button>

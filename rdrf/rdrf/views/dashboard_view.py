@@ -217,7 +217,6 @@ class ParentDashboard(object):
                         if form_timestamp:
                             last_completed = parse_datetime(form_timestamp)
 
-                    progress_dict["link"] = cfg.get_add_action(self.patient)[0]
                     followup = followups.get(cfg.id)
                     pending_entry = pending_entries.get(cfg.id)
                     next_due = (
@@ -229,6 +228,19 @@ class ParentDashboard(object):
                             else None
                         )
                     )
+                    status = module_status(
+                        progress=progress,
+                        last_completed=last_completed,
+                        next_due=next_due,
+                        today=(
+                            timezone.localtime().date()
+                            if timezone.is_aware(timezone.now())
+                            else timezone.now().date()
+                        ),
+                    )
+                    progress_dict["link"] = self._get_form_link(
+                        cfg, form, context=context
+                    )
                     progress_dict.update(
                         {
                             "progress": progress,
@@ -237,16 +249,7 @@ class ParentDashboard(object):
                             "cadence": cadence_label(
                                 followup.frequency if followup else None
                             ),
-                            "status": module_status(
-                                progress=progress,
-                                last_completed=last_completed,
-                                next_due=next_due,
-                                today=(
-                                    timezone.localtime().date()
-                                    if timezone.is_aware(timezone.now())
-                                    else timezone.now().date()
-                                ),
-                            ),
+                            "status": status,
                         }
                     )
 

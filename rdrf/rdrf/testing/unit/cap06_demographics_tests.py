@@ -137,6 +137,23 @@ class DemographicsEditPageTest(TestCase):
         self.assertNotIn('<select name="rdrf_registry"', content)
         self.assertIn('name="rdrf_registry"', content)
 
+    def test_registry_section_can_be_hidden_from_parents(self):
+        rule = self._add_field_rule(
+            "SECTION:Registry", DemographicFields.HIDDEN
+        )
+        rule.is_section = True
+        rule.save(update_fields=["is_section"])
+
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+
+        self.assertNotIn('href="#demographics-section-1-1">Registry</a>', content)
+        self.assertRegex(
+            content,
+            r'<div class="section_hidden">\s*<section id="demographics-section-1-1"',
+        )
+
     def test_readonly_demographic_field_renders_readonly(self):
         self._add_field_rule("umrn", DemographicFields.READONLY)
         response = self.client.get(self.url)

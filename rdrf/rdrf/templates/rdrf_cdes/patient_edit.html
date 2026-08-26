@@ -172,6 +172,12 @@
         z-index: 1;
     }
 
+    .demographics-form-actions--top:has(+ .section_hidden) {
+        margin-bottom: var(--space-5);
+        position: static;
+        width: 100%;
+    }
+
     .demographics-form-actions .btn {
         border-radius: var(--radius-md);
         box-shadow: var(--elevation-xs);
@@ -458,11 +464,11 @@
             deferred —
             cross-subsection validation dependencies unresolved.{% endcomment %}
             <div class="rdrf-form-actions demographics-form-actions demographics-form-actions--top d-print-none">
-                <a href="" class="btn btn-outline-secondary rdrf-form-actions__cancel">
+                <a href="{{ cancel_link|default:'' }}" class="btn btn-outline-secondary rdrf-form-actions__cancel">
                     {% trans 'Cancel' %}
                 </a>
                 <button type="submit" class="btn btn-primary rdrf-form-actions__save">
-                    {% trans "Save" %}
+                    {% if request.user.is_parent %}{% trans "Save and exit" %}{% else %}{% trans "Save" %}{% endif %}
                 </button>
             </div>
 
@@ -645,11 +651,11 @@
                 {% endfor %}
 
                 <div class="rdrf-form-actions demographics-form-actions demographics-form-actions--footer d-print-none">
-                    <a href="" class="btn btn-outline-secondary rdrf-form-actions__cancel">
+                    <a href="{{ cancel_link|default:'' }}" class="btn btn-outline-secondary rdrf-form-actions__cancel">
                         {% trans 'Cancel' %}
                     </a>
                     <button type="submit" class="btn btn-primary rdrf-form-actions__save">
-                        {% trans "Save" %}
+                        {% if request.user.is_parent %}{% trans "Save and exit" %}{% else %}{% trans "Save" %}{% endif %}
                     </button>
                 </div>
         </form>

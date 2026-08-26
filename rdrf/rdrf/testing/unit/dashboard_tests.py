@@ -535,7 +535,7 @@ class ParentDashboardTest(RDRFTestCase):
             "multi": {
                 cfg3: {
                     form5: {
-                        "link": "/TEST/forms/65/9/add",
+                        "link": "/TEST/forms/65/9/8",
                         "progress": 0,
                         "last_completed": datetime(2022, 8, 26, 7, 49, 53, 841787),
                         "next_due": None,

@@ -13,6 +13,8 @@
 {% load i18n %}
 {% load translate %}
 
+{% block body_class %}rdrf-clinical-form-page{% endblock %}
+
 
 {% block extrastyle %}
     {{block.super}}
@@ -700,7 +702,7 @@
                 {% endfor %}
 
                 <div class="rdrf-consent-actions d-print-none">
-                    <a href="" class="btn btn-outline-secondary">{% trans 'Cancel' %}</a>
+                    <a href="{{ cancel_link|default:'' }}" class="btn btn-outline-secondary">{% trans 'Cancel' %}</a>
                     <button id="submit-btn" type="submit" class="btn btn-primary" value="Save">{% trans 'Save' %}</button>
                 </div>
 			</div>

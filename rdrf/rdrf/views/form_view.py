@@ -586,6 +586,9 @@ class FormView(View):
         context["next_form_link"] = wizard.next_link
         context["context_id"] = context_id
         context["previous_form_link"] = wizard.previous_link
+        context["cancel_link"] = parent_dashboard_url(
+            request.user, registry_code
+        )
         context["context_launcher"] = context_launcher.html
 
         if request.user.is_parent:
@@ -1020,6 +1023,12 @@ class FormView(View):
         )
         xray_recorder.end_subsegment()
 
+        save_destination = parent_save_destination(
+            request.user, registry_code
+        )
+        if all_sections_valid and save_destination and not self.CREATE_MODE:
+            return HttpResponseRedirect(save_destination)
+
         xray_recorder.begin_subsegment("template")
         context_launcher = RDRFContextLauncherComponent(
             request.user,
@@ -1066,6 +1075,9 @@ class FormView(View):
             "next_form_link": wizard.next_link,
             "not_linked": not patient.is_linked,
             "previous_form_link": wizard.previous_link,
+            "cancel_link": parent_dashboard_url(
+                request.user, registry_code
+            ),
             "context_id": context_id,
             "show_print_button": True if not self.CREATE_MODE else False,
             "context_launcher": context_launcher.html,
@@ -1608,6 +1620,16 @@ class Colours(object):
     yellow = "#ffff00"
 
 
+def parent_dashboard_url(user, registry_code):
+    if user.is_parent:
+        return reverse("parent_dashboard", args=[registry_code])
+    return None
+
+
+def parent_save_destination(user, registry_code):
+    return parent_dashboard_url(user, registry_code)
+
+
 class CustomConsentFormView(View):
     def get(self, request, registry_code, patient_id, context_id=None):
         if not request.user.is_authenticated:
@@ -1667,6 +1689,7 @@ class CustomConsentFormView(View):
             "patient_info": patient_info.html,
             "next_form_link": wizard.next_link,
             "previous_form_link": wizard.previous_link,
+            "cancel_link": parent_dashboard_url(request.user, registry_code),
             "parent": parent,
             "consent": consent_status_for_patient(registry_code, patient_model),
             "can_sign_consent": can_sign_consent(request.user, patient_model),
@@ -1916,7 +1939,8 @@ class CustomConsentFormView(View):
                 % {"patient_name": patient_name},
             )
             return HttpResponseRedirect(
-                self._get_success_url(registry_model, patient_model)
+                parent_save_destination(request.user, registry_code)
+                or self._get_success_url(registry_model, patient_model)
             )
         else:
             parent = ParentGuardian.objects.filter(
@@ -1936,6 +1960,9 @@ class CustomConsentFormView(View):
                     "not_linked": not patient_model.is_linked,
                     "next_form_link": wizard.next_link,
                     "previous_form_link": wizard.previous_link,
+                    "cancel_link": parent_dashboard_url(
+                        request.user, registry_code
+                    ),
                     "context_launcher": context_launcher.html,
                     "forms": form_sections,
                     "error_messages": [],

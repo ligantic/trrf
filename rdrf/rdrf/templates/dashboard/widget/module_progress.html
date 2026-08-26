@@ -66,8 +66,8 @@
                   <td>{% if form_dict.last_completed %}{{ form_dict.last_completed|date:"DATE_FORMAT" }}{% else %}{% trans "-" %}{% endif %}</td>
                   <td>{% if form_dict.next_due %}{{ form_dict.next_due|date:"DATE_FORMAT" }}{% else %}{% trans "-" %}{% endif %}</td>
                   <td class="text-end d-print-none">
-                    {% if form_dict.status != "complete" %}
-                      <a href="{{ form_dict.link }}" class="btn btn-sm btn-outline-primary">{% if form_dict.status == "in-progress" %}{% trans "Continue" %}{% else %}{% trans "Start" %}{% endif %}</a>
+                      {% if form_dict.status != "complete" or not form_dict.next_due %}
+                        <a href="{{ form_dict.link }}" class="btn btn-sm btn-outline-primary">{% if form_dict.status == "in-progress" %}{% trans "Continue" %}{% elif form_dict.status == "complete" %}{% trans "Edit" %}{% else %}{% trans "Start" %}{% endif %}</a>
                     {% endif %}
                   </td>
                 </tr>

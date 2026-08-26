@@ -814,6 +814,11 @@ class PatientEditView(PatientFormMixin, View):
 
         context["next_form_link"] = wizard.next_link
         context["previous_form_link"] = wizard.previous_link
+        context["cancel_link"] = (
+            reverse("parent_dashboard", args=[registry_code])
+            if request.user.is_parent
+            else ""
+        )
 
         if request.user.is_parent:
             context["parent"] = ParentGuardian.objects.filter(
@@ -900,6 +905,13 @@ class PatientEditView(PatientFormMixin, View):
         if all(valid_forms):
             xray_recorder.begin_subsegment("save")
             self.all_forms_valid(forms)
+            if request.user.is_parent:
+                messages.success(
+                    request, _("Patient's details saved successfully")
+                )
+                return HttpResponseRedirect(
+                    reverse("parent_dashboard", args=[registry_code])
+                )
             patient, form_sections = self._get_patient_and_forms_sections(
                 patient_id, registry_code, request
             )
@@ -955,6 +967,11 @@ class PatientEditView(PatientFormMixin, View):
 
         context["next_form_link"] = wizard.next_link
         context["previous_form_link"] = wizard.previous_link
+        context["cancel_link"] = (
+            reverse("parent_dashboard", args=[registry_code])
+            if request.user.is_parent
+            else ""
+        )
         context["patient_info"] = patient_info.html
 
         context["registry_code"] = registry_code

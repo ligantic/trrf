@@ -6,6 +6,7 @@ from .constants import (
     PATIENT_NEXT_OF_KIN_SECTION_NAME,
     PATIENT_PERSONAL_DETAILS_SECTION_NAME,
     PATIENT_RELATIVE_SECTION_NAME,
+    PATIENT_REGISTRY_SECTION_NAME,
     PATIENT_STAGE_SECTION_NAME,
 )
 
@@ -73,7 +74,7 @@ class DemographicsSectionFieldBuilder(object):
             ]
             fields.extend(wg_fields)
 
-        return _("Registry"), fields
+        return PATIENT_REGISTRY_SECTION_NAME, fields
 
     def get_patient_address_section(self):
         return PATIENT_ADDRESS_SECTION_NAME, None
