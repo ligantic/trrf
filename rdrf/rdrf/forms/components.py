@@ -4,14 +4,28 @@ from collections import defaultdict, deque, namedtuple
 from django.contrib.contenttypes.models import ContentType
 from django.template import Context, loader
 from django.urls import reverse
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from django.utils.translation import gettext_lazy as _
+from registry.patients.models import (
+    LongitudinalFollowupEntry,
+    LongitudinalFollowupQueueState,
+)
 
 from rdrf.forms.form_title_helper import FormTitleHelper
 from rdrf.forms.progress.form_progress import FormProgress
+from rdrf.helpers.dashboard_status import (
+    STATUS_COMPLETE,
+    STATUS_DUE_NOW,
+    STATUS_DUE_SOON,
+    STATUS_OVERDUE,
+    module_status,
+)
 from rdrf.helpers.registry_features import RegistryFeatures
 from rdrf.helpers.utils import consent_status_for_patient, get_form_links
 from rdrf.models.definition.models import (
     ContextFormGroup,
+    LongitudinalFollowup,
     RDRFContext,
     RegistryType,
 )
@@ -157,24 +171,27 @@ class RDRFContextLauncherComponent(RDRFComponent):
 
         existing_data_link = self._get_existing_data_link()
 
-        fixed_contexts = self._get_fixed_contexts()
-        multiple_contexts = self._get_multiple_contexts()
-        sort_order = sorted(
-            set(list(fixed_contexts.keys()) + list(multiple_contexts.keys()))
-        )
+        if self.user.is_parent:
+            context_form_groups = self._get_parent_context_form_groups()
+        else:
+            fixed_contexts = self._get_fixed_contexts()
+            multiple_contexts = self._get_multiple_contexts()
+            sort_order = sorted(
+                set(list(fixed_contexts.keys()) + list(multiple_contexts.keys()))
+            )
 
-        context_form_groups = []
-        for position in sort_order:
-            form_groups = [
-                ("fixed", form_group)
-                for form_group in fixed_contexts.get(position, ())
-            ]
-            form_groups += [
-                ("multiple", form_group)
-                for form_group in multiple_contexts.get(position, ())
-            ]
-            form_groups = sorted(form_groups, key=sort_by_name)
-            context_form_groups += form_groups
+            context_form_groups = []
+            for position in sort_order:
+                form_groups = [
+                    ("fixed", form_group)
+                    for form_group in fixed_contexts.get(position, ())
+                ]
+                form_groups += [
+                    ("multiple", form_group)
+                    for form_group in multiple_contexts.get(position, ())
+                ]
+                form_groups = sorted(form_groups, key=sort_by_name)
+                context_form_groups += form_groups
 
         logger.debug(context_form_groups)
 
@@ -191,6 +208,146 @@ class RDRFContextLauncherComponent(RDRFComponent):
             "clinician_form_link": self._get_clinician_form_link(),
         }
         return data
+
+    def _get_parent_context_form_groups(self):
+        if not self.registry_model.has_feature(RegistryFeatures.CONTEXTS):
+            return [
+                ("fixed", form_group)
+                for groups in self._get_fixed_contexts().values()
+                for form_group in groups
+            ]
+
+        fixed_context_form_groups = []
+        multiple_context_form_groups = []
+        cfg_qs = ContextFormGroup.objects.filter(registry=self.registry_model)
+        for cfg in cfg_qs:
+            context = self._get_context_for_group(cfg) if cfg.is_fixed else None
+            forms = []
+            for form in cfg.forms:
+                if not (
+                    self.user.can_view(form)
+                    and form.applicable_to(self.patient_model)
+                ):
+                    continue
+
+                if cfg.is_fixed:
+                    if not form.has_progress_indicator:
+                        continue
+
+                    url = (
+                        form.get_link(self.patient_model, context)
+                        if context
+                        else form.get_link(self.patient_model)
+                    )
+                    forms.append(
+                        _Form(
+                            url,
+                            self.form_titles.get(form.name, form.nice_name),
+                            current=(
+                                form.name == self.current_form_name
+                                and context == self.current_rdrf_context_model
+                            ),
+                        )
+                    )
+                elif cfg.is_multiple:
+                    target = self._get_parent_multiple_target(cfg, form)
+                    if target:
+                        forms.append(target)
+
+            if forms:
+                form_group = _FormGroup(cfg.name)
+                form_group.forms = forms
+                if cfg.is_fixed:
+                    fixed_context_form_groups.append(("fixed", form_group))
+                else:
+                    multiple_context_form_groups.append(("fixed", form_group))
+        return fixed_context_form_groups + multiple_context_form_groups
+
+    def _get_parent_multiple_target(self, cfg, form):
+        context = (
+            RDRFContext.objects.get_for_patient(
+                self.patient_model, self.registry_model
+            )
+            .filter(context_form_group=cfg)
+            .order_by("-last_updated")
+            .first()
+        )
+        add_action = cfg.get_add_action(self.patient_model)
+        form_title = self.form_titles.get(form.name, form.nice_name)
+        if not context:
+            return (
+                _Form(
+                    add_action[0],
+                    form_title,
+                    current=form.name == self.current_form_name,
+                )
+                if add_action
+                else None
+            )
+
+        last_completed = None
+        form_timestamp = self.patient_model.get_form_timestamp(form, context)
+        if form_timestamp:
+            last_completed = parse_datetime(form_timestamp)
+
+        followup = (
+            LongitudinalFollowup.objects.filter(context_form_group=cfg).last()
+        )
+        pending_entry = (
+            LongitudinalFollowupEntry.objects.filter(
+                patient=self.patient_model,
+                state=LongitudinalFollowupQueueState.PENDING,
+                longitudinal_followup__context_form_group=cfg,
+            )
+            .order_by("send_at")
+            .first()
+        )
+        next_due = (
+            pending_entry.send_at
+            if pending_entry
+            else (
+                last_completed + followup.frequency
+                if last_completed and followup
+                else None
+            )
+        )
+        now = timezone.now()
+        today = (
+            timezone.localtime(now).date()
+            if timezone.is_aware(now)
+            else now.date()
+        )
+        progress = FormProgress(self.registry_model).get_form_progress(
+            form, self.patient_model, context
+        )
+        status = module_status(
+            progress=progress,
+            last_completed=last_completed,
+            next_due=next_due,
+            today=today,
+        )
+        if status in (STATUS_DUE_SOON, STATUS_DUE_NOW, STATUS_OVERDUE):
+            return (
+                _Form(
+                    add_action[0],
+                    form_title,
+                    current=form.name == self.current_form_name,
+                )
+                if add_action
+                else None
+            )
+
+        if status == STATUS_COMPLETE and next_due:
+            return None
+
+        return _Form(
+            form.get_link(self.patient_model, context),
+            form_title,
+            current=(
+                form.name == self.current_form_name
+                and context == self.current_rdrf_context_model
+            ),
+        )
 
     def _get_clinician_form_link(self):
         if not self.registry_model.has_feature(RegistryFeatures.CLINICIAN_FORM):
