@@ -331,13 +331,15 @@ else:
         },
     }
 
-# Azure Blob Storage configuration
-# The connection string is injected as an environment variable (see Pulumi infra).
-AZURE_STORAGE_CONNECTION_STRING = env.get(
-    "AZURE_STORAGE_CONNECTION_STRING", ""
+# Azure Blob Storage configuration. django-storages uses AZURE_CONNECTION_STRING
+# and AZURE_CONTAINER; accept the deployment names as compatibility aliases.
+AZURE_CONNECTION_STRING = env.get(
+    "AZURE_CONNECTION_STRING",
+    env.get("AZURE_STORAGE_CONNECTION_STRING", ""),
 )
-AZURE_STORAGE_CONTAINER_NAME = env.get(
-    "AZURE_STORAGE_CONTAINER_NAME", "files"
+AZURE_CONTAINER = env.get(
+    "AZURE_CONTAINER",
+    env.get("AZURE_STORAGE_CONTAINER_NAME", "files"),
 )
 # Do not overwrite existing blobs (matches old AWS_S3_FILE_OVERWRITE = False).
 AZURE_OVERWRITE_FILES = False
