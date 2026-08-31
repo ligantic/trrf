@@ -344,3 +344,60 @@ function rdrfScrollToFormPosition(positionId) {
     resizeObserver = new ResizeObserver(setFinished);
     resizeObserver.observe(document.body);
 }
+
+  function rdrfScrollToFragment() {
+    const fragmentId = window.location.hash.slice(1);
+    if (!fragmentId) {
+      return;
+    }
+
+    const target = document.getElementById(fragmentId);
+    if (!target) {
+      return;
+    }
+
+    const scrollTarget = target.closest(".rdrf-cde-field, .rdrf-section-card") || target;
+    let animationFrame;
+    let settleTimer;
+    let resizeObserver;
+
+    const scroll = () => {
+      const fixedHeaderOffset = Array.prototype.slice.call(
+        document.querySelectorAll(".fixed-top, .banner")
+      ).reduce(
+        (bottom, element) => Math.max(
+          bottom,
+          element.getBoundingClientRect().bottom
+        ),
+        0
+      ) + 16;
+      const top = window.scrollY + scrollTarget.getBoundingClientRect().top
+        - fixedHeaderOffset;
+      window.scrollTo({top: Math.max(0, top), behavior: "auto"});
+    };
+
+    const stopObserving = () => {
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
+    };
+
+    const scheduleScroll = () => {
+      window.cancelAnimationFrame(animationFrame);
+      window.clearTimeout(settleTimer);
+      animationFrame = window.requestAnimationFrame(() => {
+        animationFrame = window.requestAnimationFrame(scroll);
+      });
+      settleTimer = window.setTimeout(stopObserving, 150);
+    };
+
+    scheduleScroll();
+    if ("ResizeObserver" in window) {
+      resizeObserver = new ResizeObserver(scheduleScroll);
+      resizeObserver.observe(document.body);
+    }
+  }
+
+  window.addEventListener("load", rdrfScrollToFragment);
+  window.addEventListener("pageshow", rdrfScrollToFragment);
+  window.addEventListener("hashchange", rdrfScrollToFragment);
