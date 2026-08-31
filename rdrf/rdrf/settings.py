@@ -310,8 +310,9 @@ WRITABLE_DIRECTORY = env.get("writable_directory", "/tmp")
 #
 #       File Uploads
 
-# Use S3 by default to avoid writing sensitive data to FS in production
-if env.get("FILE_STORAGE", "S3") == "FS":
+# Ported from AWS S3 to Azure Blob Storage.
+# FILE_STORAGE: "Azure" (default) uses Azure Blob, "FS" uses local filesystem.
+if env.get("FILE_STORAGE", "Azure") == "FS":
     STORAGES = {
         "default": {
             "BACKEND": "django.core.files.storage.FileSystemStorage",
@@ -323,46 +324,28 @@ if env.get("FILE_STORAGE", "S3") == "FS":
 else:
     STORAGES = {
         "default": {
-            "BACKEND": "rdrf.db.filestorage.CustomS3Storage",
+            "BACKEND": "storages.backends.azure_storage.AzureStorage",
         },
         "staticfiles": {
             "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
         },
     }
 
-# Configure different aspects of file uploads to S3
-
-# Never create buckets, create them from CloudFormation and pass them in
-AWS_AUTO_CREATE_BUCKET = False
-AWS_DEFAULT_ACL = None
-
-# To test locally set these values in your .env_local file
-# .env_local is in .gitignore so it can have your local settings without being checked in
-
-AWS_STORAGE_BUCKET_NAME = env.get(
-    "AWS_STORAGE_BUCKET_NAME", ""
-)  # set to dev-trrf-filestoragebucket in local dev
-AWS_S3_FILE_OVERWRITE = False
-
-# Set these to an IAM user's keys when testing locally.
-# On the servers EC2 roles will take care of this.
-AWS_ACCESS_KEY_ID = env.get(
-    "aws_storage_access_key_id", env.get("aws_access_key_id", "")
+# Azure Blob Storage configuration
+# The connection string is injected as an environment variable (see Pulumi infra).
+AZURE_STORAGE_CONNECTION_STRING = env.get(
+    "AZURE_STORAGE_CONNECTION_STRING", ""
 )
-AWS_SECRET_ACCESS_KEY = env.get(
-    "aws_storage_secret_access_key", env.get("aws_secret_access_key", "")
+AZURE_STORAGE_CONTAINER_NAME = env.get(
+    "AZURE_STORAGE_CONTAINER_NAME", "files"
 )
-AWS_SECURITY_TOKEN = env.get(
-    "aws_storage_security_token", env.get("aws_security_token", "")
-)
+# Do not overwrite existing blobs (matches old AWS_S3_FILE_OVERWRITE = False).
+AZURE_OVERWRITE_FILES = False
+# Do not auto-create containers; they are created by Pulumi.
+AZURE_AUTO_CREATE_CONTAINER = False
 
-AWS_S3_REGION_NAME = env.get(
-    "aws_storage_region_name", env.get("aws_region_name", "ap-southeast-2")
-)
-AWS_LOCATION = env.get(
-    "aws_storage_location", ""
-)  # set to "local/{YOUR_USERNAME}/" in local dev
-
+# Virus checking. The S3 tag-based scanner is not available on Azure Blob
+# Storage, so it stays disabled (returns CLEAN) unless explicitly enabled.
 VIRUS_CHECKING_ENABLED = env.get("VIRUS_CHECKING_ENABLED", False)
 
 #
