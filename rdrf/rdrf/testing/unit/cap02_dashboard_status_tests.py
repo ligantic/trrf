@@ -25,6 +25,34 @@ class DashboardModuleStatusTest(SimpleTestCase):
         self.assertEqual(module_status(progress=45), STATUS_IN_PROGRESS)
         self.assertEqual(module_status(progress=100), STATUS_COMPLETE)
 
+    def test_blank_progress_tracked_form_is_in_progress_after_save(self):
+        last_saved = datetime(2026, 7, 1, tzinfo=timezone.utc)
+
+        self.assertEqual(
+            module_status(
+                progress=0,
+                last_completed=last_saved,
+                has_progress=True,
+            ),
+            STATUS_IN_PROGRESS,
+        )
+        self.assertEqual(
+            module_status(
+                progress=45,
+                last_completed=last_saved,
+                has_progress=True,
+            ),
+            STATUS_IN_PROGRESS,
+        )
+        self.assertEqual(
+            module_status(
+                progress=100,
+                last_completed=last_saved,
+                has_progress=True,
+            ),
+            STATUS_COMPLETE,
+        )
+
     def test_pending_entry_due_states_take_priority(self):
         self.assertEqual(
             module_status(

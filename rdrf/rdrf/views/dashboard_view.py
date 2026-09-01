@@ -201,7 +201,8 @@ class ParentDashboard(object):
                         form, self.patient, context
                     )
                     progress_dict["status"] = module_status(
-                        progress=progress_dict["progress"]
+                        progress=progress_dict["progress"],
+                        has_progress=form.has_progress_indicator,
                     )
                 elif cfg.is_multiple:
                     key = "multi"
@@ -237,6 +238,7 @@ class ParentDashboard(object):
                             if timezone.is_aware(timezone.now())
                             else timezone.now().date()
                         ),
+                        has_progress=form.has_progress_indicator,
                     )
                     progress_dict["link"] = self._get_form_link(
                         cfg, form, context=context

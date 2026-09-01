@@ -325,6 +325,7 @@ class RDRFContextLauncherComponent(RDRFComponent):
             last_completed=last_completed,
             next_due=next_due,
             today=today,
+            has_progress=form.has_progress_indicator,
         )
         if status in (STATUS_DUE_SOON, STATUS_DUE_NOW, STATUS_OVERDUE):
             return (

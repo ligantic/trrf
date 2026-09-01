@@ -9,7 +9,13 @@ STATUS_DUE_NOW = "due-now"
 STATUS_OVERDUE = "overdue"
 
 
-def module_status(progress=None, last_completed=None, next_due=None, today=None):
+def module_status(
+    progress=None,
+    last_completed=None,
+    next_due=None,
+    today=None,
+    has_progress=False,
+):
     """Return the RDRF badge variant for a dashboard module row."""
     if next_due and today:
         due_date = next_due.date() if hasattr(next_due, "date") else next_due
@@ -26,6 +32,8 @@ def module_status(progress=None, last_completed=None, next_due=None, today=None)
         if progress > 0:
             return STATUS_IN_PROGRESS
 
+    if has_progress:
+        return STATUS_IN_PROGRESS if last_completed else STATUS_NOT_STARTED
     return STATUS_COMPLETE if last_completed else STATUS_NOT_STARTED
 
 

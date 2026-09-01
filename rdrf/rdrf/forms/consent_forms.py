@@ -142,6 +142,15 @@ class BaseConsentForm(forms.BaseForm):
             for consent_section_model in data[registry_model]:
                 answer_dict = data[registry_model][consent_section_model]
                 if not consent_section_model.is_valid(answer_dict):
+                    required_question = consent_section_model.questions.filter(
+                        code=consent_section_model.validation_rule.strip()
+                    ).first()
+                    if required_question:
+                        self.add_error(
+                            required_question.field_key,
+                            _("Please confirm this consent before saving."),
+                        )
+                        continue
                     error_message = "Consent Section '%s %s' is not valid" % (
                         registry_model.code.upper(),
                         consent_section_model.section_label,
