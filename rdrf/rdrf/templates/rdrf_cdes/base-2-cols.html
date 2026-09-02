@@ -71,6 +71,11 @@
             var hasErrors = {{ error_messages|length }} > 0;
 
             adjustContentTopPadding();
+        $(window).on("load resize", function () {
+            setTimeout(function () {
+                adjustContentTopPadding();
+            }, 100);
+        });
 
             hide_empty_menu();
 

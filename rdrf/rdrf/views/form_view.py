@@ -955,6 +955,12 @@ class FormView(View):
                 )
                 xray_recorder.end_subsegment()
 
+                save_destination = parent_save_destination(
+                    request.user, registry_code
+                )
+                if save_destination:
+                    return HttpResponseRedirect(save_destination)
+
                 redirect_url = reverse(
                     "registry_form",
                     args=(
@@ -1129,7 +1135,7 @@ class FormView(View):
             patient.mark_changed_timestamp()
 
             success_message = _(
-                f"Patient {patient_name} saved successfully. Please now use the blue arrow on the right to continue."
+                f"Patient {patient_name} saved successfully."
             )
             messages.add_message(request, messages.SUCCESS, success_message)
         else:
@@ -1934,7 +1940,7 @@ class CustomConsentFormView(View):
             messages.success(
                 self.request,
                 _(
-                    "Patient %(patient_name)s saved successfully. Please now use the blue arrow on the right to continue."
+                    "Patient %(patient_name)s saved successfully."
                 )
                 % {"patient_name": patient_name},
             )

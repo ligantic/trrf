@@ -10,7 +10,7 @@ function hide_empty_menu() {
 // so that the banner doesn't overflow
 function adjustContentTopPadding(contentId = "content") {
   var fixedTopSectionHeight = $(".fixed-top").height() || 0;
-  var bannerHeight = $(".banner").height() || 0;
+  var bannerHeight = $(".banner:visible").height() || 0;
   var relativePadding = 0;
 
   if (fixedTopSectionHeight === 0 && bannerHeight === 0) {

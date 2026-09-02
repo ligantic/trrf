@@ -355,14 +355,6 @@
 {% block content %}
 {{ block.super }}
 
-<a class="previous-form d-none d-md-inline-block" href="{{ previous_form_link }}">
-    <span class="fa fa-chevron-left" aria-hidden="true"></span>
-</a>
-
-<a class="next-form d-none d-md-inline-block" href="{{ next_form_link }}">
-    <span class="fa fa-chevron-right" aria-hidden="true"></span>
-</a>
-
 <div class="row rdrf-clinical-content">
     <div class="col-lg-3 d-none d-lg-block d-print-none">
         {% include "rdrf_cdes/clinical_form_section_rail.html" %}
