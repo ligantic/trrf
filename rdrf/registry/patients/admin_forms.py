@@ -581,6 +581,7 @@ class PatientForm(forms.ModelForm):
                             == DemographicFields.HIDDEN
                         ):
                             self.fields[target_field].required = False
+                            self.fields[target_field].disabled = True
                             self.fields[
                                 target_field
                             ].widget = forms.MultipleHiddenInput()
@@ -597,6 +598,7 @@ class PatientForm(forms.ModelForm):
                             target_field_config.status
                             == DemographicFields.HIDDEN
                         ):
+                            self.fields[target_field].disabled = True
                             self.fields[
                                 target_field
                             ].widget = forms.HiddenInput()

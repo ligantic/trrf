@@ -17,7 +17,7 @@ from django.db import connections
 from django.test import TestCase
 from django.urls import reverse
 from registry.groups import GROUPS as RDRF_GROUPS
-from registry.groups.models import CustomUser
+from registry.groups.models import CustomUser, WorkingGroup
 from registry.patients.models import Patient
 
 from rdrf.models.definition.models import (
@@ -63,6 +63,10 @@ class DemographicsEditPageTest(TestCase):
             user=self.user,
         )
         self.patient.rdrf_registry.set([self.registry])
+        self.working_group = WorkingGroup.objects.create(
+            name="CAP-06 Working Group", registry=self.registry
+        )
+        self.patient.working_groups.set([self.working_group])
 
         self.url = reverse(
             "patient_edit", args=[self.registry.code, self.patient.id]
@@ -169,3 +173,31 @@ class DemographicsEditPageTest(TestCase):
             response.content.decode(), "place_of_birth"
         )
         self.assertIn('type="hidden"', hidden_input)
+
+    def test_hidden_date_ignores_an_invalid_submitted_value(self):
+        self.patient.date_of_migration = "2020-01-01"
+        self.patient.save(update_fields=["date_of_migration"])
+        self._add_field_rule("date_of_migration", DemographicFields.HIDDEN)
+
+        response = self.client.post(
+            self.url,
+            {
+                "family_name": "Updated",
+                "given_names": self.patient.given_names,
+                "date_of_birth": "01-01-1990",
+                "sex": "1",
+                "living_status": "Alive",
+                "rdrf_registry": str(self.registry.id),
+                "working_groups": str(self.working_group.id),
+                "patient_address-TOTAL_FORMS": "0",
+                "patient_address-INITIAL_FORMS": "0",
+                "patient_address-MIN_NUM_FORMS": "0",
+                "patient_address-MAX_NUM_FORMS": "1000",
+                "date_of_migration": "not-a-date",
+            },
+        )
+
+        self.assertFalse(response.context["errors"], response.context["error_messages"])
+        self.patient.refresh_from_db()
+        self.assertEqual(self.patient.family_name, "UPDATED")
+        self.assertEqual(str(self.patient.date_of_migration), "2020-01-01")
