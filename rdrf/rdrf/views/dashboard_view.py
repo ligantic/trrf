@@ -24,7 +24,7 @@ from report.utils import get_graphql_result_value
 from rdrf.forms.progress.form_progress import FormProgress
 from rdrf.helpers.dashboard_status import cadence_label, module_status
 from rdrf.helpers.registry_features import RegistryFeatures
-from rdrf.helpers.utils import consent_status_for_patient
+from rdrf.helpers.utils import consent_check, consent_status_for_patient
 from rdrf.models.definition.models import (
     ConsentQuestion,
     ContextFormGroup,
@@ -537,6 +537,19 @@ class ParentDashboardView(BaseDashboardView):
             patient = self._get_session_patient(
                 patients, request.session.get(session_key)
             ) or self._get_patient(request.user, patients, None)
+
+        if patient and not consent_check(
+            self.registry, request.user, patient, "see_patient"
+        ):
+            return redirect(
+                reverse(
+                    "consent_form_view",
+                    kwargs={
+                        "registry_code": self.registry.code,
+                        "patient_id": patient.id,
+                    },
+                )
+            )
 
         context = {
             "parent": self.parent,

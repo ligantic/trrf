@@ -9,6 +9,7 @@ Covers the participant-context contract from planning/capabilities/PROPOSALS.md 
 """
 
 import uuid
+from unittest.mock import patch
 
 from django.test import TestCase
 from django.urls import reverse
@@ -79,6 +80,25 @@ class ParentDashboardCaregiverAccessTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self._dashboard_patient(response), self.child_a)
+
+    @patch("rdrf.views.dashboard_view.consent_check", return_value=False)
+    def test_patient_without_required_consent_redirects_to_consent_form(
+        self, consent_check
+    ):
+        response = self.client.get(
+            self.dashboard_url, {"patient_id": self.child_a.id}
+        )
+
+        self.assertRedirects(
+            response,
+            reverse(
+                "consent_form_view", args=[self.registry.code, self.child_a.id]
+            ),
+            fetch_redirect_response=False,
+        )
+        consent_check.assert_called_once_with(
+            self.registry, self.user, self.child_a, "see_patient"
+        )
 
     def test_existing_unlinked_patient_returns_403(self):
         response = self.client.get(
