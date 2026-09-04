@@ -1,6 +1,7 @@
 from collections import namedtuple
 from datetime import date, datetime, timedelta, timezone
 from types import SimpleNamespace
+from unittest.mock import patch
 
 from django.template.loader import get_template
 from django.test import SimpleTestCase
@@ -90,6 +91,18 @@ class DashboardModuleStatusTest(SimpleTestCase):
     def test_cadence_label(self):
         self.assertEqual(cadence_label(timedelta(days=730)), "Every 2 years")
         self.assertEqual(cadence_label(timedelta(days=14)), "Every 2 weeks")
+
+    def test_cadence_label_uses_plural_translation(self):
+        with patch(
+            "rdrf.helpers.dashboard_status.ngettext",
+            return_value="Translated every %(quantity)d weeks",
+        ) as translate:
+            label = cadence_label(timedelta(days=14))
+
+        self.assertEqual(label, "Translated every 2 weeks")
+        translate.assert_called_once_with(
+            "Every %(quantity)d week", "Every %(quantity)d weeks", 2
+        )
 
     def test_longitudinal_module_actions_follow_status(self):
         Form = namedtuple("Form", "nice_name")

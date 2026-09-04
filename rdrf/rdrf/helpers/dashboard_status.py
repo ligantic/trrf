@@ -1,5 +1,7 @@
 from datetime import timedelta
 
+from django.utils.translation import ngettext
+
 
 STATUS_NOT_STARTED = "not-started"
 STATUS_IN_PROGRESS = "in-progress"
@@ -52,5 +54,11 @@ def cadence_label(frequency):
     else:
         quantity, unit = days, "day"
 
-    suffix = "" if quantity == 1 else "s"
-    return f"Every {quantity} {unit}{suffix}"
+    messages = {
+        "year": ("Every %(quantity)d year", "Every %(quantity)d years"),
+        "month": ("Every %(quantity)d month", "Every %(quantity)d months"),
+        "week": ("Every %(quantity)d week", "Every %(quantity)d weeks"),
+        "day": ("Every %(quantity)d day", "Every %(quantity)d days"),
+    }
+    singular, plural = messages[unit]
+    return ngettext(singular, plural, quantity) % {"quantity": quantity}

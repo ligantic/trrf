@@ -111,8 +111,9 @@ class ParentDashboard(object):
         not_completed = []
 
         for question in registry_consent_questions:
+            translated_question_label = _(question.question_label)
             question_label = re.sub(
-                r"^\s*\d+\.\s+", "", question.question_label
+                r"^\s*\d+\.\s+", "", translated_question_label
             )
             consent = consent_answers.get(question.pk)
             if consent is None:
@@ -364,6 +365,8 @@ class ParentDashboard(object):
             return None
 
         plugin = import_string(provider_path)(self, widget)
+        if not plugin:
+            return None
         plugin["widget"] = {
             "title": _(widget.title),
             "free_text": _(widget.free_text),

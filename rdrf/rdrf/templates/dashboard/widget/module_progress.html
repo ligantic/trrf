@@ -32,7 +32,7 @@
               {% for form, form_dict in forms.items %}
                 <tr>
                   <th scope="row">
-                    {{ form.nice_name }}
+                    {% trans form.nice_name %}
                     <span class="rdrf-modules-panel__meta">{% trans "One-off module" %}</span>
                   </th>
                   <td>
@@ -59,7 +59,7 @@
               {% for form, form_dict in forms.items %}
                 <tr>
                   <th scope="row">
-                    {{ form.nice_name }}
+                    {% trans form.nice_name %}
                     {% if form_dict.cadence %}<span class="d-block small text-muted fw-normal">{{ form_dict.cadence }}</span>{% endif %}
                   </th>
                   <td>
