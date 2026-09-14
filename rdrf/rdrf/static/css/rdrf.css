@@ -98,6 +98,19 @@ body {
   }
 }
 
+@media (max-width: 575.98px) {
+  .fixed-top {
+    display: contents;
+    position: static;
+  }
+
+  .fixed-top .rdrf-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+  }
+}
+
 /**************************************************************************
  * CSS utils                                                              */
 

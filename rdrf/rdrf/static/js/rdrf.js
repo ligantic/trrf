@@ -9,7 +9,10 @@ function hide_empty_menu() {
 // Some pages can have larger banners than others, adjusting the top padding of the main content
 // so that the banner doesn't overflow
 function adjustContentTopPadding(contentId = "content") {
-  var fixedTopSectionHeight = $(".fixed-top").height() || 0;
+  var $fixedTopSection = $(".fixed-top");
+  var fixedTopSectionHeight = $fixedTopSection.css("position") === "fixed"
+    ? $fixedTopSection.height() || 0
+    : 0;
   var bannerHeight = $(".banner:visible").height() || 0;
   var relativePadding = 0;
 
