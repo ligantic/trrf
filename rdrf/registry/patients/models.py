@@ -1817,7 +1817,9 @@ class PatientAddress(models.Model, PatientUpdateMixin):
     address = models.TextField()
     suburb = models.CharField(max_length=100, verbose_name=_("Suburb/Town"))
     country = models.CharField(max_length=100, verbose_name=_("Country"))
-    state = models.CharField(max_length=50, verbose_name=_("State"))
+    state = models.CharField(
+        max_length=50, blank=True, verbose_name=_("State")
+    )
     postcode = models.CharField(max_length=50, verbose_name=_("Postcode"))
 
     history = HistoricalRecords()

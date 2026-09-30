@@ -172,7 +172,7 @@ class PatientAddressForm(forms.ModelForm):
         required=True,
         widget=CountryWidget(attrs={"onChange": "select_country(this);"}),
     )
-    state = forms.ChoiceField(required=True, widget=StateWidget())
+    state = forms.ChoiceField(required=False, widget=StateWidget())
     address = forms.CharField(widget=forms.Textarea(attrs={"rows": 5}))
 
 

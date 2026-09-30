@@ -221,6 +221,16 @@ class EditPatientViewTest(PatientViewBase):
         self.assertEqual(address.state, "AU-WA")
         self.assertEqual(address.postcode, "6000")
 
+    def test_patient_edit_without_address_state(self):
+        address_pk = self.existing_patient.patientaddress_set.first().pk
+        address = self.address(pk=address_pk)
+        address["patient_address-0-state"] = ""
+
+        self.edit_patient(self.existing_patient.pk, address=address)
+
+        address = self.existing_patient.patientaddress_set.first()
+        self.assertEqual(address.state, "")
+
 
 class PatientAddressMandatoryFeatureTest(EditPatientViewTest):
     def setUp(self):
