@@ -9,6 +9,7 @@ from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.forms.formsets import formset_factory
 from django.forms.models import inlineformset_factory
+from django.forms.widgets import Textarea
 from django.http import (
     FileResponse,
     Http404,
@@ -61,7 +62,6 @@ from rdrf.forms.navigation.wizard import NavigationFormType, NavigationWizard
 from rdrf.forms.progress.form_progress import FormProgress
 from rdrf.forms.widgets.widgets import get_widgets_for_data_type
 from rdrf.helpers.cde_data_types import CDEDataTypes
-from rdrf.helpers.dashboard_status import is_form_complete
 from rdrf.helpers.registry_features import RegistryFeatures
 from rdrf.helpers.utils import (
     FormLink,
@@ -447,33 +447,6 @@ class FormView(View):
         """
         pass
 
-    def _check_read_only_longitudinal_completion(self, patient_model):
-        if not self.read_only or not self.rdrf_context:
-            return
-
-        context_form_group = self.rdrf_context.context_form_group
-        if not context_form_group or not context_form_group.is_multiple:
-            return
-        if (
-            not context_form_group.supports_direct_linking
-            or context_form_group.forms[0].pk != self.registry_form.pk
-        ):
-            raise Http404
-
-        has_progress = self.registry_form.has_progress_indicator
-        progress = (
-            FormProgress(self.registry).get_form_progress(
-                self.registry_form, patient_model, self.rdrf_context
-            )
-            if has_progress
-            else None
-        )
-        last_completed = patient_model.get_form_timestamp(
-            self.registry_form, self.rdrf_context
-        )
-        if not is_form_complete(progress, last_completed, has_progress):
-            raise Http404
-
     def get(self, request, registry_code, form_id, patient_id, context_id=None):
         xray_recorder.begin_subsegment("formview_get")
         xray_recorder.begin_subsegment("auth")
@@ -540,7 +513,6 @@ class FormView(View):
                 self.set_rdrf_context(patient_model, context_id)
         except RDRFContextSwitchError:
             return HttpResponseRedirect("/")
-        self._check_read_only_longitudinal_completion(patient_model)
         xray_recorder.end_subsegment()
 
         xray_recorder.begin_subsegment("data")
@@ -1386,9 +1358,13 @@ class FormView(View):
                     for bound_field in form:
                         widget = bound_field.field.widget
                         widget._rdrf_read_only = True
-                        if widget.input_type in ("text", "number", "textarea"):
+                        input_type = getattr(widget, "input_type", None)
+                        if isinstance(widget, Textarea) or input_type in (
+                            "text",
+                            "number",
+                        ):
                             widget.attrs["readonly"] = "readonly"
-                        elif widget.input_type != "hidden":
+                        elif input_type != "hidden":
                             widget.attrs["disabled"] = "disabled"
 
         context = {

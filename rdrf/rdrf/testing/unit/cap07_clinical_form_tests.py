@@ -234,7 +234,17 @@ class ClinicalFormPageTest(TestCase):
         )
         get_or_create.assert_not_called()
 
-    def test_read_only_longitudinal_route_requires_complete_form(self):
+    def test_read_only_route_renders_textarea_widget(self):
+        self.cde.widget_name = "TextAreaWidget"
+        self.cde.save(update_fields=["widget_name"])
+
+        response = self.client.get(self.read_only_url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "<textarea")
+        self.assertContains(response, 'readonly="readonly"')
+
+    def test_read_only_longitudinal_route_allows_incomplete_direct_url(self):
         self.registry.add_feature(RegistryFeatures.CONTEXTS)
         self.registry.save(update_fields=["metadata_json"])
         default_group = ContextFormGroup.objects.create(
@@ -275,7 +285,8 @@ class ClinicalFormPageTest(TestCase):
             return_value=45,
         ):
             incomplete_response = self.client.get(url)
-        self.assertEqual(incomplete_response.status_code, 404)
+        self.assertEqual(incomplete_response.status_code, 200)
+        self.assertTrue(incomplete_response.context["read_only"])
 
         with patch(
             "rdrf.views.form_view.FormProgress.get_form_progress",
