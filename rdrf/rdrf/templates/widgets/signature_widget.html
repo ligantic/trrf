@@ -3,12 +3,14 @@
 <div>
 <div id="signature" style="border: 1px solid black">
 </div>
+{% if not read_only %}
 <input type="hidden" name="{{name}}" value="{{html_value}}"/>
 <div class="float-end">
     <a class="btn btn-outline-secondary" onclick="reset_signature();">
         <span class="fa fa-times"></span> {% trans "Clear signature" %}
     </a>
 </div>
+{% endif %}
 </div>
 <script>
     var $sigdiv = $("#signature").jSignature({'UndoButton':true});
@@ -78,5 +80,9 @@
     }
 
     {{set_value}}
+    {% if read_only %}
+    disable_signature();
+    {% else %}
     {{hide_undo_btn}}
+    {% endif %}
 </script>

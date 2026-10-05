@@ -3,6 +3,15 @@
 <div class="row rdrf-cde-field invisibutton-container">
     <label for="{{ field.auto_id }}" class="col-sm-3 col-form-label">
         {% if field.field.cde.code and not CREATE_MODE and have_dynamic_data %}
+        {% if read_only %}
+        <a href="{% url 'registry_form_field_history_view' registry_code form_name patient_id section_code context_id field.field.cde.code %}"
+            onclick="rdrf_click_form_field_history(event, this)"
+            class="btn btn-outline-secondary btn-xs invisibutton pull-left"
+            data-bs-toggle="tooltip" title="View previous answers"
+            aria-label="Previous answers">
+            <i class="fa fa-clock-o" aria-hidden="true"></i>
+        </a>
+        {% else %}
         <a href="{% url 'registry_form_field_history' registry_code form_name patient_id section_code context_id field.field.cde.code %}"
             onclick="rdrf_click_form_field_history(event, this)"
             class="btn btn-outline-secondary btn-xs invisibutton pull-left"
@@ -10,6 +19,7 @@
             aria-label="Previous answers">
             <i class="fa fa-clock-o" aria-hidden="true"></i>
         </a>
+        {% endif %}
         {% endif %}
         {{ field.label }}
         {% if field.field.required %}

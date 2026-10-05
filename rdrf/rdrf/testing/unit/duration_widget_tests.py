@@ -128,4 +128,5 @@ def test_positive_integer_input_renders_empty_form_control():
 
     assert 'value=""' in rendered
     assert 'class="form-control"' in rendered
-    assert 'min="0" max="2147483647"' in rendered
+    assert 'min="0"' in rendered
+    assert 'max="2147483647"' in rendered

@@ -10,7 +10,9 @@ function update_cde($target_cde, visibility_array) {
         switch(visibility) {
             case "enabled":
             case "disabled":
-                $target_cde.prop('disabled', visibility == "disabled");
+                if (!window.rdrfReadOnlyMode) {
+                    $target_cde.prop('disabled', visibility == "disabled");
+                }
                 break;
             case "visible":
                 $target_cde.parents('.rdrf-cde-field').show();

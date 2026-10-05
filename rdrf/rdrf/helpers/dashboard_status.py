@@ -39,6 +39,18 @@ def module_status(
     return STATUS_COMPLETE if last_completed else STATUS_NOT_STARTED
 
 
+def is_form_complete(progress=None, last_completed=None, has_progress=False):
+    """Apply dashboard completion rules without follow-up due-date status."""
+    return (
+        module_status(
+            progress=progress,
+            last_completed=last_completed,
+            has_progress=has_progress,
+        )
+        == STATUS_COMPLETE
+    )
+
+
 def cadence_label(frequency):
     """Return a compact, display-ready cadence for a follow-up frequency."""
     if not frequency:

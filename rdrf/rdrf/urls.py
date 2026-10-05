@@ -310,6 +310,11 @@ patterns += [
         name="form_add",
     ),
     re_path(
+        r"^(?P<registry_code>\w+)/forms/(?P<form_id>\w+)/(?P<patient_id>\d+)/(?P<context_id>\d+)/view/?$",
+        form_view.ReadOnlyFormView.as_view(),
+        name="registry_form_view",
+    ),
+    re_path(
         r"^(?P<registry_code>\w+)/forms/(?P<form_id>\w+)/(?P<patient_id>\d+)/(?P<context_id>\d+)?$",
         form_view.FormView.as_view(),
         name="registry_form",
@@ -323,6 +328,16 @@ patterns += [
         r"^(?P<registry_code>\w+)/forms/(?P<form_id>\w+)/(?P<patient_id>\d+)/(?P<section_code>\w+)/(?P<context_id>\d+)?/(?P<cde_code>\w+)/history/?$",
         form_view.FormFieldHistoryView.as_view(),
         name="registry_form_field_history",
+    ),
+    re_path(
+        r"^(?P<registry_code>\w+)/forms/(?P<form_id>\w+)/(?P<patient_id>\d+)/(?P<section_code>\w+)/(?P<context_id>\d+)/(?P<cde_code>\w+)/view/history/?$",
+        form_view.ReadOnlyFormFieldHistoryView.as_view(),
+        name="registry_form_field_history_view",
+    ),
+    re_path(
+        r"^(?P<registry_code>\w+)/forms/(?P<form_id>\w+)/(?P<patient_id>\d+)/(?P<section_code>\w+)/(?P<context_id>\d+)/(?P<cde_code>\w+)/(?P<formset_index>\d+)/view/history/?$",
+        form_view.ReadOnlyFormFieldHistoryView.as_view(),
+        name="registry_formset_field_history_view",
     ),
     re_path(
         r"^(?P<registry_code>\w+)/forms/(?P<form_id>\w+)/(?P<patient_id>\d+)/(?P<section_code>\w+)/(?P<context_id>\d+)?/(?P<cde_code>\w+)/(?P<formset_index>\d+)?/history/?$",

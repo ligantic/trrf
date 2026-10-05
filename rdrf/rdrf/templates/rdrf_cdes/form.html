@@ -92,6 +92,8 @@
 </style>
 
 <script>
+    var rdrfReadOnlyMode = {{ read_only|yesno:"true,false" }};
+
     // The following "corrects" the behaviour of the "today" button in the jquery datepicker
     // clicking the today button
     $.datepicker._gotoToday = function (id) {
@@ -130,6 +132,7 @@
             $("#form-progress-cdes").toggle("fast");
         });
 
+        {% if not read_only %}
         $(document).find(".datepicker").each(function () {
             $(this).on("mouseover", function () {
                 $(this).datepicker({
@@ -146,6 +149,7 @@
                 });
             });
         });
+        {% endif %}
 
         function serialized_form() {
             // don't serialize the readonly elements for change detection
@@ -154,7 +158,9 @@
             return $($($('#main-form')[0].elements).not('[readonly]').not('.skip-serialize')).serialize();
         }
 
+        {% if not read_only %}
         rdrfSetupFileUploads();
+        {% endif %}
         rdrfSetupFormPositionSaving();
 
         {% if current_position %}
@@ -337,17 +343,21 @@
 {% endblock %}
 
 {% block page_header_navigation %}
+{% if not read_only %}
 <nav class="rdrf-module-nav d-print-none" data-rdrf-module-nav aria-label="{% trans 'Modules' %}"></nav>
 <div class="d-none" data-rdrf-module-nav-source>
     {{ context_launcher | safe }}
 </div>
+{% endif %}
 {% endblock %}
 
 {% block page_header_summary %}
 <div class="rdrf-clinical-summary">
     <div class="rdrf-clinical-summary__title-row">
         <h1 class="rdrf-clinical-summary__title">{{ current_form_name }}</h1>
+        {% if not read_only %}
         {% include "rdrf_cdes/clinical_form_progress.html" with in_header_summary=True %}
+        {% endif %}
     </div>
 </div>
 {% endblock %}
@@ -360,7 +370,7 @@
         {% include "rdrf_cdes/clinical_form_section_rail.html" %}
     </div>
     <div class="col-lg-9 col-12">
-        <form class="form-horizontal" id="main-form" novalidate enctype="multipart/form-data" method="post">{% csrf_token %}
+        <form class="form-horizontal" id="main-form" novalidate enctype="multipart/form-data" method="post"{% if read_only %} onsubmit="return false;"{% endif %}>{% csrf_token %}
             <input class="form-control" type="hidden" name="position">
 
             {% include "rdrf_cdes/clinical_form_actions.html" with action_position="top" show_print_button=False %}

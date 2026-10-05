@@ -48,10 +48,12 @@
                       </td>
 		      <td>{{snapshot.user}}</td>
                       <td class="text-right">
+                          {% if not read_only %}
                         <button type="button" data-id="{{ snapshot.id }}"
                                 class="btn btn-outline-secondary btn-xs cde-history-restore invisibutton">
                           Restore
                         </button>
+                        {% endif %}
                       </td>
                     </tr>
                     {% endfor %}

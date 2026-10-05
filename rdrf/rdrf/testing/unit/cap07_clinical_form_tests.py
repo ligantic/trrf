@@ -13,6 +13,7 @@ Covers:
 
 import uuid
 from datetime import timedelta
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -45,6 +46,17 @@ from rdrf.models.definition.models import (
     WhitelistedFileExtension,
 )
 from rdrf.forms.components import RDRFContextLauncherComponent
+from rdrf.forms.widgets.widgets import (
+    CalculatedFieldWidget,
+    CustomFileInput,
+    DateWidget,
+    DurationWidget,
+    LookupWidget,
+    PositiveIntegerInput,
+    SignatureWidget,
+    SliderWidget,
+    TimeWidget,
+)
 from rdrf.helpers.registry_features import RegistryFeatures
 
 AUTH_BACKEND = "django.contrib.auth.backends.ModelBackend"
@@ -177,12 +189,452 @@ class ClinicalFormPageTest(TestCase):
                 self.context.pk,
             ],
         )
+        self.read_only_url = reverse(
+            "registry_form_view",
+            args=[
+                self.registry.code,
+                self.form.pk,
+                self.patient.pk,
+                self.context.pk,
+            ],
+        )
         self.client.force_login(self.user, backend=AUTH_BACKEND)
 
     def _get_page(self):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
         return response.content.decode()
+
+    def test_read_only_route_renders_without_creating_default_context(self):
+        with patch.object(
+            RDRFContextManager, "get_or_create_default_context"
+        ) as get_or_create:
+            response = self.client.get(self.read_only_url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["read_only"])
+        content = response.content.decode()
+        self.assertIn('id="main-form"', content)
+        self.assertIn('readonly="readonly"', content)
+        self.assertContains(response, ">Back</a>")
+        self.assertNotContains(response, "Cancel</a>")
+        self.assertNotContains(response, "data-rdrf-module-nav")
+        self.assertNotContains(response, "data-rdrf-module-nav-source")
+        self.assertNotContains(response, "rdrf-form-progress-summary")
+        self.assertNotContains(response, "role=\"progressbar\"")
+        self.assertNotIn("Save and exit", content)
+        self.assertNotIn("add_form(this,", content)
+        self.assertNotIn("delete_form(this,", content)
+        self.assertNotIn("Mark for deletion", content)
+        self.assertEqual(response.context["delete_form_url"], "")
+        self.assertNotContains(response, 'data-bs-target="#form_modal"')
+        self.assertEqual(
+            response.context["back_link"],
+            f"{reverse('parent_saved_responses', kwargs={'registry_code': self.registry.code})}?patient_id={self.patient.pk}",
+        )
+        get_or_create.assert_not_called()
+
+    def test_read_only_longitudinal_route_requires_complete_form(self):
+        self.registry.add_feature(RegistryFeatures.CONTEXTS)
+        self.registry.save(update_fields=["metadata_json"])
+        default_group = ContextFormGroup.objects.create(
+            registry=self.registry,
+            code="CAP07_FIXED",
+            name="Fixed forms",
+            abbreviated_name="Fixed",
+            is_default=True,
+        )
+        self.context.context_form_group = default_group
+        self.context.save(update_fields=["context_form_group"])
+        context_form_group = ContextFormGroup.objects.create(
+            registry=self.registry,
+            code="CAP07_LONGITUDINAL",
+            name="Longitudinal forms",
+            abbreviated_name="Longitudinal",
+            context_type="M",
+        )
+        context_form_group.items.create(registry_form=self.form)
+        context = RDRFContext.objects.create(
+            registry=self.registry,
+            context_form_group=context_form_group,
+            object_id=self.patient.pk,
+            content_type=ContentType.objects.get_for_model(self.patient),
+        )
+        url = reverse(
+            "registry_form_view",
+            args=[
+                self.registry.code,
+                self.form.pk,
+                self.patient.pk,
+                context.pk,
+            ],
+        )
+
+        with patch(
+            "rdrf.views.form_view.FormProgress.get_form_progress",
+            return_value=45,
+        ):
+            incomplete_response = self.client.get(url)
+        self.assertEqual(incomplete_response.status_code, 404)
+
+        with patch(
+            "rdrf.views.form_view.FormProgress.get_form_progress",
+            return_value=100,
+        ):
+            complete_response = self.client.get(url)
+        self.assertEqual(complete_response.status_code, 200)
+
+    def test_read_only_back_link_uses_only_same_origin_referers(self):
+        same_origin_referer = (
+            "http://testserver/ang/dashboard/saved-responses"
+            f"?patient_id={self.patient.pk}"
+        )
+        response = self.client.get(
+            self.read_only_url,
+            HTTP_REFERER=same_origin_referer,
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context["back_link"], same_origin_referer
+        )
+
+        response = self.client.get(
+            self.read_only_url,
+            HTTP_REFERER="https://example.invalid/",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.context["back_link"],
+            f"{reverse('parent_saved_responses', kwargs={'registry_code': self.registry.code})}?patient_id={self.patient.pk}",
+        )
+
+    def test_read_only_route_hides_previous_submission_switcher(self):
+        from rdrf.views.form_view import FormView
+
+        def add_previous_context(view, changes_since_version, patient, registry_code):
+            view.has_previous_contexts = True
+            view.previous_versions = [
+                {"id": 999, "name": "Earlier submission"}
+            ]
+            return None, ""
+
+        with patch.object(
+            FormView, "fetch_previous_data", add_previous_context
+        ):
+            response = self.client.get(self.read_only_url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["has_previous_data"])
+        self.assertNotContains(response, "View Changes Since")
+        self.assertNotContains(response, "Earlier submission")
+
+    def test_read_only_route_hides_form_instructions_but_edit_route_keeps_them(
+        self,
+    ):
+        instruction = "Please click the green 'Save' button before progressing."
+        self.form.header = f"<p>{instruction}</p>"
+        self.form.save(update_fields=["header"])
+
+        read_only_response = self.client.get(self.read_only_url)
+        self.assertEqual(read_only_response.status_code, 200)
+        self.assertNotContains(read_only_response, instruction)
+
+        edit_response = self.client.get(self.url)
+        self.assertEqual(edit_response.status_code, 200)
+        self.assertContains(edit_response, instruction)
+
+    def test_read_only_field_history_has_no_restore_action(self):
+        history_url = reverse(
+            "registry_form_field_history_view",
+            args=[
+                self.registry.code,
+                self.form.pk,
+                self.patient.pk,
+                "CAP07SEC",
+                self.context.pk,
+                self.cde.code,
+            ],
+        )
+
+        response = self.client.get(history_url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["read_only"])
+        self.assertNotContains(response, "Restore")
+        self.assertContains(response, "cde-history-chart")
+
+        repeatable_history_url = reverse(
+            "registry_formset_field_history_view",
+            args=[
+                self.registry.code,
+                self.form.pk,
+                self.patient.pk,
+                "CAP07MULTI",
+                self.context.pk,
+                "CAP07Q2",
+                0,
+            ],
+        )
+        repeatable_response = self.client.get(repeatable_history_url)
+        self.assertEqual(repeatable_response.status_code, 200)
+        self.assertNotContains(repeatable_response, "Restore")
+
+    def test_read_only_history_rejects_a_foreign_patient_context(self):
+        other_patient = Patient.objects.create(
+            consent=True,
+            date_of_birth="2014-01-01",
+            family_name="Other",
+            given_names="Patient",
+        )
+        other_patient.rdrf_registry.set([self.registry])
+        other_context = RDRFContextManager(
+            self.registry
+        ).get_or_create_default_context(other_patient)
+        history_url = reverse(
+            "registry_form_field_history_view",
+            args=[
+                self.registry.code,
+                self.form.pk,
+                self.patient.pk,
+                "CAP07SEC",
+                other_context.pk,
+                self.cde.code,
+            ],
+        )
+
+        response = self.client.get(history_url)
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_custom_widgets_render_read_only_values_without_edit_actions(self):
+        attrs = {"id": "id_value", "readonly": "readonly"}
+        date_html = DateWidget(attrs=attrs).render(
+            "value", "2026-01-05", None
+        )
+        lookup_html = LookupWidget(attrs=attrs).render(
+            "value", "saved", None
+        )
+        calculated_widget = CalculatedFieldWidget(
+            script="<script>recalculate()</script>"
+        )
+        calculated_html = calculated_widget.render("value", "42", None)
+        integer_html = PositiveIntegerInput(attrs=attrs).render(
+            "ClinicalModule____CAP07SEC____CAP07Q1", 4, None
+        )
+        slider_html = SliderWidget(
+            attrs={
+                **attrs,
+                "min": 1,
+                "max": 10,
+                "left_label": "Very Bad",
+                "right_label": "Very Good",
+            }
+        ).render("value", 5, {"id": "id_value"})
+        time_html = TimeWidget(attrs=attrs).render(
+            "value", "09:15 AM", None
+        )
+        duration_html = DurationWidget(attrs=attrs).render(
+            "value", "P1D", None
+        )
+        signature_html = SignatureWidget(attrs=attrs).render(
+            "value", None, None
+        )
+
+        self.assertIn('readonly="readonly"', date_html)
+        self.assertIn('readonly="readonly"', lookup_html)
+        self.assertNotIn("lookup(", lookup_html)
+        self.assertIn("recalculate()", calculated_html)
+        calculated_widget._rdrf_read_only = True
+        calculated_read_only_html = calculated_widget.render(
+            "value", "42", None
+        )
+        self.assertNotIn("recalculate()", calculated_read_only_html)
+        self.assertIn('readonly="readonly"', integer_html)
+        self.assertIn('rdrf-cde-slider__label--start">Very Bad', slider_html)
+        self.assertIn('rdrf-cde-slider__label--end">Very Good', slider_html)
+        self.assertIn('type="hidden" id="id_value"', slider_html)
+        self.assertIn('value="5" disabled="disabled"', slider_html)
+        self.assertIn('"enabled": false', slider_html)
+        self.assertNotIn('type="text"', slider_html)
+        self.assertIn('readonly', time_html)
+        self.assertIn('disabled', time_html)
+        self.assertNotIn("setupTimeWidget", time_html)
+        self.assertIn('name="value" class="time-widget"', time_html)
+        self.assertIn('value="09:15 AM" disabled="disabled"', time_html)
+        self.assertIn('type="number"', duration_html)
+        self.assertIn('data-duration-unit="years"', duration_html)
+        self.assertIn('disabled="disabled"', duration_html)
+        self.assertNotIn('type="hidden"', duration_html)
+        self.assertNotIn("setupDurationWidget", duration_html)
+        self.assertNotIn("Clear signature", signature_html)
+        self.assertIn("disable_signature();", signature_html)
+
+        file_value = SimpleNamespace(
+            name="evidence.pdf", url="/media/evidence.pdf"
+        )
+        with (
+            patch.object(
+                CustomFileInput,
+                "get_filename",
+                return_value="evidence.pdf",
+            ),
+            patch.object(
+                CustomFileInput, "do_virus_check", return_value="clean"
+            ),
+        ):
+            file_html = CustomFileInput().render(
+                "evidence",
+                file_value,
+                {"id": "id_evidence", "disabled": "disabled"},
+            )
+
+        self.assertIn('href="/media/evidence.pdf"', file_html)
+        self.assertNotIn('type="file"', file_html)
+        self.assertNotIn("evidence-clear", file_html)
+
+        from rdrf.forms.widgets.widgets import MultipleFileInput, ReadOnlySelect
+
+        read_only_select_html = ReadOnlySelect(
+            attrs={"disabled": "disabled"},
+            choices=[("saved", "Saved choice")],
+        ).render(
+            "value",
+            "saved",
+            {"id": "id_value"},
+        )
+        self.assertIn('name="value"', read_only_select_html)
+        self.assertIn('disabled="disabled"', read_only_select_html)
+
+        multiple_file_html = MultipleFileInput(
+            attrs={"disabled": "disabled"}
+        ).render(
+            "evidence",
+            [file_value],
+            {"id": "id_evidence"},
+        )
+        self.assertIn('name="evidence_0-index"', multiple_file_html)
+        self.assertIn('disabled="disabled"', multiple_file_html)
+        self.assertNotIn('type="file"', multiple_file_html)
+        self.assertNotIn('evidence_0-clear', multiple_file_html)
+
+        from django.template.loader import render_to_string
+
+        xnat_html = render_to_string(
+            "widgets/xnat_widget.html",
+            {
+                "id": "value",
+                "value": "PROJECT;SUBJECT",
+                "read_only": True,
+                "project_id": "PROJECT",
+                "subject_id": "SUBJECT",
+                "consent_check": False,
+                "xnat_enabled": False,
+            },
+        )
+        self.assertIn('name="value"', xnat_html)
+        self.assertIn('disabled="disabled"', xnat_html)
+
+    def test_composite_and_registry_select_widgets_are_disabled(self):
+        from rdrf.forms.widgets.widgets import (
+            CountryWidget,
+            OtherPleaseSpecifyWidget,
+            ParameterisedSelectWidget,
+            StateWidget,
+        )
+
+        attrs = {"disabled": "disabled"}
+        render_attrs = {"id": "id_value"}
+        country_html = CountryWidget(attrs=attrs).render(
+            "value", "AU", render_attrs
+        )
+        state_html = StateWidget(attrs=attrs).render(
+            "value", "AU-NSW", render_attrs
+        )
+        self.assertIn('disabled="disabled"', country_html)
+        self.assertIn('disabled="disabled"', state_html)
+
+        other_widget = OtherPleaseSpecifyWidget(
+            main_choices=[("", "Unknown"), ("Other", "Other")],
+            other_please_specify_value="Other",
+            unset_value="",
+            attrs=attrs,
+        )
+        other_html = other_widget.render("value", "Other", render_attrs)
+        self.assertGreaterEqual(
+            other_html.count('disabled="disabled"'), 2
+        )
+
+        class StaticParameterisedSelect(ParameterisedSelectWidget):
+            def _get_items(self):
+                return [("saved", "Saved value")]
+
+        parameterised_html = StaticParameterisedSelect(
+            widget_parameter="unused",
+            widget_context={},
+            attrs=attrs,
+        ).render("value", "saved", render_attrs)
+        self.assertIn('disabled="disabled"', parameterised_html)
+
+    def test_read_only_route_rejects_post_and_delete(self):
+        self.assertEqual(
+            self.client.post(self.read_only_url).status_code, 405
+        )
+        self.assertEqual(
+            self.client.delete(self.read_only_url).status_code, 405
+        )
+
+    def test_read_only_route_rejects_context_owned_by_another_patient(self):
+        other_patient = Patient.objects.create(
+            consent=True,
+            date_of_birth="2014-01-01",
+            family_name="Other",
+            given_names="Patient",
+        )
+        other_patient.rdrf_registry.set([self.registry])
+        other_context = RDRFContextManager(
+            self.registry
+        ).get_or_create_default_context(other_patient)
+        foreign_context_url = reverse(
+            "registry_form_view",
+            args=[
+                self.registry.code,
+                self.form.pk,
+                self.patient.pk,
+                other_context.pk,
+            ],
+        )
+
+        response = self.client.get(foreign_context_url)
+
+        self.assertEqual(response.status_code, 302)
+
+    def test_read_only_route_rejects_form_from_another_registry(self):
+        other_registry = Registry.objects.create(code="cap07other")
+        other_form = RegistryForm.objects.create(
+            name="OtherModule",
+            registry=other_registry,
+            abbreviated_name="Other",
+            sections="CAP07SEC",
+        )
+        foreign_form_url = reverse(
+            "registry_form_view",
+            args=[
+                self.registry.code,
+                other_form.pk,
+                self.patient.pk,
+                self.context.pk,
+            ],
+        )
+
+        response = self.client.get(foreign_form_url)
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_edit_route_remains_editable(self):
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.context.get("read_only", False))
 
     def test_form_page_renders_section_rail_and_cards(self):
         content = self._get_page()

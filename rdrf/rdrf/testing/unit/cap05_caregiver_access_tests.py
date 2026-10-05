@@ -246,7 +246,15 @@ class ParentDashboardCaregiverAccessTest(TestCase):
         self.assertEqual(len(first_page.context["page_obj"].object_list), 20)
         self.assertEqual(
             first_page.context["page_obj"].object_list[0]["url"],
-            form.get_link(self.child_a, contexts[-1]),
+            reverse(
+                "registry_form_view",
+                args=(
+                    self.registry.code,
+                    form.pk,
+                    self.child_a.pk,
+                    contexts[-1].pk,
+                ),
+            ),
         )
 
         second_page = self.client.get(self.saved_responses_url, {"page": 2})
@@ -254,7 +262,15 @@ class ParentDashboardCaregiverAccessTest(TestCase):
         self.assertEqual(len(second_page.context["page_obj"].object_list), 1)
         self.assertEqual(
             second_page.context["page_obj"].object_list[0]["url"],
-            form.get_link(self.child_a, contexts[0]),
+            reverse(
+                "registry_form_view",
+                args=(
+                    self.registry.code,
+                    form.pk,
+                    self.child_a.pk,
+                    contexts[0].pk,
+                ),
+            ),
         )
         self.assertContains(second_page, f"patient_id={self.child_a.id}")
 

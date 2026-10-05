@@ -24,7 +24,11 @@ from registry.patients.models import (
 from report.utils import get_graphql_result_value
 
 from rdrf.forms.progress.form_progress import FormProgress
-from rdrf.helpers.dashboard_status import cadence_label, module_status
+from rdrf.helpers.dashboard_status import (
+    cadence_label,
+    is_form_complete,
+    module_status,
+)
 from rdrf.helpers.registry_features import RegistryFeatures
 from rdrf.helpers.utils import consent_check, consent_status_for_patient
 from rdrf.models.definition.models import (
@@ -124,6 +128,7 @@ class ParentDashboard(object):
             data_by_context.setdefault(record.context_id, record.data)
 
         rows = []
+        form_progress = FormProgress(self.registry)
         for context_id, data in data_by_context.items():
             context = context_by_id[context_id]
             form = forms_by_group[context.context_form_group_id]
@@ -133,13 +138,29 @@ class ParentDashboard(object):
                 continue
             if saved_at is None:
                 continue
+            has_progress = form.has_progress_indicator
+            progress = (
+                form_progress.get_form_progress(form, self.patient, context)
+                if has_progress
+                else None
+            )
+            if not is_form_complete(progress, saved_at, has_progress):
+                continue
 
             rows.append(
                 {
                     "form": form,
                     "context": context,
                     "saved_at": saved_at,
-                    "url": form.get_link(self.patient, context),
+                    "url": reverse(
+                        "registry_form_view",
+                        args=(
+                            self.registry.code,
+                            form.pk,
+                            self.patient.pk,
+                            context.pk,
+                        ),
+                    ),
                 }
             )
 

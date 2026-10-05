@@ -728,6 +728,7 @@
 }
 
 .rdrf-form-actions__cancel,
+.rdrf-form-actions__back,
 .rdrf-form-actions__save,
 .rdrf-form-actions__print {
   align-items: center;
@@ -769,6 +770,7 @@
   border-color: rgba(155, 155, 155, 0.1);
 }
 
+.rdrf-form-actions__back,
 .rdrf-form-actions__print {
   background-color: var(--color-surface-primary);
   border-color: var(--color-border-default);
@@ -779,6 +781,8 @@
   margin-right: var(--space-1);
 }
 
+.rdrf-form-actions__back:hover,
+.rdrf-form-actions__back:focus,
 .rdrf-form-actions__print:hover,
 .rdrf-form-actions__print:focus {
   background-color: var(--color-surface-reference);
@@ -808,6 +812,7 @@
   }
 
   .rdrf-form-actions__cancel,
+  .rdrf-form-actions__back,
   .rdrf-form-actions__save,
   .rdrf-form-actions__print {
     flex: 1 1 auto;

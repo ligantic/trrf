@@ -1,6 +1,7 @@
 import base64
 import datetime
 import inspect
+import json
 import logging
 import math
 import re
@@ -35,6 +36,19 @@ from rdrf.models.definition.models import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _is_read_only_widget(attrs, widget):
+    attrs = attrs or {}
+    return any(
+        attrs.get(attribute) or widget.attrs.get(attribute)
+        for attribute in ("readonly", "disabled")
+    )
+
+
+def _build_widget_attrs(widget, attrs, defaults):
+    combined_attrs = {**widget.attrs, **(attrs or {})}
+    return widget.build_attrs(combined_attrs, defaults)
 
 
 class BadCustomFieldWidget(Textarea):
@@ -169,10 +183,13 @@ class CalculatedFieldWidget(widgets.TextInput):
         super(CalculatedFieldWidget, self).__init__(attrs=attrs)
 
     def render(self, name, value, attrs, renderer=None):
-        # attrs['readonly'] = 'readonly'
+        rendered = super(CalculatedFieldWidget, self).render(
+            name, value, attrs
+        )
         return (
-            super(CalculatedFieldWidget, self).render(name, value, attrs)
-            + self.script
+            rendered
+            if getattr(self, "_rdrf_read_only", False)
+            else rendered + self.script
         )
 
 
@@ -188,6 +205,15 @@ class LookupWidget(widgets.TextInput):
         return raw_value
 
     def render(self, name, value, attrs, renderer=None):
+        if _is_read_only_widget(attrs, self):
+            input_attrs = _build_widget_attrs(
+                self,
+                attrs,
+                {"type": "text", "name": name, "id": "id_%s" % name},
+            )
+            input_attrs["value"] = value or ""
+            return format_html("<input{}>", flatatt(input_attrs))
+
         return """
             <input type="text" name="%s" id="id_%s" value="%s">
             <script type="text/javascript">
@@ -216,7 +242,18 @@ class DateWidget(widgets.TextInput):
                 return value
 
         output_val = conditional_escape(just_date(value) or "")
-        return f'<input type="text" name="{name}" id="id_{name}" value="{output_val}" class="datepicker form-control">'
+        final_attrs = _build_widget_attrs(
+            self,
+            attrs,
+            {
+                "type": "text",
+                "name": name,
+                "id": "id_%s" % name,
+                "class": "datepicker form-control",
+            },
+        )
+        final_attrs["value"] = output_val
+        return format_html("<input{}>", flatatt(final_attrs))
 
 
 class CountryWidget(widgets.Select):
@@ -232,7 +269,8 @@ class CountryWidget(widgets.Select):
         ]
 
     def render(self, name, value, attrs, renderer=None):
-        final_attrs = self.build_attrs(
+        final_attrs = _build_widget_attrs(
+            self,
             attrs,
             {
                 "name": name,
@@ -276,7 +314,8 @@ class StateWidget(widgets.Select):
         else:
             country_states = []
 
-        final_attrs = self.build_attrs(
+        final_attrs = _build_widget_attrs(
+            self,
             attrs,
             {
                 "name": name,
@@ -322,7 +361,8 @@ class ParameterisedSelectWidget(widgets.Select):
 
         # final_attrs = dict(self.attrs, name=name)
 
-        final_attrs = self.build_attrs(
+        final_attrs = _build_widget_attrs(
+            self,
             attrs,
             {
                 "name": name,
@@ -375,9 +415,20 @@ class PositiveIntegerInput(widgets.TextInput):
         min_value, max_value = self._get_value_range(name)
         value = "" if value is None else value
 
-        return """
-            <input type="number" name="%s" id="id_%s" value="%s" min="%s" max="%s" class="form-control">
-        """ % (name, name, value, min_value, max_value)
+        final_attrs = _build_widget_attrs(
+            self,
+            attrs,
+            {
+                "type": "number",
+                "name": name,
+                "id": "id_%s" % name,
+                "min": min_value,
+                "max": max_value,
+                "class": "form-control",
+            },
+        )
+        final_attrs["value"] = value
+        return format_html("<input{}>", flatatt(final_attrs))
 
     def _get_value_range(self, cde_name):
         cde_code = cde_name.split("____")[2]
@@ -433,11 +484,16 @@ class ReadOnlySelect(widgets.Select):
         )
 
     def _make_hidden_field(self, name, value, attrs):
-        return """<input type="hidden" id="%s" name="%s" value="%s"/>""" % (
-            attrs["id"],
-            name,
-            value,
-        )
+        attrs = attrs or {}
+        input_attrs = {
+            "type": "hidden",
+            "id": attrs.get("id", self.attrs.get("id", "id_%s" % name)),
+            "name": name,
+            "value": "" if value is None else value,
+        }
+        if _is_read_only_widget(attrs, self):
+            input_attrs["disabled"] = "disabled"
+        return format_html("<input{}>", flatatt(input_attrs))
 
     def _make_label(self, html):
         import re
@@ -492,7 +548,7 @@ class MultipleFileInput(Widget):
         return None
 
     def render(self, name, value, attrs=None, renderer=None):
-        attrs = attrs or {}
+        attrs = _build_widget_attrs(self, attrs, {})
         items = self._render_each(name, value, attrs)
 
         elements = (
@@ -517,7 +573,14 @@ class MultipleFileInput(Widget):
     def _render_base(self, name, value, attrs, index):
         input_name = self.input_name(name, index)
         base = CustomFileInput().render(input_name, value, attrs)
-        hidden = HiddenInput().render(input_name + "-index", index, {})
+        hidden_attrs = (
+            {"disabled": "disabled"}
+            if _is_read_only_widget(attrs, self)
+            else {}
+        )
+        hidden = HiddenInput().render(
+            input_name + "-index", index, hidden_attrs
+        )
         return "%s\n%s" % (base, hidden)
 
     def _render_each(self, name, value, attrs):
@@ -625,7 +688,9 @@ class SliderWidget(widgets.TextInput):
         return {CDEDataTypes.INTEGER, CDEDataTypes.FLOAT}
 
     def render(self, name, value, attrs=None, renderer=None):
-        if not (value and isinstance(value, float) or isinstance(value, int)):
+        read_only = _is_read_only_widget(attrs, self)
+
+        if value is None or not isinstance(value, (float, int)):
             value = ""
 
         left_label = (
@@ -635,38 +700,40 @@ class SliderWidget(widgets.TextInput):
             self.attrs.pop("right_label") if "right_label" in self.attrs else ""
         )
 
-        if self.attrs:
-            widget_attrs = (
-                ",\n".join(
-                    '"{}":{}'.format(k, v) for k, v in self.attrs.items()
-                )
-                + ","
-            )
-        else:
-            widget_attrs = ""
+        slider_options = {
+            key: option
+            for key, option in self.attrs.items()
+            if key not in {"readonly", "disabled", "id", "class"}
+        }
+        if read_only:
+            slider_options["enabled"] = False
+        widget_attrs = json.dumps(slider_options)
+        input_attrs = attrs or self.attrs
+        input_id = input_attrs.get("id", "id_%s" % name)
+        input_disabled = ' disabled="disabled"' if read_only else ""
 
         context = f"""
             <div class="rdrf-cde-slider">
                 <span class="rdrf-cde-slider__label rdrf-cde-slider__label--start">{_(left_label)}</span>
                 <div class="rdrf-cde-slider__control">
-                    <input type="hidden" id="{attrs["id"]}" name="{name}" value="{value}"/>
+                    <input type="hidden" id="{input_id}" name="{name}" value="{value}"{input_disabled}/>
                 </div>
                 <span class="rdrf-cde-slider__label rdrf-cde-slider__label--end">{_(right_label)}</span>
             </div>
             <script>
                 $(function() {{
-                    $( "#{attrs["id"]}" ).bootstrapSlider({{
+                    $( "#{input_id}" ).bootstrapSlider({{
                         tooltip: 'always',
-                        id: '{attrs["id"]}-slider',
+                        id: '{input_id}-slider',
                         value: '{value}',
-                        {widget_attrs}
+                        ...{widget_attrs}
                     }});
 
                     // Set the uninitialised / null value to ""
-                    $( "#{attrs["id"]}" ).val("{value}");
+                    $( "#{input_id}" ).val("{value}");
                     // Set the uninitialised / null value to "-" in the tooltip
                     if ("{value}" === "") {{
-                        $("#{attrs["id"]}-slider .tooltip-inner").html("-");
+                        $("#{input_id}-slider .tooltip-inner").html("-");
                     }};
 
                      // Set z-index to 0 for slider tooltip so it's not displayed through
@@ -711,6 +778,7 @@ class SignatureWidget(widgets.TextInput):
             "set_value": mark_safe(set_value),
             "hide_undo_btn": mark_safe(hide_undo_btn),
             "encoded_default_value": mark_safe(encoded_default_value),
+            "read_only": _is_read_only_widget(attrs, self),
         }
         if not renderer:
             renderer = get_default_renderer()
@@ -777,19 +845,20 @@ class TimeWidget(widgets.TextInput):
     def render(self, name, value, attrs=None, renderer=None):
         fmt = self.attrs.pop("format") if "format" in self.attrs else self.AMPM
         value, start_time = self._parse_value(value, fmt)
+        read_only = _is_read_only_widget(attrs, self)
         has_am_pm = "true" if fmt == self.AMPM else "false"
         displayed_time = f"{start_time[0]:02d}:{start_time[1]:02d}" if start_time else ""
         meridian = start_time[2] if fmt == self.AMPM and start_time else "AM"
         html = f"""
             <div class="rdrf-time-widget" data-time-input-name="{name}" data-has-am-pm="{has_am_pm}">
                 <label class="visually-hidden" for="id_{name}_time">Time</label>
-                <input id="id_{name}_time" type="text" class="time-input form-control" data-time-min="{1 if fmt == self.AMPM else 0}" data-time-max="{12 if fmt == self.AMPM else 23}" inputmode="numeric" maxlength="5" pattern="[0-9]{{2}}:[0-9]{{2}}" placeholder="HH:MM" value="{displayed_time}">
-                {f'''<label class="visually-hidden" for="id_{name}_meridian">AM or PM</label><select id="id_{name}_meridian" class="time-input form-select" data-time-unit="meridian"><option value="AM" {"selected" if meridian == "AM" else ""}>AM</option><option value="PM" {"selected" if meridian == "PM" else ""}>PM</option></select>''' if fmt == self.AMPM else ""}
-                <input id="id_{name}" type="hidden" name="{name}" class="time-widget" value="{value}">
+                <input id="id_{name}_time" type="text" class="time-input form-control" data-time-min="{1 if fmt == self.AMPM else 0}" data-time-max="{12 if fmt == self.AMPM else 23}" inputmode="numeric" maxlength="5" pattern="[0-9]{{2}}:[0-9]{{2}}" placeholder="HH:MM" value="{displayed_time}" {"readonly" if read_only else ""}>
+                {f'''<label class="visually-hidden" for="id_{name}_meridian">AM or PM</label><select id="id_{name}_meridian" class="time-input form-select" data-time-unit="meridian" {"disabled" if read_only else ""}><option value="AM" {"selected" if meridian == "AM" else ""}>AM</option><option value="PM" {"selected" if meridian == "PM" else ""}>PM</option></select>''' if fmt == self.AMPM else ""}
+                    <input id="id_{name}" type="hidden" name="{name}" class="time-widget" value="{value}" {"disabled=\"disabled\"" if read_only else ""}>
             </div>
         """
         script = ""
-        if _is_not_multisection_clone_base_widget(attrs):
+        if not read_only and _is_not_multisection_clone_base_widget(attrs):
             # Only attach the script if this is not the default
             # widget used for cloning in multisections
             script = f"""
@@ -924,6 +993,7 @@ class DurationWidget(widgets.TextInput):
         return {CDEDataTypes.DURATION}
 
     def render(self, name, value, attrs=None, renderer=None):
+        read_only = _is_read_only_widget(attrs, self)
         widget_helper = DurationWidgetHelper(self.attrs)
 
         current_default_fmt = widget_helper.current_format_default()
@@ -956,6 +1026,18 @@ class DurationWidget(widgets.TextInput):
                 if widget_helper._get_attribute(unit)
             )
         )
+        if read_only:
+            visible_inputs = "".join(
+                f'''
+                    <div class="rdrf-duration-widget__unit" data-duration-label="{_(unit.capitalize())}">
+                        <label class="visually-hidden" for="id_{name}_{unit}">{_(unit.capitalize())}</label>
+                        <input id="id_{name}_{unit}" type="number" class="duration-input form-control" min="0" value="{unit_values[unit]}" placeholder="{_(unit.capitalize())}" data-duration-unit="{unit}" disabled="disabled" />
+                    </div>
+                '''
+                for unit in active_units
+            )
+            return f'<div class="rdrf-duration-widget">{visible_inputs}</div>'
+
         visible_inputs = "".join(
             f'''
                 <div class="rdrf-duration-widget__unit" data-duration-label="{_(unit.capitalize())}">
@@ -1042,6 +1124,7 @@ class XnatWidget(LookupWidget):
                 "xnat_enabled": self.registry.has_feature(
                     RegistryFeatures.XNAT_INTEGRATION
                 ),
+                "read_only": _is_read_only_widget(attrs, self),
             }
         )
         return get_template("widgets/xnat_widget.html").render(

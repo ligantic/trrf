@@ -693,6 +693,59 @@ class ParentDashboardTest(RDRFTestCase):
             applicable_rows = parent_dashboard._get_saved_responses()
         self.assertEqual([row["form"] for row in applicable_rows], [form2])
 
+    def test_saved_responses_only_include_complete_forms(self):
+        cfg = ContextFormGroup.objects.create(
+            registry=self.registry,
+            code="COMPLETE_HISTORY",
+            context_type="M",
+        )
+        cde = CommonDataElement.objects.create(
+            code="HISTORY_COMPLETE_CDE",
+            name="Completion field",
+            datatype="string",
+        )
+        section = Section.objects.create(
+            code="HISTORY_COMPLETE_SECTION",
+            abbreviated_name="Completion Section",
+            elements=cde.code,
+        )
+        form = RegistryForm.objects.create(
+            name="HistoryCompleteForm",
+            registry=self.registry,
+            abbreviated_name="History Complete Form",
+            sections=section.code,
+        )
+        form.complete_form_cdes.set([cde])
+        cfg.items.create(registry_form=form)
+
+        patient = create_valid_patient(registry=self.registry)
+        context = self._create_patient_context(patient, cfg)
+        ClinicalData.objects.create(
+            registry_code=self.registry.code,
+            django_id=patient.id,
+            django_model="Patient",
+            collection="cdes",
+            context_id=context.id,
+            data={"HistoryCompleteForm_timestamp": "2026-01-01 12:00:00"},
+        )
+        parent_dashboard = ParentDashboard(
+            self._request(), self.dashboard, patient
+        )
+
+        with patch(
+            "rdrf.views.dashboard_view.FormProgress.get_form_progress",
+            return_value=45,
+        ):
+            self.assertEqual(parent_dashboard._get_saved_responses(), [])
+
+        with patch(
+            "rdrf.views.dashboard_view.FormProgress.get_form_progress",
+            return_value=100,
+        ):
+            rows = parent_dashboard._get_saved_responses()
+
+        self.assertEqual([row["context"] for row in rows], [context])
+
     def test_due_module_link_keeps_latest_context(self):
         cfg = ContextFormGroup.objects.create(
             registry=self.registry, code="DUE_HISTORY", context_type="M"

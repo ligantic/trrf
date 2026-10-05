@@ -14,6 +14,7 @@ from django.http import (
     Http404,
     HttpResponse,
     HttpResponseNotFound,
+    HttpResponseNotAllowed,
     HttpResponseRedirect,
     JsonResponse,
 )
@@ -21,6 +22,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.template.context_processors import csrf
 from django.template.loader import render_to_string
 from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 from django.views.generic.base import TemplateView, View
@@ -59,6 +61,7 @@ from rdrf.forms.navigation.wizard import NavigationFormType, NavigationWizard
 from rdrf.forms.progress.form_progress import FormProgress
 from rdrf.forms.widgets.widgets import get_widgets_for_data_type
 from rdrf.helpers.cde_data_types import CDEDataTypes
+from rdrf.helpers.dashboard_status import is_form_complete
 from rdrf.helpers.registry_features import RegistryFeatures
 from rdrf.helpers.utils import (
     FormLink,
@@ -214,6 +217,8 @@ class SectionInfo(object):
 
 
 class FormView(View):
+    read_only = False
+
     def __init__(self, *args, **kwargs):
         # when set to True in integration testing, switches off unsupported messaging middleware
         self.template = None
@@ -442,6 +447,33 @@ class FormView(View):
         """
         pass
 
+    def _check_read_only_longitudinal_completion(self, patient_model):
+        if not self.read_only or not self.rdrf_context:
+            return
+
+        context_form_group = self.rdrf_context.context_form_group
+        if not context_form_group or not context_form_group.is_multiple:
+            return
+        if (
+            not context_form_group.supports_direct_linking
+            or context_form_group.forms[0].pk != self.registry_form.pk
+        ):
+            raise Http404
+
+        has_progress = self.registry_form.has_progress_indicator
+        progress = (
+            FormProgress(self.registry).get_form_progress(
+                self.registry_form, patient_model, self.rdrf_context
+            )
+            if has_progress
+            else None
+        )
+        last_completed = patient_model.get_form_timestamp(
+            self.registry_form, self.rdrf_context
+        )
+        if not is_form_complete(progress, last_completed, has_progress):
+            raise Http404
+
     def get(self, request, registry_code, form_id, patient_id, context_id=None):
         xray_recorder.begin_subsegment("formview_get")
         xray_recorder.begin_subsegment("auth")
@@ -482,7 +514,11 @@ class FormView(View):
                 )
             )
 
-        self.registry_form = self.get_registry_form(form_id)
+        self.registry_form = (
+            get_object_or_404(RegistryForm, registry=self.registry, pk=form_id)
+            if self.read_only
+            else self.get_registry_form(form_id)
+        )
         form_permission = self.user.get_form_permission(self.registry_form)
         if not form_permission.can_view():
             if form_permission == UserFormPermission.FORM_NOT_TRANSLATED:
@@ -496,13 +532,15 @@ class FormView(View):
 
         xray_recorder.begin_subsegment("contexts")
         self.rdrf_context_manager = RDRFContextManager(self.registry)
-        self.rdrf_context_manager.get_or_create_default_context(patient_model)
+        if not self.read_only:
+            self.rdrf_context_manager.get_or_create_default_context(patient_model)
 
         try:
             if not self.CREATE_MODE:
                 self.set_rdrf_context(patient_model, context_id)
         except RDRFContextSwitchError:
             return HttpResponseRedirect("/")
+        self._check_read_only_longitudinal_completion(patient_model)
         xray_recorder.end_subsegment()
 
         xray_recorder.begin_subsegment("data")
@@ -549,6 +587,7 @@ class FormView(View):
             user=request.user,
             patient_model=patient_model,
             changes_since_version=changes_since_version,
+            read_only=self.read_only,
         )
         context["location"] = location_name(
             self.registry_form, self.rdrf_context
@@ -589,6 +628,21 @@ class FormView(View):
         context["cancel_link"] = parent_dashboard_url(
             request.user, registry_code
         )
+        if self.read_only:
+            referer = request.META.get("HTTP_REFERER", "")
+            saved_responses_url = reverse(
+                "parent_saved_responses",
+                kwargs={"registry_code": registry_code},
+            )
+            context["back_link"] = (
+                referer
+                if url_has_allowed_host_and_scheme(
+                    referer,
+                    allowed_hosts={request.get_host()},
+                    require_https=request.is_secure(),
+                )
+                else f"{saved_responses_url}?{urlencode({'patient_id': patient_id})}"
+            )
         context["context_launcher"] = context_launcher.html
 
         if request.user.is_parent:
@@ -610,7 +664,7 @@ class FormView(View):
                     "context_id": context_id,
                 },
             )
-            if context_id != "add"
+            if context_id != "add" and not self.read_only
             else ""
         )
 
@@ -1325,6 +1379,18 @@ class FormView(View):
         for s in remove_sections:
             sections.remove(s)
 
+        if self.read_only:
+            for section_form in form_section.values():
+                section_forms = getattr(section_form, "forms", [section_form])
+                for form in section_forms:
+                    for bound_field in form:
+                        widget = bound_field.field.widget
+                        widget._rdrf_read_only = True
+                        if widget.input_type in ("text", "number", "textarea"):
+                            widget.attrs["readonly"] = "readonly"
+                        elif widget.input_type != "hidden":
+                            widget.attrs["disabled"] = "disabled"
+
         context = {
             "CREATE_MODE": self.CREATE_MODE,
             "old_style_demographics": self.registry.code != "fkrp",
@@ -1434,6 +1500,9 @@ class FormView(View):
 
     # fixme: could replace with TemplateView.get_template_names()
     def _get_template(self):
+        if self.read_only:
+            return "rdrf_cdes/form.html"
+
         if (
             self.user
             and self.user.is_readonly(self.registry_form)
@@ -1442,6 +1511,16 @@ class FormView(View):
             return "rdrf_cdes/form_readonly.html"
 
         return "rdrf_cdes/form.html"
+
+
+class ReadOnlyFormView(FormView):
+    read_only = True
+
+    def post(self, request, *args, **kwargs):
+        return HttpResponseNotAllowed(["GET"])
+
+    def delete(self, request, *args, **kwargs):
+        return HttpResponseNotAllowed(["GET"])
 
 
 class FormListView(TemplateView):
@@ -1528,6 +1607,55 @@ class FormFieldHistoryView(TemplateView):
                 "history": history,
             }
         )
+        return context
+
+
+class ReadOnlyFormFieldHistoryView(FormFieldHistoryView):
+    def get(self, request, **kwargs):
+        if request.user.is_working_group_staff:
+            raise PermissionDenied()
+
+        patient = get_object_or_permission_denied(
+            Patient, pk=kwargs.get("patient_id")
+        )
+        security_check_user_patient(request.user, patient)
+        registry = get_object_or_404(Registry, code=kwargs["registry_code"])
+        registry_form = get_object_or_404(
+            RegistryForm, registry=registry, pk=kwargs["form_id"]
+        )
+        if not request.user.get_form_permission(registry_form).can_view():
+            raise PermissionDenied()
+        if not consent_check(registry, request.user, patient, "see_patient"):
+            messages.error(request, _("Patient consent must be recorded"))
+            return HttpResponseRedirect(
+                reverse(
+                    "consent_form_view",
+                    kwargs={
+                        "registry_code": registry.code,
+                        "patient_id": patient.pk,
+                    },
+                )
+            )
+        if not registry_form.applicable_to(patient):
+            raise Http404
+
+        rdrf_context = get_object_or_404(
+            RDRFContext.objects.get_for_patient(patient, registry),
+            pk=kwargs["context_id"],
+        )
+        section = DataDefinitions(registry_form).sections_by_code.get(
+            kwargs["section_code"]
+        )
+        if not section or kwargs["cde_code"] not in section.get_elements():
+            raise Http404
+        if kwargs.get("formset_index") is not None and not section.allow_multiple:
+            raise Http404
+
+        return super().get(request, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["read_only"] = True
         return context
 
 

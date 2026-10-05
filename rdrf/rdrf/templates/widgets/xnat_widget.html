@@ -1,6 +1,7 @@
 {% load i18n %}
 
 <script type="text/javascript">
+  {% if not read_only %}
   $(document).ready(function() {
 
     {% if '__prefix__' in id %}
@@ -28,6 +29,7 @@
     {% endif %}
 
   });
+  {% endif %}
 
 </script>
 
@@ -37,21 +39,26 @@
     <div class="mb-3 row">
       <label for="id_{{ id }}_project_id" class="col-sm-2 col-form-label">{% trans "Project ID" %}</label>
       <div class="col-sm-10">
+        {% if read_only %}<output id="id_{{ id }}_project_id">{{ project_id|default:"" }}</output>{% else %}
         <input id="id_{{ id }}_project_id" type="text" />
+        {% endif %}
       </div>
     </div>
     <div class="mb-3 row">
       <label for="id_{{ id }}_subject_id" class="col-sm-2 col-form-label">{% trans "Subject ID" %}</label>
       <div class="col-sm-10">
+        {% if read_only %}<output id="id_{{ id }}_subject_id">{{ subject_id|default:"" }}</output>{% else %}
         <input id="id_{{ id }}_subject_id" type="text" />
+        {% endif %}
       </div>
     </div>
     <input type="hidden" id="id_{{ id }}" name="{{ id }}"
            {% if value %}
               value="{{ value }}"
            {% endif %}
+          {% if read_only %}disabled="disabled"{% endif %}
     >
-    <div class="offset-2">
+    {% if not read_only %}<div class="offset-2">
       {% if consent_check and xnat_enabled %}
         <button data-xnat="trigger_lookup" type="button" class="btn btn-outline-secondary">{% trans "Load" %}</button>
       {% else %}
@@ -64,6 +71,7 @@
         </p>
       {% endif %}
     </div>
+    {% endif %}
   </fieldset>
 
 {% if consent_check and xnat_enabled %}

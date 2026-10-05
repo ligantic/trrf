@@ -161,12 +161,12 @@
                                 {% endblock %}
                                 {% block page_header_summary %}
                                 {% endblock %}
-                                {% if header %}
+                                {% if header and not read_only %}
                                 {% autoescape off %}
                                     {{ header }}
                                 {% endautoescape %}
                                 {% endif %}
-                                {% if has_previous_data %}
+                                {% if has_previous_data and not read_only %}
                                     <div class="btn-group">
                                         <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                             {% trans "View Changes Since" %}
