@@ -1,5 +1,7 @@
 import uuid
 from datetime import datetime
+from datetime import timedelta
+from unittest.mock import patch
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
@@ -15,6 +17,7 @@ from rdrf.models.definition.models import (
     ConsentQuestion,
     ConsentSection,
     ContextFormGroup,
+    LongitudinalFollowup,
     RDRFContext,
     Registry,
     RegistryDashboard,
@@ -557,6 +560,183 @@ class ParentDashboardTest(RDRFTestCase):
         }
         self.assertDictEqual(
             parent_dashboard._get_module_progress(), expected_module_progress
+        )
+
+    def test_get_saved_responses_orders_and_filters_contexts(self):
+        cfg1 = ContextFormGroup.objects.create(
+            registry=self.registry, code="HISTORY_1", context_type="M"
+        )
+        cfg2 = ContextFormGroup.objects.create(
+            registry=self.registry, code="HISTORY_2", context_type="M"
+        )
+        multi_form_cfg = ContextFormGroup.objects.create(
+            registry=self.registry, code="HISTORY_MULTI", context_type="M"
+        )
+        Section.objects.create(
+            code="HISTORY_SECTION",
+            abbreviated_name="History Section",
+            elements="",
+        )
+        form1 = RegistryForm.objects.create(
+            id=71,
+            name="HistoryForm1",
+            registry=self.registry,
+            abbreviated_name="History Form 1",
+            sections="HISTORY_SECTION",
+            position=1,
+        )
+        form2 = RegistryForm.objects.create(
+            id=72,
+            name="HistoryForm2",
+            registry=self.registry,
+            abbreviated_name="History Form 2",
+            sections="HISTORY_SECTION",
+            position=2,
+        )
+        multi_form1 = RegistryForm.objects.create(
+            id=73,
+            name="HistoryMultiForm1",
+            registry=self.registry,
+            abbreviated_name="History Multi Form 1",
+            sections="HISTORY_SECTION",
+            position=3,
+        )
+        multi_form2 = RegistryForm.objects.create(
+            id=74,
+            name="HistoryMultiForm2",
+            registry=self.registry,
+            abbreviated_name="History Multi Form 2",
+            sections="HISTORY_SECTION",
+            position=4,
+        )
+        cfg1.items.create(registry_form=form1)
+        cfg2.items.create(registry_form=form2)
+        multi_form_cfg.items.create(registry_form=multi_form1)
+        multi_form_cfg.items.create(registry_form=multi_form2)
+
+        patient = create_valid_patient(id=91, registry=self.registry)
+        other_patient = create_valid_patient(id=92, registry=self.registry)
+        contexts = {
+            701: self._create_patient_context(patient, cfg1, id=701),
+            702: self._create_patient_context(patient, cfg2, id=702),
+            703: self._create_patient_context(patient, cfg1, id=703),
+            704: self._create_patient_context(patient, cfg1, id=704),
+            705: self._create_patient_context(patient, multi_form_cfg, id=705),
+            706: RDRFContext.objects.create(
+                registry=self.registry,
+                context_form_group=cfg1,
+                object_id=patient.id,
+                content_type=ContentType.objects.get_for_model(patient),
+                active=False,
+            ),
+            707: self._create_patient_context(other_patient, cfg1, id=707),
+        }
+
+        def save_timestamp(context, form, timestamp, patient_model=patient):
+            ClinicalData.objects.create(
+                registry_code=self.registry.code,
+                django_id=patient_model.id,
+                django_model="Patient",
+                collection="cdes",
+                context_id=context.id,
+                data={form.name + "_timestamp": timestamp},
+            )
+
+        save_timestamp(contexts[701], form1, "2026-01-01 12:00:00")
+        # Match the existing dynamic-data reader: the first active record wins.
+        save_timestamp(contexts[701], form1, "2099-01-01 12:00:00")
+        save_timestamp(contexts[702], form2, "2026-01-01 12:00:00")
+        save_timestamp(contexts[703], form1, "2026-01-02 12:00:00")
+        save_timestamp(contexts[704], form1, "not-a-timestamp")
+        save_timestamp(contexts[705], multi_form1, "2026-01-03 12:00:00")
+        save_timestamp(contexts[706], form1, "2026-01-04 12:00:00")
+        save_timestamp(
+            contexts[707], form1, "2026-01-05 12:00:00", other_patient
+        )
+        ClinicalData.objects.create(
+            registry_code=self.registry.code,
+            django_id=patient.id,
+            django_model="Patient",
+            collection="cdes",
+            context_id=contexts[703].id,
+            active=False,
+            data={"HistoryForm1_timestamp": "2027-01-01 12:00:00"},
+        )
+
+        parent_dashboard = ParentDashboard(
+            self._request(), self.dashboard, patient
+        )
+
+        rows = parent_dashboard._get_saved_responses()
+
+        self.assertEqual(
+            [(row["context"].id, row["form"]) for row in rows],
+            [(703, form1), (702, form2), (701, form1)],
+        )
+
+        with patch.object(
+            parent_dashboard._request.user, "has_perm", return_value=False
+        ):
+            self.assertEqual(parent_dashboard._get_saved_responses(), [])
+
+        with patch.object(
+            parent_dashboard._request.user, "can_view", return_value=False
+        ):
+            self.assertEqual(parent_dashboard._get_saved_responses(), [])
+
+        with patch.object(
+            RegistryForm,
+            "applicable_to",
+            autospec=True,
+            side_effect=lambda candidate, patient: candidate.id == form2.id,
+        ):
+            applicable_rows = parent_dashboard._get_saved_responses()
+        self.assertEqual([row["form"] for row in applicable_rows], [form2])
+
+    def test_due_module_link_keeps_latest_context(self):
+        cfg = ContextFormGroup.objects.create(
+            registry=self.registry, code="DUE_HISTORY", context_type="M"
+        )
+        section = Section.objects.create(
+            code="DUE_SECTION", abbreviated_name="Due Section", elements=""
+        )
+        form = RegistryForm.objects.create(
+            id=75,
+            name="DueHistoryForm",
+            registry=self.registry,
+            abbreviated_name="Due History Form",
+            sections=section.code,
+            position=1,
+        )
+        cfg.items.create(registry_form=form)
+        patient = create_valid_patient(id=93, registry=self.registry)
+        older_context = self._create_patient_context(patient, cfg, id=750)
+        latest_context = self._create_patient_context(patient, cfg, id=751)
+        for context in (older_context, latest_context):
+            ClinicalData.objects.create(
+                registry_code=self.registry.code,
+                django_id=patient.id,
+                django_model="Patient",
+                collection="cdes",
+                context_id=context.id,
+                data={
+                    form.name + "_timestamp": "2020-01-01 12:00:00"
+                },
+            )
+        LongitudinalFollowup.objects.create(
+            name="Due history followup",
+            context_form_group=cfg,
+            frequency=timedelta(days=1),
+            debounce=None,
+        )
+
+        progress = ParentDashboard(
+            self._request(), self.dashboard, patient
+        )._get_module_progress()
+
+        self.assertEqual(
+            progress["multi"][cfg][form]["link"],
+            form.get_link(patient, latest_context),
         )
 
     def test_get_cde_data(self):

@@ -9,8 +9,11 @@ Covers the participant-context contract from planning/capabilities/PROPOSALS.md 
 """
 
 import uuid
+from datetime import datetime, timedelta
 from unittest.mock import patch
 
+from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from django.urls import reverse
 from registry.groups import GROUPS as RDRF_GROUPS
@@ -18,7 +21,15 @@ from registry.groups.models import CustomUser
 from registry.patients.models import ParentGuardian, Patient
 
 from rdrf.helpers.utils import is_authorised
-from rdrf.models.definition.models import Registry, RegistryDashboard
+from rdrf.models.definition.models import (
+    ClinicalData,
+    ContextFormGroup,
+    RDRFContext,
+    Registry,
+    RegistryDashboard,
+    RegistryForm,
+    Section,
+)
 
 AUTH_BACKEND = "django.contrib.auth.backends.ModelBackend"
 
@@ -67,12 +78,60 @@ class ParentDashboardCaregiverAccessTest(TestCase):
         self.dashboard_url = reverse(
             "parent_dashboard", args=[self.registry.code]
         )
+        self.saved_responses_url = reverse(
+            "parent_saved_responses", args=[self.registry.code]
+        )
         self.session_key = f"selected_patient_{self.registry.code}"
 
         self.client.force_login(self.user, backend=AUTH_BACKEND)
 
     def _dashboard_patient(self, response):
         return response.context["dashboard"]["patient"]
+
+    def _grant_module_view_permission(self):
+        permission = Permission.objects.get(codename="can_see_data_modules")
+        parent_group = self.user.groups.get(name=RDRF_GROUPS.PARENT)
+        parent_group.permissions.add(permission)
+
+    def _create_saved_responses(self, patient, count):
+        section = Section.objects.create(
+            code="HISTORY_SECTION",
+            abbreviated_name="History Section",
+            elements="",
+        )
+        form = RegistryForm.objects.create(
+            name="HistoryForm",
+            registry=self.registry,
+            abbreviated_name="History Form",
+            sections=section.code,
+            position=1,
+        )
+        cfg = ContextFormGroup.objects.create(
+            registry=self.registry,
+            code="HISTORY",
+            context_type="M",
+        )
+        cfg.items.create(registry_form=form)
+        content_type = ContentType.objects.get_for_model(patient)
+        contexts = []
+        for index in range(count):
+            context = RDRFContext.objects.create(
+                registry=self.registry,
+                context_form_group=cfg,
+                object_id=patient.id,
+                content_type=content_type,
+            )
+            saved_at = datetime(2026, 1, 1) + timedelta(days=index)
+            ClinicalData.objects.create(
+                registry_code=self.registry.code,
+                django_id=patient.id,
+                django_model="Patient",
+                collection="cdes",
+                context_id=context.id,
+                data={form.name + "_timestamp": saved_at.isoformat()},
+            )
+            contexts.append(context)
+        return form, contexts
 
     def test_linked_patient_returns_200(self):
         response = self.client.get(
@@ -99,6 +158,105 @@ class ParentDashboardCaregiverAccessTest(TestCase):
         consent_check.assert_called_once_with(
             self.registry, self.user, self.child_a, "see_patient"
         )
+
+    def test_saved_responses_requires_module_view_permission(self):
+        response = self.client.get(self.saved_responses_url)
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_saved_responses_redirects_when_consent_check_fails(self):
+        self._grant_module_view_permission()
+        with patch(
+            "rdrf.views.dashboard_view.consent_check", return_value=False
+        ):
+            response = self.client.get(self.saved_responses_url)
+
+        self.assertRedirects(
+            response,
+            reverse(
+                "consent_form_view", args=[self.registry.code, self.child_a.id]
+            ),
+            fetch_redirect_response=False,
+        )
+
+    def test_saved_responses_rejects_invalid_consent_status(self):
+        self._grant_module_view_permission()
+        with patch(
+            "rdrf.views.dashboard_view.consent_status_for_patient",
+            return_value=False,
+        ):
+            response = self.client.get(self.saved_responses_url)
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_saved_responses_patient_selection_and_isolation(self):
+        self._grant_module_view_permission()
+
+        response = self.client.get(
+            self.saved_responses_url, {"patient_id": self.child_b.id}
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["patient"], self.child_b)
+        self.assertContains(response, "No saved responses yet.")
+        self.assertContains(response, "rdrf-segmented__option--active")
+        self.assertContains(response, 'aria-current="page"')
+        self.assertEqual(
+            self.client.session.get(self.session_key), self.child_b.id
+        )
+
+        response = self.client.get(
+            self.saved_responses_url,
+            {"patient_id": self.unlinked_patient.id},
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_saved_responses_missing_patient_returns_404(self):
+        self._grant_module_view_permission()
+        nonexistent_id = Patient.objects.latest("id").id + 1000
+
+        response = self.client.get(
+            self.saved_responses_url, {"patient_id": nonexistent_id}
+        )
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_dashboard_links_to_saved_responses_when_longitudinal_forms_exist(
+        self,
+    ):
+        self._grant_module_view_permission()
+        self._create_saved_responses(self.child_a, 1)
+
+        response = self.client.get(self.dashboard_url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Saved responses")
+        self.assertContains(
+            response,
+            f"{self.saved_responses_url}?patient_id={self.child_a.id}",
+        )
+
+    def test_saved_responses_paginate_and_link_to_each_context(self):
+        self._grant_module_view_permission()
+        form, contexts = self._create_saved_responses(self.child_a, 21)
+
+        first_page = self.client.get(self.saved_responses_url)
+        self.assertEqual(first_page.status_code, 200)
+        self.assertEqual(first_page.context["page_obj"].paginator.count, 21)
+        self.assertEqual(len(first_page.context["page_obj"].object_list), 20)
+        self.assertEqual(
+            first_page.context["page_obj"].object_list[0]["url"],
+            form.get_link(self.child_a, contexts[-1]),
+        )
+
+        second_page = self.client.get(self.saved_responses_url, {"page": 2})
+        self.assertEqual(second_page.status_code, 200)
+        self.assertEqual(len(second_page.context["page_obj"].object_list), 1)
+        self.assertEqual(
+            second_page.context["page_obj"].object_list[0]["url"],
+            form.get_link(self.child_a, contexts[0]),
+        )
+        self.assertContains(second_page, f"patient_id={self.child_a.id}")
 
     def test_existing_unlinked_patient_returns_403(self):
         response = self.client.get(

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<main class="container py-4">
+  <nav aria-label="{% trans 'Breadcrumb' %}">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item">
+        <a href="{% url 'parent_dashboard' registry.code %}?patient_id={{ patient.id }}{% if parent_id %}&amp;parent_id={{ parent_id }}{% endif %}">{% trans "Dashboard" %}</a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">{% trans "Saved responses" %}</li>
+    </ol>
+  </nav>
+
+  <header class="mb-4">
+    <h1 class="h2">{% trans "Saved responses" %}</h1>
+    {% if patient %}<p class="text-muted mb-0">{{ patient }}</p>{% endif %}
+  </header>
+
+  {% if patients|length > 1 %}
+  <nav class="rdrf-segmented d-print-none mb-4" aria-label="{% trans 'Switch participant' %}">
+    {% for tab_patient in patients %}
+      <a class="rdrf-segmented__option{% if tab_patient == patient %} rdrf-segmented__option--active{% endif %}"
+         href="{% url 'parent_saved_responses' registry.code %}?patient_id={{ tab_patient.id }}{% if parent_id %}&amp;parent_id={{ parent_id }}{% endif %}"
+         {% if tab_patient == patient %}aria-current="page"{% endif %}>{{ tab_patient }}</a>
+    {% endfor %}
+  </nav>
+  {% endif %}
+
+  {% if page_obj.object_list %}
+  <div class="table-responsive">
+    <table class="table table-sm align-middle">
+      <thead>
+        <tr>
+          <th scope="col">{% trans "Module" %}</th>
+          <th scope="col">{% trans "Saved" %}</th>
+          <th scope="col"><span class="visually-hidden">{% trans "Action" %}</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for response in page_obj %}
+        <tr>
+          <th scope="row">{% trans response.form.nice_name %}</th>
+          <td>{{ response.saved_at|date:"DATE_FORMAT" }}</td>
+          <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{{ response.url }}">{% trans "Open" %}</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p>{% trans "No saved responses yet." %}</p>
+  {% endif %}
+
+  {% if page_obj.paginator.num_pages > 1 %}
+  <nav aria-label="{% trans 'Saved response pages' %}">
+    <ul class="pagination justify-content-center">
+      {% if page_obj.has_previous %}
+      <li class="page-item">
+        <a class="page-link" aria-label="{% trans 'Previous page' %}" href="{% url 'parent_saved_responses' registry.code %}?page={{ page_obj.previous_page_number }}&amp;patient_id={{ patient.id }}{% if parent_id %}&amp;parent_id={{ parent_id }}{% endif %}">{% trans "Previous" %}</a>
+      </li>
+      {% endif %}
+      {% for page_number in page_obj.paginator.page_range %}
+      <li class="page-item{% if page_number == page_obj.number %} active{% endif %}">
+        {% if page_number == page_obj.number %}
+          <span class="page-link" aria-current="page">{{ page_number }}</span>
+        {% else %}
+          <a class="page-link" href="{% url 'parent_saved_responses' registry.code %}?page={{ page_number }}&amp;patient_id={{ patient.id }}{% if parent_id %}&amp;parent_id={{ parent_id }}{% endif %}">{{ page_number }}</a>
+        {% endif %}
+      </li>
+      {% endfor %}
+      {% if page_obj.has_next %}
+      <li class="page-item">
+        <a class="page-link" aria-label="{% trans 'Next page' %}" href="{% url 'parent_saved_responses' registry.code %}?page={{ page_obj.next_page_number }}&amp;patient_id={{ patient.id }}{% if parent_id %}&amp;parent_id={{ parent_id }}{% endif %}">{% trans "Next" %}</a>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+</main>
+{% endblock %}

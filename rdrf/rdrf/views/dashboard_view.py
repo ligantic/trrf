@@ -1,9 +1,11 @@
 import logging
 import re
 from collections import defaultdict
+from datetime import timezone as datetime_timezone
 
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
+from django.core.paginator import Paginator
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -26,6 +28,7 @@ from rdrf.helpers.dashboard_status import cadence_label, module_status
 from rdrf.helpers.registry_features import RegistryFeatures
 from rdrf.helpers.utils import consent_check, consent_status_for_patient
 from rdrf.models.definition.models import (
+    ClinicalData,
     ConsentQuestion,
     ContextFormGroup,
     LongitudinalFollowup,
@@ -81,6 +84,75 @@ class ParentDashboard(object):
             return self.patient.default_context(self.registry)
 
         return None
+
+    def _get_saved_responses(self):
+        user = self._request.user
+        if not self.patient or not user.has_perm("patients.can_see_data_modules"):
+            return []
+
+        forms_by_group = {}
+        for context_form_group in ContextFormGroup.objects.filter(
+            registry=self.registry
+        ):
+            if not (
+                context_form_group.is_multiple
+                and context_form_group.supports_direct_linking
+            ):
+                continue
+
+            form = context_form_group.forms[0]
+            if user.can_view(form) and form.applicable_to(self.patient):
+                forms_by_group[context_form_group.id] = form
+
+        contexts = list(
+            RDRFContext.objects.get_for_patient(self.patient, self.registry)
+            .filter(context_form_group_id__in=forms_by_group)
+            .select_related("context_form_group")
+        )
+        if not contexts:
+            return []
+
+        context_by_id = {context.id: context for context in contexts}
+        data_by_context = {}
+        records = (
+            ClinicalData.objects.collection(self.registry.code, "cdes")
+            .find(self.patient)
+            .filter(context_id__in=context_by_id)
+            .order_by("pk")
+        )
+        for record in records:
+            data_by_context.setdefault(record.context_id, record.data)
+
+        rows = []
+        for context_id, data in data_by_context.items():
+            context = context_by_id[context_id]
+            form = forms_by_group[context.context_form_group_id]
+            try:
+                saved_at = parse_datetime(data.get(form.name + "_timestamp"))
+            except (TypeError, ValueError):
+                continue
+            if saved_at is None:
+                continue
+
+            rows.append(
+                {
+                    "form": form,
+                    "context": context,
+                    "saved_at": saved_at,
+                    "url": form.get_link(self.patient, context),
+                }
+            )
+
+        def sort_key(row):
+            saved_at = row["saved_at"]
+            comparable_time = (
+                saved_at.replace(tzinfo=datetime_timezone.utc)
+                if timezone.is_naive(saved_at)
+                else saved_at.astimezone(datetime_timezone.utc)
+            )
+            return comparable_time, row["context"].id
+
+        return sorted(rows, key=sort_key, reverse=True)
 
     def _get_form_link(self, context_form_group, registry_form, context=None):
         if not context:
@@ -515,10 +587,7 @@ class ParentDashboardView(BaseDashboardView):
             None,
         )
 
-    def get(self, request, registry_code):
-        dashboard = get_object_or_404(
-            RegistryDashboard, registry=self.registry)
-
+    def _resolve_patient(self, request):
         patients = [
             patient
             for patient in self.parent.children
@@ -544,7 +613,7 @@ class ParentDashboardView(BaseDashboardView):
         if patient and not consent_check(
             self.registry, request.user, patient, "see_patient"
         ):
-            return redirect(
+            consent_redirect = redirect(
                 reverse(
                     "consent_form_view",
                     kwargs={
@@ -553,14 +622,65 @@ class ParentDashboardView(BaseDashboardView):
                     },
                 )
             )
+            return patients, patient, consent_redirect
+
+        return patients, patient, None
+
+    def get(self, request, registry_code):
+        dashboard = get_object_or_404(
+            RegistryDashboard, registry=self.registry)
+        patients, patient, response = self._resolve_patient(request)
+        if response:
+            return response
 
         context = {
             "parent": self.parent,
             "patients": patients,
             "registry_code": self.registry.code,
+            "parent_id": request.GET.get("parent_id"),
             "dashboard": ParentDashboard(
                 request, dashboard, patient
             ).template(),
         }
 
         return render(request, "dashboard/parent_dashboard.html", context)
+
+
+class ParentSavedResponsesView(ParentDashboardView):
+    page_size = 20
+
+    def get(self, request, registry_code):
+        dashboard = get_object_or_404(
+            RegistryDashboard, registry=self.registry
+        )
+        patients, patient, response = self._resolve_patient(request)
+        if response:
+            return response
+
+        if not request.user.has_perm("patients.can_see_data_modules"):
+            raise PermissionDenied
+        if patient and not consent_status_for_patient(
+            self.registry.code, patient
+        ):
+            raise PermissionDenied
+
+        rows = (
+            ParentDashboard(request, dashboard, patient)._get_saved_responses()
+            if patient
+            else []
+        )
+        page_obj = Paginator(rows, self.page_size).get_page(
+            request.GET.get("page")
+        )
+        return render(
+            request,
+            "dashboard/saved_responses.html",
+            {
+                "parent": self.parent,
+                "patients": patients,
+                "registry": self.registry,
+                "patient": patient,
+                "parent_id": request.GET.get("parent_id"),
+                "page_obj": page_obj,
+            },
+        )

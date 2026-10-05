@@ -350,6 +350,11 @@ patterns += [
         name="registry",
     ),
     re_path(
+        r"^(?P<registry_code>\w+)/dashboard/saved-responses/?$",
+        dashboard_view.ParentSavedResponsesView.as_view(),
+        name="parent_saved_responses",
+    ),
+    re_path(
         r"^(?P<registry_code>\w+)/dashboard/?$",
         dashboard_view.ParentDashboardView.as_view(),
         name="parent_dashboard",
