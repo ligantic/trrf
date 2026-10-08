@@ -9,7 +9,7 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 from django.views.generic.base import View
 from registry.patients.models import Patient
-from report.schema import create_dynamic_schema, to_camel_case
+from report.schema import to_camel_case
 
 from rdrf.db.contexts_api import RDRFContextManager
 from rdrf.forms.progress.form_progress import FormProgress
@@ -21,6 +21,7 @@ from rdrf.patients.query_data import (
     build_patient_filters,
     build_patients_query,
     build_search_item,
+    execute_query,
     get_all_patients,
     query_patient_facets,
 )
@@ -245,13 +246,11 @@ class PatientsListingView(View):
             registry, ["total", patient_query], query_input, operation_input
         )
 
-        schema = create_dynamic_schema()
-
-        result_all = schema.execute(
-            build_all_patients_query(registry, ["total"]), context_value=request
+        result_all = execute_query(
+            request, build_all_patients_query(registry, ["total"])
         )
-        result_filtered = schema.execute(
-            all_patients_query, variable_values=variables, context_value=request
+        result_filtered = execute_query(
+            request, all_patients_query, variable_values=variables
         )
 
         return get_all_patients(result_all, registry).get(

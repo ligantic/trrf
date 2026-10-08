@@ -1,8 +1,61 @@
+from types import SimpleNamespace
+from unittest.mock import patch
+
+from django.test import SimpleTestCase
+from graphql import ExecutionResult, GraphQLError
+
 from rdrf.helpers.registry_features import RegistryFeatures
 from rdrf.models.definition.models import Registry
 from rdrf.patients.patient_columns import ColumnFullName
 from rdrf.patients.patient_list_configuration import PatientListConfiguration
+from rdrf.patients.query_data import GraphQLResultError
 from rdrf.testing.unit.tests import RDRFTestCase
+from rdrf.views.patients_listing import PatientsListingView
+
+
+class PatientListingQueryTests(SimpleTestCase):
+    def _query(self):
+        return PatientsListingView()._query_all_patients(
+            SimpleNamespace(),
+            SimpleNamespace(code="ang"),
+            {"search": [{"text": "activ", "fields": ["givenNames", "familyName"]}]},
+            ["id"],
+            ["familyName", "givenNames"],
+            {"offset": 0, "limit": 10},
+        )
+
+    @patch("rdrf.patients.query_data.create_dynamic_schema")
+    def test_filtered_query_errors_are_not_consumed_as_patient_results(self, create_schema):
+        create_schema.return_value.execute.side_effect = [
+            ExecutionResult(data={"ang": {"allPatients": {"total": 61}}}),
+            ExecutionResult(
+                data={"ang": {"allPatients": {"patients": None, "total": None}}},
+                errors=[GraphQLError("Search resolver failed")],
+            ),
+        ]
+
+        with self.assertRaisesMessage(GraphQLResultError, "Search resolver failed"):
+            self._query()
+
+    @patch("rdrf.patients.query_data.create_dynamic_schema")
+    def test_base_query_errors_stop_execution(self, create_schema):
+        create_schema.return_value.execute.return_value = ExecutionResult(
+            data=None, errors=[GraphQLError("Total resolver failed")]
+        )
+
+        with self.assertRaisesMessage(GraphQLResultError, "Total resolver failed"):
+            self._query()
+
+        self.assertEqual(create_schema.return_value.execute.call_count, 1)
+
+    @patch("rdrf.patients.query_data.create_dynamic_schema")
+    def test_empty_search_results_preserve_counts(self, create_schema):
+        create_schema.return_value.execute.side_effect = [
+            ExecutionResult(data={"ang": {"allPatients": {"total": 61}}}),
+            ExecutionResult(data={"ang": {"allPatients": {"patients": [], "total": 0}}}),
+        ]
+
+        self.assertEqual(self._query(), (61, {"patients": [], "total": 0}))
 
 
 class PatientListTests(RDRFTestCase):
