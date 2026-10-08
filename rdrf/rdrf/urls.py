@@ -365,9 +365,9 @@ patterns += [
         name="registry",
     ),
     re_path(
-        r"^(?P<registry_code>\w+)/dashboard/saved-responses/?$",
-        dashboard_view.ParentSavedResponsesView.as_view(),
-        name="parent_saved_responses",
+        r"^(?P<registry_code>\w+)/dashboard/historical-data/?$",
+        dashboard_view.ParentHistoricalDataView.as_view(),
+        name="parent_historical_data",
     ),
     re_path(
         r"^(?P<registry_code>\w+)/dashboard/?$",
@@ -378,6 +378,11 @@ patterns += [
         r"^(?P<registry_code>\w+)/patientslisting/?$",
         patients_listing.PatientsListingView.as_view(),
         name="patient_list",
+    ),
+    re_path(
+        r"^(?P<registry_code>\w+)/patient/(?P<patient_id>\d+)/submissions/?$",
+        dashboard_view.PatientSubmissionsView.as_view(),
+        name="patient_submissions",
     ),
     re_path(
         r"^(?P<registry_code>\w+)/patient/add/?$",

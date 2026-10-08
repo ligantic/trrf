@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<main class="container py-4">
+  <nav class="rdrf-breadcrumb" aria-label="{% trans 'Breadcrumb' %}">
+    <a href="{% url 'patient_list' registry.code %}">{% trans "Patient listing" %}</a>
+    <span class="rdrf-breadcrumb__separator" aria-hidden="true">›</span>
+    <span aria-current="page">{% trans "Submissions" %}</span>
+  </nav>
+
+  <header class="mb-4">
+    <h1 class="h2">{% trans "Submissions" %}</h1>
+    <p class="text-muted mb-0">{{ patient }}</p>
+  </header>
+
+  {% if page_obj.object_list %}
+  <div class="table-responsive">
+    <table class="table table-sm align-middle">
+      <thead>
+        <tr>
+          <th scope="col">{% trans "Module" %}</th>
+          <th scope="col">{% trans "Start date" %}</th>
+          <th scope="col">{% trans "Progress" %}</th>
+          <th scope="col"><span class="visually-hidden">{% trans "Action" %}</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for submission in page_obj %}
+        <tr>
+          <th scope="row">{% trans submission.form.nice_name %}</th>
+          <td>{{ submission.started_at|date:"DATE_FORMAT" }}</td>
+          <td>
+            {% if submission.progress is not None %}
+            <div class="d-flex align-items-center gap-2">
+              <div class="rdrf-progress flex-grow-1" role="progressbar"
+                   aria-valuenow="{{ submission.progress|floatformat:'0' }}"
+                   aria-valuemin="0" aria-valuemax="100"
+                   aria-label="{% trans 'Submission completion' %}">
+                <div class="rdrf-progress__bar" style="width: {{ submission.progress|floatformat:'0' }}%;"></div>
+              </div>
+              <span>{{ submission.progress|floatformat:"0" }}%</span>
+            </div>
+            {% else %}
+            <span class="text-muted">{% trans "Not tracked" %}</span>
+            {% endif %}
+          </td>
+          <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{{ submission.url }}">{% trans "Edit" %}</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p>{% trans "No submissions yet." %}</p>
+  {% endif %}
+
+  {% if page_obj.paginator.num_pages > 1 %}
+  <nav aria-label="{% trans 'Submission pages' %}">
+    <ul class="pagination justify-content-center">
+      {% if page_obj.has_previous %}
+      <li class="page-item">
+        <a class="page-link" aria-label="{% trans 'Previous page' %}" href="?page={{ page_obj.previous_page_number }}">{% trans "Previous" %}</a>
+      </li>
+      {% endif %}
+      {% for page_number in page_obj.paginator.page_range %}
+      <li class="page-item{% if page_number == page_obj.number %} active{% endif %}">
+        {% if page_number == page_obj.number %}
+          <span class="page-link" aria-current="page">{{ page_number }}</span>
+        {% else %}
+          <a class="page-link" href="?page={{ page_number }}">{{ page_number }}</a>
+        {% endif %}
+      </li>
+      {% endfor %}
+      {% if page_obj.has_next %}
+      <li class="page-item">
+        <a class="page-link" aria-label="{% trans 'Next page' %}" href="?page={{ page_obj.next_page_number }}">{% trans "Next" %}</a>
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+</main>
+{% endblock %}

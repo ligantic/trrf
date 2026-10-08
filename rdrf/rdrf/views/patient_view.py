@@ -10,6 +10,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.html import strip_tags
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.module_loading import import_string
 from django.utils.translation import gettext as _
 from django.views.generic import CreateView
@@ -731,6 +732,27 @@ class AddPatientView(StaffMemberRequiredMixin, PatientFormMixin, CreateView):
 
 
 class PatientEditView(PatientFormMixin, View):
+    def _return_url(self, request, registry_code):
+        if request.user.is_parent:
+            return reverse("parent_dashboard", args=[registry_code])
+        candidates = [
+            request.POST.get("next"),
+            request.GET.get("next"),
+            request.META.get("HTTP_REFERER"),
+        ]
+        for url in candidates:
+            if (
+                url
+                and url_has_allowed_host_and_scheme(
+                    url,
+                    allowed_hosts={request.get_host()},
+                    require_https=request.is_secure(),
+                )
+                and not url.split("?")[0].endswith(request.path)
+            ):
+                return url
+        return reverse("landing")
+
     def get(self, request, registry_code, patient_id):
         xray_recorder.begin_subsegment("auth")
         if not request.user.is_authenticated:
@@ -814,11 +836,7 @@ class PatientEditView(PatientFormMixin, View):
 
         context["next_form_link"] = wizard.next_link
         context["previous_form_link"] = wizard.previous_link
-        context["cancel_link"] = (
-            reverse("parent_dashboard", args=[registry_code])
-            if request.user.is_parent
-            else ""
-        )
+        context["cancel_link"] = self._return_url(request, registry_code)
 
         if request.user.is_parent:
             context["parent"] = ParentGuardian.objects.filter(
@@ -905,24 +923,13 @@ class PatientEditView(PatientFormMixin, View):
         if all(valid_forms):
             xray_recorder.begin_subsegment("save")
             self.all_forms_valid(forms)
-            if request.user.is_parent:
-                messages.success(
-                    request, _("Patient's details saved successfully")
-                )
-                return HttpResponseRedirect(
-                    reverse("parent_dashboard", args=[registry_code])
-                )
-            patient, form_sections = self._get_patient_and_forms_sections(
-                patient_id, registry_code, request
+            messages.success(
+                request, _("Patient's details saved successfully")
             )
-            context = {
-                "forms": form_sections,
-                "patient": patient,
-                "context_launcher": context_launcher.html,
-                "message": _("Patient's details saved successfully"),
-                "error_messages": [],
-            }
             xray_recorder.end_subsegment()
+            return HttpResponseRedirect(
+                self._return_url(request, registry_code)
+            )
         else:
             xray_recorder.begin_subsegment("error")
             error_messages = get_error_messages(
@@ -967,11 +974,7 @@ class PatientEditView(PatientFormMixin, View):
 
         context["next_form_link"] = wizard.next_link
         context["previous_form_link"] = wizard.previous_link
-        context["cancel_link"] = (
-            reverse("parent_dashboard", args=[registry_code])
-            if request.user.is_parent
-            else ""
-        )
+        context["cancel_link"] = self._return_url(request, registry_code)
         context["patient_info"] = patient_info.html
 
         context["registry_code"] = registry_code

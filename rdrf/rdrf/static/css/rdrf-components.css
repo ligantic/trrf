@@ -1120,7 +1120,7 @@
   line-height: 20px;
   padding: var(--space-3);
   width: min(calc(100vw - 32px), 336px);
-  z-index: 1050 !important;
+  z-index: 1060 !important;
 }
 
 #ui-datepicker-div .ui-datepicker-header {

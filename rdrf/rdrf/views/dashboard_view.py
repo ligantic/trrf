@@ -25,6 +25,10 @@ from report.utils import get_graphql_result_value
 
 from rdrf.forms.progress.form_progress import FormProgress
 from rdrf.helpers.dashboard_status import (
+    STATUS_COMPLETE,
+    STATUS_DUE_NOW,
+    STATUS_IN_PROGRESS,
+    STATUS_NOT_STARTED,
     cadence_label,
     is_form_complete,
     module_status,
@@ -46,8 +50,103 @@ from rdrf.models.pro_instruments import (
     PROInstrumentStatus,
 )
 from rdrf.patients.query_data import query_patient
+from rdrf.security.security_checks import (
+    get_object_or_permission_denied,
+    security_check_user_patient,
+)
 
 logger = logging.getLogger(__name__)
+
+
+def _get_patient_form_responses(
+    request, registry, patient, include_incomplete=False, editable=False
+):
+    user = request.user
+    if not patient or not user.has_perm("patients.can_see_data_modules"):
+        return []
+
+    forms_by_group = {}
+    for context_form_group in ContextFormGroup.objects.filter(
+        registry=registry
+    ):
+        if not (
+            context_form_group.is_multiple
+            and context_form_group.supports_direct_linking
+        ):
+            continue
+
+        form = context_form_group.forms[0]
+        if user.can_view(form) and form.applicable_to(patient):
+            forms_by_group[context_form_group.id] = form
+
+    contexts = list(
+        RDRFContext.objects.get_for_patient(patient, registry)
+        .filter(context_form_group_id__in=forms_by_group)
+        .select_related("context_form_group")
+    )
+    if not contexts:
+        return []
+
+    context_by_id = {context.id: context for context in contexts}
+    data_by_context = {}
+    records = (
+        ClinicalData.objects.collection(registry.code, "cdes")
+        .find(patient)
+        .filter(context_id__in=context_by_id)
+        .order_by("pk")
+    )
+    for record in records:
+        data_by_context.setdefault(record.context_id, record.data)
+
+    rows = []
+    form_progress = FormProgress(registry)
+    route_name = "registry_form" if editable else "registry_form_view"
+    for context_id, data in data_by_context.items():
+        context = context_by_id[context_id]
+        form = forms_by_group[context.context_form_group_id]
+        try:
+            saved_at = parse_datetime(data.get(form.name + "_timestamp"))
+        except (TypeError, ValueError):
+            saved_at = None
+        if saved_at is None and not include_incomplete:
+            continue
+
+        has_progress = form.has_progress_indicator
+        progress = (
+            form_progress.get_form_progress(form, patient, context)
+            if has_progress
+            else 100 if saved_at else None
+        )
+        if not include_incomplete:
+            if not is_form_complete(progress, saved_at, has_progress):
+                continue
+
+        rows.append(
+            {
+                "form": form,
+                "context": context,
+                "saved_at": saved_at,
+                "started_at": context.created_at,
+                "progress": progress,
+                "url": reverse(
+                    route_name,
+                    args=(registry.code, form.pk, patient.pk, context.pk),
+                ),
+            }
+        )
+
+    def sort_key(row):
+        response_date = (
+            row["started_at"] if include_incomplete else row["saved_at"]
+        )
+        comparable_time = (
+            response_date.replace(tzinfo=datetime_timezone.utc)
+            if timezone.is_naive(response_date)
+            else response_date.astimezone(datetime_timezone.utc)
+        )
+        return comparable_time, row["context"].id
+
+    return sorted(rows, key=sort_key, reverse=True)
 
 
 class ParentDashboard(object):
@@ -90,90 +189,9 @@ class ParentDashboard(object):
         return None
 
     def _get_saved_responses(self):
-        user = self._request.user
-        if not self.patient or not user.has_perm("patients.can_see_data_modules"):
-            return []
-
-        forms_by_group = {}
-        for context_form_group in ContextFormGroup.objects.filter(
-            registry=self.registry
-        ):
-            if not (
-                context_form_group.is_multiple
-                and context_form_group.supports_direct_linking
-            ):
-                continue
-
-            form = context_form_group.forms[0]
-            if user.can_view(form) and form.applicable_to(self.patient):
-                forms_by_group[context_form_group.id] = form
-
-        contexts = list(
-            RDRFContext.objects.get_for_patient(self.patient, self.registry)
-            .filter(context_form_group_id__in=forms_by_group)
-            .select_related("context_form_group")
+        return _get_patient_form_responses(
+            self._request, self.registry, self.patient
         )
-        if not contexts:
-            return []
-
-        context_by_id = {context.id: context for context in contexts}
-        data_by_context = {}
-        records = (
-            ClinicalData.objects.collection(self.registry.code, "cdes")
-            .find(self.patient)
-            .filter(context_id__in=context_by_id)
-            .order_by("pk")
-        )
-        for record in records:
-            data_by_context.setdefault(record.context_id, record.data)
-
-        rows = []
-        form_progress = FormProgress(self.registry)
-        for context_id, data in data_by_context.items():
-            context = context_by_id[context_id]
-            form = forms_by_group[context.context_form_group_id]
-            try:
-                saved_at = parse_datetime(data.get(form.name + "_timestamp"))
-            except (TypeError, ValueError):
-                continue
-            if saved_at is None:
-                continue
-            has_progress = form.has_progress_indicator
-            progress = (
-                form_progress.get_form_progress(form, self.patient, context)
-                if has_progress
-                else None
-            )
-            if not is_form_complete(progress, saved_at, has_progress):
-                continue
-
-            rows.append(
-                {
-                    "form": form,
-                    "context": context,
-                    "saved_at": saved_at,
-                    "url": reverse(
-                        "registry_form_view",
-                        args=(
-                            self.registry.code,
-                            form.pk,
-                            self.patient.pk,
-                            context.pk,
-                        ),
-                    ),
-                }
-            )
-
-        def sort_key(row):
-            saved_at = row["saved_at"]
-            comparable_time = (
-                saved_at.replace(tzinfo=datetime_timezone.utc)
-                if timezone.is_naive(saved_at)
-                else saved_at.astimezone(datetime_timezone.utc)
-            )
-            return comparable_time, row["context"].id
-
-        return sorted(rows, key=sort_key, reverse=True)
 
     def _get_form_link(self, context_form_group, registry_form, context=None):
         if not context:
@@ -352,6 +370,16 @@ class ParentDashboard(object):
                 forms_progress.update({form: progress_dict})
             if key:
                 modules_progress[key].update({cfg: forms_progress})
+
+        for module_type in ("fixed", "multi"):
+            for forms_progress in modules_progress.get(module_type, {}).values():
+                for progress_dict in forms_progress.values():
+                    status = progress_dict["status"]
+                    if status in (STATUS_COMPLETE, STATUS_IN_PROGRESS):
+                        continue
+                    if status == STATUS_NOT_STARTED:
+                        progress_dict["status"] = STATUS_DUE_NOW
+                    return modules_progress
 
         return modules_progress
 
@@ -667,7 +695,7 @@ class ParentDashboardView(BaseDashboardView):
         return render(request, "dashboard/parent_dashboard.html", context)
 
 
-class ParentSavedResponsesView(ParentDashboardView):
+class ParentHistoricalDataView(ParentDashboardView):
     page_size = 20
 
     def get(self, request, registry_code):
@@ -695,13 +723,64 @@ class ParentSavedResponsesView(ParentDashboardView):
         )
         return render(
             request,
-            "dashboard/saved_responses.html",
+            "dashboard/historical_data.html",
             {
                 "parent": self.parent,
                 "patients": patients,
                 "registry": self.registry,
                 "patient": patient,
                 "parent_id": request.GET.get("parent_id"),
+                "page_obj": page_obj,
+            },
+        )
+
+
+class PatientSubmissionsView(View):
+    page_size = 20
+
+    def get(self, request, registry_code, patient_id):
+        if request.user.is_working_group_staff:
+            raise PermissionDenied
+        if not request.user.has_perm("patients.can_see_data_modules"):
+            raise PermissionDenied
+
+        registry = get_object_or_404(Registry, code=registry_code)
+        patient = get_object_or_permission_denied(Patient, pk=patient_id)
+        if not patient.in_registry(registry.code):
+            raise Http404
+        if not request.user.is_superuser and not request.user.in_registry(
+            registry
+        ):
+            raise PermissionDenied
+        security_check_user_patient(request.user, patient)
+
+        if not consent_check(registry, request.user, patient, "see_patient"):
+            return redirect(
+                reverse(
+                    "consent_form_view",
+                    kwargs={
+                        "registry_code": registry.code,
+                        "patient_id": patient.pk,
+                    },
+                )
+            )
+
+        rows = _get_patient_form_responses(
+            request,
+            registry,
+            patient,
+            include_incomplete=True,
+            editable=True,
+        )
+        page_obj = Paginator(rows, self.page_size).get_page(
+            request.GET.get("page")
+        )
+        return render(
+            request,
+            "dashboard/submissions.html",
+            {
+                "registry": registry,
+                "patient": patient,
                 "page_obj": page_obj,
             },
         )

@@ -230,7 +230,7 @@ class ClinicalFormPageTest(TestCase):
         self.assertNotContains(response, 'data-bs-target="#form_modal"')
         self.assertEqual(
             response.context["back_link"],
-            f"{reverse('parent_saved_responses', kwargs={'registry_code': self.registry.code})}?patient_id={self.patient.pk}",
+            f"{reverse('parent_historical_data', kwargs={'registry_code': self.registry.code})}?patient_id={self.patient.pk}",
         )
         get_or_create.assert_not_called()
 
@@ -297,7 +297,7 @@ class ClinicalFormPageTest(TestCase):
 
     def test_read_only_back_link_uses_only_same_origin_referers(self):
         same_origin_referer = (
-            "http://testserver/ang/dashboard/saved-responses"
+            "http://testserver/ang/dashboard/historical-data"
             f"?patient_id={self.patient.pk}"
         )
         response = self.client.get(
@@ -316,7 +316,7 @@ class ClinicalFormPageTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             response.context["back_link"],
-            f"{reverse('parent_saved_responses', kwargs={'registry_code': self.registry.code})}?patient_id={self.patient.pk}",
+            f"{reverse('parent_historical_data', kwargs={'registry_code': self.registry.code})}?patient_id={self.patient.pk}",
         )
 
     def test_read_only_route_hides_previous_submission_switcher(self):
@@ -705,6 +705,31 @@ class ClinicalFormPageTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context["parent"], parent_for_patient)
 
+    def test_parent_cannot_delete_context_from_form_page_or_endpoint(self):
+        self.user.add_group(RDRF_GROUPS.PARENT)
+        guardian = ParentGuardian.objects.create(user=self.user)
+        guardian.patient.add(self.patient)
+        context_group = ContextFormGroup.objects.create(
+            registry=self.registry,
+            context_type="M",
+            code="CAP07_PARENT_DELETE",
+            name="Parent delete test",
+            abbreviated_name="Parent delete test",
+        )
+        ContextFormGroupItem.objects.create(
+            context_form_group=context_group, registry_form=self.form
+        )
+        self.context.context_form_group = context_group
+        self.context.save(update_fields=["context_form_group"])
+
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["delete_form_url"], "")
+        self.assertNotContains(response, 'data-bs-target="#form_modal"')
+        delete_response = self.client.delete(self.url)
+        self.assertEqual(delete_response.status_code, 403)
+
     def test_section_rail_rendering_contract(self):
         content = self._get_page()
 
@@ -895,7 +920,7 @@ class ParentClinicalModuleNavigationTest(TestCase):
             self.patient, "get_form_timestamp", return_value=None
         ), patch(
             "rdrf.forms.components.FormProgress.get_form_progress",
-            return_value=100,
+            return_value=50,
         ):
             groups = self._launcher()._get_parent_context_form_groups()
 
@@ -915,7 +940,7 @@ class ParentClinicalModuleNavigationTest(TestCase):
         self.assertNotEqual(forms[0].url, self.form.get_link(self.patient, older))
         self.assertNotEqual(forms[1].url, second_form.get_link(self.patient, older))
 
-    def test_parent_empty_or_due_multiple_cfg_uses_add_link(self):
+    def test_parent_empty_multiple_cfg_is_hidden_and_due_uses_add_link(self):
         second_form = self._second_form()
         add_url, add_text = self.cfg.get_add_action(self.patient)
         with patch(
@@ -923,13 +948,7 @@ class ParentClinicalModuleNavigationTest(TestCase):
             return_value=100,
         ):
             empty_groups = self._launcher()._get_parent_context_form_groups()
-        empty_forms = empty_groups[0][1].forms
-        self.assertEqual([form.url for form in empty_forms], [add_url, add_url])
-        self.assertEqual(
-            [form.text for form in empty_forms],
-            [self.form.nice_name, second_form.nice_name],
-        )
-        self.assertNotEqual(empty_forms[0].text, add_text)
+        self.assertEqual(empty_groups, [])
 
         context = self._context(timezone.now() - timedelta(days=1))
         LongitudinalFollowup.objects.create(
@@ -953,6 +972,7 @@ class ParentClinicalModuleNavigationTest(TestCase):
             [form.text for form in due_forms],
             [self.form.nice_name, second_form.nice_name],
         )
+        self.assertNotEqual(due_forms[0].text, add_text)
         self.assertNotEqual(due_forms[0].url, self.form.get_link(self.patient, context))
 
     def test_parent_add_target_is_active_for_current_form(self):
@@ -1046,6 +1066,43 @@ class ParentClinicalModuleNavigationTest(TestCase):
             self.cfg.get_add_action(self.patient)[0],
         )
 
+    def test_parent_complete_or_unstarted_modules_are_hidden(self):
+        context = self._context(timezone.now() - timedelta(days=1))
+        for progress, timestamp in (
+            (100, timezone.now().isoformat()),
+            (0, None),
+        ):
+            with self.subTest(progress=progress), patch.object(
+                self.patient, "get_form_timestamp", return_value=timestamp
+            ), patch(
+                "rdrf.forms.components.FormProgress.get_form_progress",
+                return_value=progress,
+            ):
+                self.assertEqual(
+                    self._launcher()._get_parent_context_form_groups(), []
+                )
+                current_forms = self._launcher(
+                    self.form.name
+                )._get_parent_context_form_groups()[0][1].forms
+                self.assertEqual(len(current_forms), 1)
+                self.assertTrue(current_forms[0].current)
+
+        with patch(
+            "rdrf.forms.components.FormProgress.get_form_progress",
+            return_value=100,
+        ):
+            current_forms = RDRFContextLauncherComponent(
+                self.user,
+                self.registry,
+                self.patient,
+                current_form_name=self.form.name,
+                current_rdrf_context_model=context,
+            )._get_parent_context_form_groups()[0][1].forms
+        self.assertEqual(
+            current_forms[0].url, self.form.get_link(self.patient, context)
+        )
+        self.assertTrue(current_forms[0].current)
+
     def test_parent_groups_fixed_modules_before_multiple_modules(self):
         fixed_form = RegistryForm.objects.create(
             name="NavigationFixedModule",
@@ -1078,10 +1135,11 @@ class ParentClinicalModuleNavigationTest(TestCase):
             registry_form=excluded_fixed_form,
         )
         second_form = self._second_form()
+        self._context(timezone.now() - timedelta(days=1))
 
         with patch(
             "rdrf.forms.components.FormProgress.get_form_progress",
-            return_value=100,
+            return_value=50,
         ):
             groups = self._launcher()._get_parent_context_form_groups()
 
@@ -1095,6 +1153,14 @@ class ParentClinicalModuleNavigationTest(TestCase):
             [form.text for form in groups[1][1].forms],
             [self.form.nice_name, second_form.nice_name],
         )
+
+        with patch(
+            "rdrf.forms.components.FormProgress.get_form_progress",
+            return_value=100,
+        ):
+            self.assertEqual(
+                self._launcher()._get_parent_context_form_groups(), []
+            )
 
     def test_non_parent_multiple_cfg_keeps_instance_launcher_links(self):
         first = self._context(timezone.now() - timedelta(days=2))

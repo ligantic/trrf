@@ -531,7 +531,7 @@ class ParentDashboardTest(RDRFTestCase):
                     form3: {
                         "link": "/TEST/forms/63/9/7",
                         "progress": 0,
-                        "status": "not-started",
+                        "status": "due-now",
                     },
                 },
             },
@@ -561,6 +561,114 @@ class ParentDashboardTest(RDRFTestCase):
         self.assertDictEqual(
             parent_dashboard._get_module_progress(), expected_module_progress
         )
+
+    def test_module_priority_advances_in_display_order(self):
+        fixed_cfg = ContextFormGroup.objects.create(
+            registry=self.registry,
+            code="PRIORITY_FIXED",
+            context_type="F",
+            sort_order=1,
+        )
+        multi_cfg = ContextFormGroup.objects.create(
+            registry=self.registry,
+            code="PRIORITY_MULTI",
+            context_type="M",
+            sort_order=2,
+        )
+        cde = CommonDataElement.objects.create(
+            code="PRIORITY_CDE", abbreviated_name="Priority CDE"
+        )
+        Section.objects.create(
+            code="PRIORITY_SECTION",
+            abbreviated_name="Priority Section",
+            elements="PRIORITY_CDE",
+        )
+        forms = [
+            RegistryForm.objects.create(
+                id=form_id,
+                name=name,
+                registry=self.registry,
+                abbreviated_name=name,
+                sections="PRIORITY_SECTION",
+                position=position,
+            )
+            for form_id, name, position in (
+                (66, "PriorityFirst", 1),
+                (67, "PrioritySecond", 2),
+                (68, "PriorityLongitudinal", 1),
+            )
+        ]
+        first_form, second_form, longitudinal_form = forms
+        fixed_cfg.items.create(registry_form=first_form)
+        fixed_cfg.items.create(registry_form=second_form)
+        multi_cfg.items.create(registry_form=longitudinal_form)
+        first_form.complete_form_cdes.set([cde])
+        second_form.complete_form_cdes.set([cde])
+
+        patient = create_valid_patient(id=90, registry=self.registry)
+        self._create_patient_context(patient, fixed_cfg, id=900)
+        self._create_patient_context(patient, multi_cfg, id=901)
+        parent_dashboard = ParentDashboard(
+            self._request(), self.dashboard, patient
+        )
+        progress_by_form = {
+            first_form.name: 0,
+            second_form.name: 0,
+            longitudinal_form.name: 0,
+        }
+
+        with patch(
+            "rdrf.views.dashboard_view.FormProgress.get_form_progress",
+            side_effect=lambda form, _patient, _context: progress_by_form[
+                form.name
+            ],
+        ):
+            fresh_progress = parent_dashboard._get_module_progress()
+            self.assertEqual(
+                list(fresh_progress["fixed"][fixed_cfg]),
+                [first_form, second_form],
+            )
+            self.assertEqual(
+                [
+                    fresh_progress["fixed"][fixed_cfg][form]["status"]
+                    for form in (first_form, second_form)
+                ],
+                ["due-now", "not-started"],
+            )
+            self.assertEqual(
+                fresh_progress["multi"][multi_cfg][longitudinal_form]["status"],
+                "not-started",
+            )
+
+            progress_by_form[first_form.name] = 100
+            second_module_due = parent_dashboard._get_module_progress()
+            self.assertEqual(
+                second_module_due["fixed"][fixed_cfg][second_form]["status"],
+                "due-now",
+            )
+
+            progress_by_form[second_form.name] = 100
+            longitudinal_due = parent_dashboard._get_module_progress()
+            self.assertEqual(
+                longitudinal_due["multi"][multi_cfg][longitudinal_form]["status"],
+                "due-now",
+            )
+
+            progress_by_form[second_form.name] = 100
+            progress_by_form[first_form.name] = 20
+            next_module_after_in_progress = parent_dashboard._get_module_progress()
+            self.assertEqual(
+                next_module_after_in_progress["fixed"][fixed_cfg][first_form]["status"],
+                "in-progress",
+            )
+            self.assertEqual(
+                next_module_after_in_progress["fixed"][fixed_cfg][second_form]["status"],
+                "complete",
+            )
+            self.assertEqual(
+                next_module_after_in_progress["multi"][multi_cfg][longitudinal_form]["status"],
+                "due-now",
+            )
 
     def test_get_saved_responses_orders_and_filters_contexts(self):
         cfg1 = ContextFormGroup.objects.create(

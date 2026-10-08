@@ -37,14 +37,14 @@
                   </th>
                   <td>
                     <span class="rdrf-badge rdrf-badge--{{ form_dict.status }}">
-                      {% if form_dict.status == "complete" %}{% trans "Complete" %}{% elif form_dict.status == "in-progress" %}{% trans "In progress" %}{% else %}{% trans "Not started" %}{% endif %}
+                      {% if form_dict.status == "complete" %}{% trans "Complete" %}{% elif form_dict.status == "in-progress" %}{% trans "In progress" %}{% elif form_dict.status == "due-now" %}{% trans "Due now" %}{% else %}{% trans "Not started" %}{% endif %}
                     </span>
                   </td>
                   <td>{% trans "-" %}</td>
                   <td>{% trans "-" %}</td>
                   <td class="text-end d-print-none">
                     {% if form_dict.status != "complete" %}
-                      <a href="{{ form_dict.link }}" class="btn btn-sm btn-outline-primary">{% if form_dict.status == "not-started" %}{% trans "Start" %}{% else %}{% trans "Edit" %}{% endif %}</a>
+                      <a href="{{ form_dict.link }}" class="btn btn-sm btn-outline-primary">{% if form_dict.status == "not-started" or form_dict.status == "due-now" %}{% trans "Start" %}{% else %}{% trans "Edit" %}{% endif %}</a>
                     {% endif %}
                   </td>
                 </tr>
@@ -82,9 +82,9 @@
       </table>
     </div>
     {% if multi_module_progress.items and dashboard.patient %}
-      <p class="mt-3 mb-0 d-print-none">
-        <a href="{% url 'parent_saved_responses' dashboard.registry.code %}?patient_id={{ dashboard.patient.id }}{% if parent_id %}&amp;parent_id={{ parent_id }}{% endif %}">{% trans "Saved responses" %}</a>
-      </p>
+      <div class="d-flex justify-content-end pt-3 d-print-none">
+        <a href="{% url 'parent_historical_data' dashboard.registry.code %}?patient_id={{ dashboard.patient.id }}{% if parent_id %}&amp;parent_id={{ parent_id }}{% endif %}" class="btn btn-sm btn-outline-primary">{% trans "Historical Data" %}</a>
+      </div>
     {% endif %}
     {% endwith %}
   {% else %}

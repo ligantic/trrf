@@ -415,6 +415,7 @@
         {{ family_linkage_panel|safe }}
 
         <header class="demographics-page-header rdrf-demographics-page-header">
+            {% if request.user.is_parent %}
             <nav class="rdrf-breadcrumb demographics-breadcrumb" aria-label="{% trans 'Breadcrumb' %}">
                 <a href="{% url 'parent_dashboard' registry_code %}">{% trans 'Dashboard' %}</a>
                 <span class="rdrf-breadcrumb__separator" aria-hidden="true">›</span>
@@ -422,6 +423,7 @@
                 <span class="rdrf-breadcrumb__separator" aria-hidden="true">›</span>
                 <span aria-current="page">{% trans 'Registry' %}</span>
             </nav>
+            {% endif %}
             <h1>{% trans form_title %}</h1>
         </header>
 
@@ -459,6 +461,7 @@
         <form class="form-horizontal" method="post" id="main-form" novalidate enctype="multipart/form-data">
 
             {% csrf_token %}
+            <input type="hidden" name="next" value="{{ cancel_link }}">
 
             {% comment %}CAP-06: whole-form save/cancel at top and bottom (REQ-06-01). Per-subsection partial saves
             deferred —

@@ -147,3 +147,46 @@ class DashboardModuleStatusTest(SimpleTestCase):
         self.assertIn('href="/completed"', content)
         self.assertIn("Edit", content)
         self.assertNotIn('href="/completed-scheduled"', content)
+
+    def test_due_now_module_actions_start_the_module(self):
+        Form = namedtuple("Form", "nice_name")
+        fixed_forms = {
+            Form("Priority fixed"): {
+                "status": STATUS_DUE_NOW,
+                "link": "/start-fixed",
+            },
+            Form("Later fixed"): {
+                "status": STATUS_NOT_STARTED,
+                "link": "/start-later",
+            },
+        }
+        multi_forms = {
+            Form("Priority longitudinal"): {
+                "status": STATUS_DUE_NOW,
+                "link": "/start-longitudinal",
+            },
+            Form("In progress"): {
+                "status": STATUS_IN_PROGRESS,
+                "link": "/continue",
+            },
+        }
+        dashboard = SimpleNamespace(
+            patient_status=SimpleNamespace(
+                module_progress={
+                    "fixed": {"fixed_cfg": fixed_forms},
+                    "multi": {"multi_cfg": multi_forms},
+                }
+            )
+        )
+
+        content = get_template("dashboard/widget/module_progress.html").render(
+            {"dashboard": dashboard}
+        )
+
+        self.assertEqual(content.count("rdrf-badge--due-now"), 2)
+        self.assertEqual(content.count("Due now"), 2)
+        self.assertIn('href="/start-fixed"', content)
+        self.assertIn('href="/start-later"', content)
+        self.assertIn('href="/start-longitudinal"', content)
+        self.assertIn('href="/continue"', content)
+        self.assertIn("Continue", content)

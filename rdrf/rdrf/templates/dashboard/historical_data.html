@@ -3,17 +3,14 @@
 
 {% block content %}
 <main class="container py-4">
-  <nav aria-label="{% trans 'Breadcrumb' %}">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item">
-        <a href="{% url 'parent_dashboard' registry.code %}?patient_id={{ patient.id }}{% if parent_id %}&amp;parent_id={{ parent_id }}{% endif %}">{% trans "Dashboard" %}</a>
-      </li>
-      <li class="breadcrumb-item active" aria-current="page">{% trans "Saved responses" %}</li>
-    </ol>
+  <nav class="rdrf-breadcrumb" aria-label="{% trans 'Breadcrumb' %}">
+    <a href="{% url 'parent_dashboard' registry.code %}?patient_id={{ patient.id }}{% if parent_id %}&amp;parent_id={{ parent_id }}{% endif %}">{% trans "Dashboard" %}</a>
+    <span class="rdrf-breadcrumb__separator" aria-hidden="true">›</span>
+    <span aria-current="page">{% trans "Historical Data" %}</span>
   </nav>
 
   <header class="mb-4">
-    <h1 class="h2">{% trans "Saved responses" %}</h1>
+    <h1 class="h2">{% trans "Historical Data" %}</h1>
     {% if patient %}<p class="text-muted mb-0">{{ patient }}</p>{% endif %}
   </header>
 
@@ -21,7 +18,7 @@
   <nav class="rdrf-segmented d-print-none mb-4" aria-label="{% trans 'Switch participant' %}">
     {% for tab_patient in patients %}
       <a class="rdrf-segmented__option{% if tab_patient == patient %} rdrf-segmented__option--active{% endif %}"
-         href="{% url 'parent_saved_responses' registry.code %}?patient_id={{ tab_patient.id }}{% if parent_id %}&amp;parent_id={{ parent_id }}{% endif %}"
+         href="{% url 'parent_historical_data' registry.code %}?patient_id={{ tab_patient.id }}{% if parent_id %}&amp;parent_id={{ parent_id }}{% endif %}"
          {% if tab_patient == patient %}aria-current="page"{% endif %}>{{ tab_patient }}</a>
     {% endfor %}
   </nav>
@@ -57,7 +54,7 @@
     <ul class="pagination justify-content-center">
       {% if page_obj.has_previous %}
       <li class="page-item">
-        <a class="page-link" aria-label="{% trans 'Previous page' %}" href="{% url 'parent_saved_responses' registry.code %}?page={{ page_obj.previous_page_number }}&amp;patient_id={{ patient.id }}{% if parent_id %}&amp;parent_id={{ parent_id }}{% endif %}">{% trans "Previous" %}</a>
+        <a class="page-link" aria-label="{% trans 'Previous page' %}" href="{% url 'parent_historical_data' registry.code %}?page={{ page_obj.previous_page_number }}&amp;patient_id={{ patient.id }}{% if parent_id %}&amp;parent_id={{ parent_id }}{% endif %}">{% trans "Previous" %}</a>
       </li>
       {% endif %}
       {% for page_number in page_obj.paginator.page_range %}
@@ -65,13 +62,13 @@
         {% if page_number == page_obj.number %}
           <span class="page-link" aria-current="page">{{ page_number }}</span>
         {% else %}
-          <a class="page-link" href="{% url 'parent_saved_responses' registry.code %}?page={{ page_number }}&amp;patient_id={{ patient.id }}{% if parent_id %}&amp;parent_id={{ parent_id }}{% endif %}">{{ page_number }}</a>
+          <a class="page-link" href="{% url 'parent_historical_data' registry.code %}?page={{ page_number }}&amp;patient_id={{ patient.id }}{% if parent_id %}&amp;parent_id={{ parent_id }}{% endif %}">{{ page_number }}</a>
         {% endif %}
       </li>
       {% endfor %}
       {% if page_obj.has_next %}
       <li class="page-item">
-        <a class="page-link" aria-label="{% trans 'Next page' %}" href="{% url 'parent_saved_responses' registry.code %}?page={{ page_obj.next_page_number }}&amp;patient_id={{ patient.id }}{% if parent_id %}&amp;parent_id={{ parent_id }}{% endif %}">{% trans "Next" %}</a>
+        <a class="page-link" aria-label="{% trans 'Next page' %}" href="{% url 'parent_historical_data' registry.code %}?page={{ page_obj.next_page_number }}&amp;patient_id={{ patient.id }}{% if parent_id %}&amp;parent_id={{ parent_id }}{% endif %}">{% trans "Next" %}</a>
       </li>
       {% endif %}
     </ul>

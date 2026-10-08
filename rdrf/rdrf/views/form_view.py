@@ -386,7 +386,7 @@ class FormView(View):
     def delete(
         self, request, registry_code, form_id, patient_id, context_id=None
     ):
-        if request.user.is_working_group_staff:
+        if request.user.is_parent or request.user.is_working_group_staff:
             raise PermissionDenied()
         patient_model = get_object_or_permission_denied(Patient, pk=patient_id)
         security_check_user_patient(request.user, patient_model)
@@ -602,8 +602,8 @@ class FormView(View):
         )
         if self.read_only:
             referer = request.META.get("HTTP_REFERER", "")
-            saved_responses_url = reverse(
-                "parent_saved_responses",
+            historical_data_url = reverse(
+                "parent_historical_data",
                 kwargs={"registry_code": registry_code},
             )
             context["back_link"] = (
@@ -613,7 +613,7 @@ class FormView(View):
                     allowed_hosts={request.get_host()},
                     require_https=request.is_secure(),
                 )
-                else f"{saved_responses_url}?{urlencode({'patient_id': patient_id})}"
+                else f"{historical_data_url}?{urlencode({'patient_id': patient_id})}"
             )
         context["context_launcher"] = context_launcher.html
 
@@ -636,7 +636,11 @@ class FormView(View):
                     "context_id": context_id,
                 },
             )
-            if context_id != "add" and not self.read_only
+            if (
+                context_id != "add"
+                and not self.read_only
+                and not request.user.is_parent
+            )
             else ""
         )
 

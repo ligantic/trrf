@@ -3,6 +3,8 @@ import logging
 from django.template import Context, loader
 from django.urls import reverse
 from django.utils.formats import date_format
+from django.utils.html import format_html
+from django.utils.translation import gettext as _
 from rdrf.forms.components import FormGroupButton
 from rdrf.helpers.registry_features import RegistryFeatures
 
@@ -241,18 +243,22 @@ class ColumnContextMenu(Column):
     def _get_forms_buttons(
         self, patient, form_progress=None, context_manager=None
     ):
+        buttons = [self._get_submissions_button(patient)]
         if not self.registry_has_context_form_groups:
             # if there are no context groups -normal registry
-            return [self._get_forms_button(patient, None, self.free_forms)]
+            buttons.append(
+                self._get_forms_button(patient, None, self.free_forms)
+            )
+            return buttons
         else:
             if (
                 len(self.fixed_form_groups) == 0
                 and len(self.multiple_form_groups) == 0
             ):
-                return ["None"]
+                buttons.append("None")
+                return buttons
 
             # display one button per form group
-            buttons = []
             for fixed_form_group in self.fixed_form_groups:
                 buttons.append(
                     self._get_forms_button(
@@ -267,6 +273,19 @@ class ColumnContextMenu(Column):
                     )
                 )
             return buttons
+
+    def _get_submissions_button(self, patient):
+        return format_html(
+            '<a class="btn btn-sm btn-outline-primary d-block mb-2" href="{}">{}</a>',
+            reverse(
+                "patient_submissions",
+                kwargs={
+                    "registry_code": self.registry.code,
+                    "patient_id": patient.id,
+                },
+            ),
+            _("Submissions"),
+        )
 
     def _get_forms_button(self, patient_model, context_form_group, forms):
         button = FormGroupButton(

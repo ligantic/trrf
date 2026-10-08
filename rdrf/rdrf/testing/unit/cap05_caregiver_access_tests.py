@@ -30,6 +30,7 @@ from rdrf.models.definition.models import (
     RegistryForm,
     Section,
 )
+from rdrf.patients.patient_columns import ColumnContextMenu
 
 AUTH_BACKEND = "django.contrib.auth.backends.ModelBackend"
 
@@ -79,7 +80,7 @@ class ParentDashboardCaregiverAccessTest(TestCase):
             "parent_dashboard", args=[self.registry.code]
         )
         self.saved_responses_url = reverse(
-            "parent_saved_responses", args=[self.registry.code]
+            "parent_historical_data", args=[self.registry.code]
         )
         self.session_key = f"selected_patient_{self.registry.code}"
 
@@ -230,11 +231,122 @@ class ParentDashboardCaregiverAccessTest(TestCase):
         response = self.client.get(self.dashboard_url)
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Saved responses")
+        self.assertContains(response, "Historical Data")
         self.assertContains(
             response,
             f"{self.saved_responses_url}?patient_id={self.child_a.id}",
         )
+
+    def test_submissions_lists_all_responses_with_start_date_and_edit_link(
+        self,
+    ):
+        self._grant_module_view_permission()
+        form, contexts = self._create_saved_responses(self.child_a, 1)
+        incomplete_context = RDRFContext.objects.create(
+            registry=self.registry,
+            context_form_group=contexts[0].context_form_group,
+            object_id=self.child_a.id,
+            content_type=ContentType.objects.get_for_model(self.child_a),
+        )
+        ClinicalData.objects.create(
+            registry_code=self.registry.code,
+            django_id=self.child_a.id,
+            django_model="Patient",
+            collection="cdes",
+            context_id=incomplete_context.id,
+            data={"partial_response": True},
+        )
+        submissions_url = reverse(
+            "patient_submissions",
+            kwargs={
+                "registry_code": self.registry.code,
+                "patient_id": self.child_a.id,
+            },
+        )
+
+        response = self.client.get(submissions_url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Start date")
+        self.assertContains(response, "Progress")
+        self.assertContains(response, "100%")
+        self.assertContains(response, "Not tracked")
+        rows = response.context["page_obj"].object_list
+        self.assertEqual(
+            {row["context"].pk for row in rows},
+            {contexts[0].pk, incomplete_context.pk},
+        )
+        incomplete_row = next(
+            row for row in rows if row["context"] == incomplete_context
+        )
+        complete_row = next(
+            row for row in rows if row["context"] == contexts[0]
+        )
+        self.assertEqual(
+            incomplete_row["started_at"], incomplete_context.created_at
+        )
+        self.assertEqual(complete_row["progress"], 100)
+        self.assertIsNone(incomplete_row["progress"])
+        self.assertEqual(
+            incomplete_row["url"],
+            reverse(
+                "registry_form",
+                args=(
+                    self.registry.code,
+                    form.pk,
+                    self.child_a.pk,
+                    incomplete_context.pk,
+                ),
+            ),
+        )
+
+    def test_modules_column_links_to_patient_submissions(self):
+        self._grant_module_view_permission()
+        column = ColumnContextMenu(
+            "Modules", "patients.can_see_data_modules"
+        )
+        column.configure(self.registry, self.user, 0)
+
+        rendered = column.cell(self.child_a)
+
+        self.assertIn("Submissions", rendered)
+        self.assertIn(
+            reverse(
+                "patient_submissions",
+                kwargs={
+                    "registry_code": self.registry.code,
+                    "patient_id": self.child_a.id,
+                },
+            ),
+            rendered,
+        )
+
+    def test_submissions_rejects_patient_not_linked_to_parent(self):
+        self._grant_module_view_permission()
+        submissions_url = reverse(
+            "patient_submissions",
+            kwargs={
+                "registry_code": self.registry.code,
+                "patient_id": self.unlinked_patient.id,
+            },
+        )
+
+        response = self.client.get(submissions_url)
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_submissions_requires_module_view_permission(self):
+        submissions_url = reverse(
+            "patient_submissions",
+            kwargs={
+                "registry_code": self.registry.code,
+                "patient_id": self.child_a.id,
+            },
+        )
+
+        response = self.client.get(submissions_url)
+
+        self.assertEqual(response.status_code, 403)
 
     def test_saved_responses_paginate_and_link_to_each_context(self):
         self._grant_module_view_permission()
