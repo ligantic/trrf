@@ -1,5 +1,9 @@
 {% load array_item i18n %}
 
+{% if element.label == "Delete" %}
+{# Deletion is driven by the Remove / Undo controls, so the checkbox stays in the DOM but hidden. #}
+<div hidden data-rdrf-formset-delete>{{ element|safe }}</div>
+{% else %}
 {% if element.errors %}
 <div class="row rdrf-cde-field has-error invisibutton-container">
 {% else %}
@@ -70,3 +74,4 @@
     </div>
     {% endif %}
 </div>
+{% endif %}

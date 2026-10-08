@@ -16,6 +16,7 @@
 {% block extrastyle %}
 {{ block.super }}
 <script type="text/javascript" src="{% static 'js/form.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/formset_entries.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/form_dsl.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/calculated_field_plugin.js' %}"></script>
 <script type="text/javascript" src="{% static 'js/xnat_lookup_plugin.js' %}"></script>
@@ -78,12 +79,6 @@
         box-shadow: var(--elevation-xs);
         padding: 1rem 1.25rem;
         margin-bottom: 1rem;
-    }
-
-    /* The legacy add/remove JS appends <hr> separators between cloned
-           entries; the nested-card border replaces them visually. */
-    .rdrf-multisection-entry hr {
-        display: none;
     }
 
     .rdrf-form-progress-card {
@@ -278,7 +273,6 @@
 
         rdrfSetupFileUploads(new_form);
 
-        $("<hr>").attr("style", "border: solid 1px gray").appendTo(new_form);
         new_form.appendTo(forms).show("fast");
 
         // Duration widget setup only done here as it contains
@@ -309,15 +303,6 @@
             }
         }
 
-    }
-
-    function delete_form(form_div, prefix) {
-        var mgmt_form = $("#mgmt_" + prefix);
-        var total_forms = mgmt_form.find("input[id=id_" + prefix + "-TOTAL_FORMS]")
-        var total_forms_dec = parseInt(total_forms.val()) - 1;
-        total_forms.attr("value", total_forms_dec);
-
-        $(form_div).parent().parent().parent().remove();
     }
 
 </script>

@@ -1,0 +1,17 @@
+{% load i18n %}
+{% comment %}
+    Remove / Undo controls for one formset entry. Include inside a
+    .rdrf-multisection-entry, before its .rdrf-multisection-entry__fields.
+    Behaviour lives in js/formset_entries.js.
+{% endcomment %}
+<div class="rdrf-multisection-entry__toolbar">
+    <button type="button" class="rdrf-multisection-entry__remove btn btn-outline-danger btn-sm" data-rdrf-formset-remove>
+        <span class="fa fa-minus" aria-hidden="true"></span> {% trans "Remove" %}
+    </button>
+</div>
+<div class="rdrf-multisection-entry__removed" role="status" hidden>
+    <span>{% trans "This entry will be removed when you save." %}</span>
+    <button type="button" class="rdrf-multisection-entry__undo btn btn-outline-secondary btn-sm" data-rdrf-formset-undo>
+        <span class="fa fa-undo" aria-hidden="true"></span> {% trans "Undo" %}
+    </button>
+</div>

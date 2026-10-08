@@ -1,0 +1,17 @@
+{% load i18n %}
+{% comment %}
+    Add button for a formset. Include below the formset's #forms_<prefix> container.
+    Expects: prefix (formset prefix), section_title (display name of the section).
+    Optional: button_label (defaults to "Add").
+{% endcomment %}
+<div class="rdrf-formset-add">
+    <button type="button"
+        class="rdrf-formset-add__button btn btn-outline-primary btn-sm"
+        data-rdrf-formset-add
+        data-bs-toggle="tooltip"
+        data-bs-placement="right"
+        title="{% blocktrans with section=section_title %}Add a new entry to {{ section }}{% endblocktrans %}"
+        onclick="add_form(this, '{{ prefix }}');">
+        <span class="fa fa-plus" aria-hidden="true"></span> {% if button_label %}{{ button_label }}{% else %}{% trans "Add" %}{% endif %}
+    </button>
+</div>

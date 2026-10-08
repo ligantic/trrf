@@ -157,7 +157,7 @@
             line-height: 1.286;
         }
 
-        #main-form .rdrf-consent-upload > .card-header .btn {
+        #main-form .rdrf-consent-upload .rdrf-formset-add__button {
             background-color: var(--color-accent);
             border-color: rgba(155, 155, 155, .1);
             border-radius: var(--radius-md);
@@ -201,14 +201,14 @@
             width: auto;
         }
 
-        #main-form .rdrf-consent-upload [id^="forms_"] > [id^="empty_"] > .row:has([onclick*="delete_form"]) {
+        #main-form .rdrf-consent-upload [id^="forms_"] > [id^="empty_"] > .row:has([data-rdrf-formset-remove]) {
             border-bottom: 0;
             display: flex;
             justify-content: flex-end;
             padding: 0;
         }
 
-        #main-form .rdrf-consent-upload [id^="forms_"] [onclick*="delete_form"] {
+        #main-form .rdrf-consent-upload [id^="forms_"] [data-rdrf-formset-remove] {
             background-color: var(--status-overdue-bg);
             border-color: transparent;
             border-radius: var(--radius-md);
@@ -218,10 +218,6 @@
             font-size: var(--text-xs-size);
             font-weight: 600;
             padding: var(--space-2) var(--space-3);
-        }
-
-        #main-form .rdrf-consent-upload [id^="forms_"] hr {
-            display: none;
         }
 
         #main-form > .card:not(#consent-header) > .card-body {
@@ -354,9 +350,10 @@
         <script type="text/javascript" src="{% static 'vendor/video.js-7.18.1/video.min.js' %}"></script>
     {% endif %}
 
+    <script src="{% static 'js/formset_entries.js' %}"></script>
     <script>
 
-        function add_form(prefix) {
+        function add_form(el, prefix) {
             var mgmt_form = $("#mgmt_" + prefix);
             var empty_form = $("#empty_" + prefix);
             var forms = $("#forms_" + prefix);
@@ -384,17 +381,7 @@
             var total_forms_inc = parseInt(total_forms.val()) + 1;
             total_forms.attr("value", total_forms_inc);
 
-            $("<hr>").attr("style", "border: solid 1px gray").appendTo(new_form);
-            new_form.appendTo(forms).show("fast");
-        }
-
-        function delete_form(form_div, prefix) {
-            var mgmt_form = $("#mgmt_" + prefix);
-            var total_forms = mgmt_form.find("input[id=id_"+ prefix +"-TOTAL_FORMS]")
-            var total_forms_dec = parseInt(total_forms.val()) - 1;
-            total_forms.attr("value", total_forms_dec);
-
-            $(form_div).parent().parent().parent().remove();
+            new_form.appendTo(forms).slideDown("fast");
         }
 
         $(document).ready(function(){
@@ -506,15 +493,13 @@
                 {% for form, sections in forms %}
                     {% if form|is_formset_obj %}
                         <div id="mgmt_{{form.prefix}}">{{form.management_form}}</div>
-                        <div style="display: none;" id="empty_{{form.prefix}}">
-                            <div class="row">
-                                <div class="col-sm-9 offset-sm-3">
-                                    <a class="btn btn-danger btn-xs float-end" onclick="delete_form(this, '{{form.prefix}}')">
-                                        <span class="fa fa-minus" aria-hidden="true"></span> {% trans 'Remove' %}
-                                    </a>
-                                </div>
-                            </div>
+                        <div style="display: none;" id="empty_{{form.prefix}}" class="rdrf-multisection-entry">
+                            {% include "rdrf_cdes/formset_entry_actions.html" %}
+                            <div class="rdrf-multisection-entry__fields">
                             {% for element in form.empty_form %}
+                                {% if element.label == "Delete" %}
+                                <div hidden data-rdrf-formset-delete>{{ element|safe }}</div>
+                                {% else %}
                                 {% if element.errors %}
                                     <div class="row has-error">
                                 {% else %}
@@ -541,7 +526,9 @@
                                             </div>
                                         {% endif %}
                                     </div>
+                                {% endif %}
                             {% endfor %}
+                            </div>
                         </div>
                         {% for name, section in sections %}
                             <div class="card rdrf-consent-section rdrf-consent-upload">
@@ -550,20 +537,20 @@
                                         <strong>{% trans 'Upload consent file' %}</strong>
                                         <span>{% trans 'If required.' %}</span>
                                     </div>
-                                    <a class="btn btn-info btn-xs" onclick="add_form('{{form.prefix}}')">
-                                        <span class="fa fa-plus" aria-hidden="true"></span> {% trans 'Upload' %}
-                                    </a>
                                 </div>
                                 <div class="card-body">
                                     <div id="section_{{form.prefix}}">
                                     <div id="forms_{{form.prefix}}">
                                     {% for f in form %}
+                                        <div class="rdrf-multisection-entry">
+                                        {% include "rdrf_cdes/formset_entry_actions.html" %}
+                                        <div class="rdrf-multisection-entry__fields">
                                         {% with secs=section|default:f.fields %}
                                             {% for s in secs %}
                                                 {% get_form_element f s as element %}
                                                     {% if element %}
-                                                        {% if element.label == "Delete" and form.can_delete == False %}
-                                                            <!-- Empty in order to skip adding delete field in case of can_delete == False -->
+                                                        {% if element.label == "Delete" %}
+                                                        <div hidden data-rdrf-formset-delete>{{ element|safe }}</div>
                                                         {% else %}
                                                                 {% if element.errors %}
                                                                     <div class="row has-error">
@@ -608,9 +595,14 @@
                                                     {% endif %}
                                             {% endfor %}
                                         {% endwith %}
-                                        <hr>
+                                        </div>
+                                        </div>
                                     {% endfor %}
                                     </div>
+                                    {% trans 'Upload' as upload_label %}
+                                    {% with section_title=name|translate %}
+                                    {% include "rdrf_cdes/formset_add_button.html" with prefix=form.prefix section_title=section_title button_label=upload_label %}
+                                    {% endwith %}
                                     </div>
                                 </div>
                             </div>

@@ -16,14 +16,6 @@
         {% else %}
         <strong class="rdrf-clinical-section-label__title" data-name="{{s}}">{{display_names|get_display_name:s|translate}}</strong>
         {% endif %}
-
-        {% if forms|is_formset:s and not changes_since_version and not read_only %}
-        {% with formset=forms|get_form_object:s %}
-        <a class="btn btn-outline-primary btn-sm rdrf-clinical-section-label__add" onclick="add_form(this, '{{formset.prefix}}');">
-            <span class="fa fa-plus" aria-hidden="true"></span> {% trans "Add" %}
-        </a>
-        {% endwith %}
-        {% endif %}
             </div>
 
             {% if section_headers|lookup:s %}
@@ -43,17 +35,12 @@
             <div id="mgmt_{{formset.prefix}}">{{formset.management_form}}</div>
             {% if not read_only %}
             <div style="display: none;" class="rdrf-multisection-entry" id="empty_{{formset.prefix}}">
-                <div class="row">
-                    <div class="col-sm-9 offset-sm-3">
-                        <a class="btn btn-outline-danger btn-sm float-end rdrf-multisection-entry__remove"
-                            onclick="delete_form(this, '{{formset.prefix}}')">
-                            <span class="fa fa-minus" aria-hidden="true"></span> {% trans "Remove" %}
-                        </a>
-                    </div>
+                {% include "rdrf_cdes/formset_entry_actions.html" %}
+                <div class="rdrf-multisection-entry__fields">
+                    {% for element in formset.empty_form %}
+                    {% include "rdrf_cdes/clinical_form_empty_formset_field.html" %}
+                    {% endfor %}
                 </div>
-                {% for element in formset.empty_form %}
-                {% include "rdrf_cdes/clinical_form_empty_formset_field.html" %}
-                {% endfor %}
             </div>
             {% endif %}
 
@@ -68,18 +55,25 @@
                         </div>
                     </div>
                     {% endif %}
-                    {% for element in f %}
-                    {% if not read_only or element.label != "Delete" %}
-                    {% include "rdrf_cdes/clinical_form_formset_field.html" %}
+                    {% if not read_only and not changes_since_version %}
+                    {% include "rdrf_cdes/formset_entry_actions.html" %}
                     {% endif %}
-                    {% endfor %}
-                    <p>
-                        <hr style="border: solid 1px gray">
-                    </p>
+                    <div class="rdrf-multisection-entry__fields">
+                        {% for element in f %}
+                        {% if not read_only or element.label != "Delete" %}
+                        {% include "rdrf_cdes/clinical_form_formset_field.html" %}
+                        {% endif %}
+                        {% endfor %}
+                    </div>
                 </div>
                 {% endwith %}
                 {% endfor %}
             </div>
+            {% if not read_only and not changes_since_version %}
+            {% with section_title=display_names|get_display_name:s|translate %}
+            {% include "rdrf_cdes/formset_add_button.html" with prefix=formset.prefix section_title=section_title %}
+            {% endwith %}
+            {% endif %}
             {% endwith %}
             {% else %}
             {% for field in forms|get_form_object:s %}

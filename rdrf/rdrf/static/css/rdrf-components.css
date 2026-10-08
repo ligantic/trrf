@@ -268,12 +268,22 @@
   margin-bottom: 0;
 }
 
-.rdrf-clinical-section-label__add {
-  margin-left: auto;
+.rdrf-formset-add,
+.rdrf-multisection-entry__toolbar,
+.rdrf-multisection-entry__removed {
+  align-items: center;
+  display: flex;
+  gap: var(--space-3);
 }
 
-.rdrf-clinical-section-label__add,
-.rdrf-multisection-entry__remove {
+/* Add sits below the entries, aligned with the field labels' column. */
+.rdrf-formset-add {
+  margin-top: var(--space-3);
+}
+
+.rdrf-formset-add__button,
+.rdrf-multisection-entry__remove,
+.rdrf-multisection-entry__undo {
   align-items: center;
   border-radius: var(--radius-sm);
   display: inline-flex;
@@ -286,8 +296,29 @@
   padding: 6px var(--space-3);
 }
 
-.rdrf-multisection-entry__remove {
-  margin-bottom: var(--space-4);
+/* Remove sits in the top-right corner of its entry. */
+.rdrf-multisection-entry__toolbar {
+  justify-content: flex-end;
+  margin-bottom: var(--space-2);
+}
+
+.rdrf-multisection-entry__removed {
+  border: 1px dashed var(--color-border-subtle);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  font-size: var(--text-xs-size);
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+}
+
+.rdrf-multisection-entry.is-removed {
+  opacity: 0.85;
+}
+
+/* Keeps the HTML hidden attribute working where the components above set display. */
+.rdrf-multisection-entry [hidden] {
+  display: none !important;
 }
 
 .rdrf-card__meta {

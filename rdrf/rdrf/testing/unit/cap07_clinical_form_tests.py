@@ -745,9 +745,18 @@ class ClinicalFormPageTest(TestCase):
     def test_multisection_renders_nested_entry_cards_with_add_remove(self):
         content = self._get_page()
         self.assertIn("rdrf-multisection-entry", content)
-        # add/remove affordances still wired to the legacy JS
+        self.assertIn("rdrf-multisection-entry__toolbar", content)
+        # Remove/Undo replace the old Mark for deletion checkbox; the DELETE
+        # checkbox stays in a hidden wrapper so the server still receives it.
+        self.assertIn("data-rdrf-formset-remove", content)
+        self.assertIn("data-rdrf-formset-undo", content)
+        self.assertIn('data-rdrf-formset-delete', content)
+        self.assertNotIn("Mark for deletion", content)
+        self.assertNotIn("delete_form(this,", content)
+        # Add sits below the entries with a tooltip naming the target section
         self.assertIn("add_form(this,", content)
-        self.assertIn("delete_form(this,", content)
+        self.assertIn('data-bs-toggle="tooltip"', content)
+        self.assertNotIn('class="rdrf-clinical-section-label__add', content)
 
     def test_section_header_renders_as_supporting_text(self):
         Section.objects.filter(code="CAP07SEC").update(
@@ -813,7 +822,14 @@ class ClinicalFormPageTest(TestCase):
             content,
         )
         self.assertIn('class="rdrf-multisection-entry"', content)
-        self.assertIn(f"delete_form(this, '{prefix}')", content)
+        self.assertIn('class="rdrf-multisection-entry__fields"', content)
+        self.assertIn('data-rdrf-formset-delete', content)
+        self.assertNotIn(f"delete_form(this, '{prefix}')", content)
+        # Add must follow the forms container, not sit in the section header
+        self.assertLess(
+            content.index(f'id="forms_{prefix}"'),
+            content.index(f"add_form(this, '{prefix}')"),
+        )
 
     def test_form_action_rendering_contract(self):
         content = self._get_page()
