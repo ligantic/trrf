@@ -306,8 +306,9 @@ class ParentDashboard(object):
                         continue
 
                     key = "fixed"
+                    form_context = context or self._get_patient_context(cfg)
                     progress_dict["link"] = self._get_form_link(
-                        cfg, form, context=context
+                        cfg, form, context=form_context
                     )
                     progress_dict["progress"] = form_progress.get_form_progress(
                         form, self.patient, context
@@ -316,6 +317,19 @@ class ParentDashboard(object):
                         progress=progress_dict["progress"],
                         has_progress=form.has_progress_indicator,
                     )
+                    if (
+                        progress_dict["status"] == STATUS_COMPLETE
+                        and form_context
+                    ):
+                        progress_dict["view_link"] = reverse(
+                            "registry_form_view",
+                            args=(
+                                self.registry.code,
+                                form.pk,
+                                self.patient.pk,
+                                form_context.pk,
+                            ),
+                        )
                 elif cfg.is_multiple:
                     key = "multi"
                     last_completed = None

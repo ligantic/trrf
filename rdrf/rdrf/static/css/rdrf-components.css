@@ -389,6 +389,44 @@
   line-height: var(--text-xs-line-height);
 }
 
+.rdrf-modules-panel__contact {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+.rdrf-modules-panel__readonly {
+  align-items: center;
+  display: inline-flex;
+  gap: var(--space-2);
+  white-space: nowrap;
+}
+
+.rdrf-modules-panel__lock {
+  color: var(--color-text-secondary);
+}
+
+.rdrf-modules-panel__view {
+  background-color: var(--color-border-subtle);
+  border-color: var(--color-border-default);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  font-size: var(--text-xs-size);
+  font-weight: 600;
+}
+
+.rdrf-modules-panel__view:hover,
+.rdrf-modules-panel__view:active {
+  background-color: var(--color-border-default);
+  border-color: var(--color-text-secondary);
+  color: var(--color-text-heading);
+}
+
+.rdrf-modules-panel__view:focus-visible,
+.rdrf-modules-panel__contact:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
 .rdrf-modules-panel__empty {
   color: var(--color-text-secondary);
   font-size: .875rem;

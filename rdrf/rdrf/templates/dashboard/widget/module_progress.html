@@ -1,6 +1,7 @@
 {% extends 'dashboard/widget/_widget_base.html' %}
 
 {% load i18n %}
+{% load curator_email %}
 
 {% block card_header %}
   <h2 class="rdrf-modules-panel__title mb-0">{% trans "Modules" %}</h2>
@@ -40,10 +41,26 @@
                       {% if form_dict.status == "complete" %}{% trans "Complete" %}{% elif form_dict.status == "in-progress" %}{% trans "In progress" %}{% elif form_dict.status == "due-now" %}{% trans "Due now" %}{% else %}{% trans "Not started" %}{% endif %}
                     </span>
                   </td>
-                  <td>{% trans "-" %}</td>
-                  <td>{% trans "-" %}</td>
+                  {% if form_dict.status == "complete" %}
+                    <td colspan="2">
+                      <a href="mailto:{% curator_email %}" class="rdrf-modules-panel__contact d-print-none">{% trans "Contact curator for changes" %}</a>
+                    </td>
+                  {% else %}
+                    <td>{% trans "-" %}</td>
+                    <td>{% trans "-" %}</td>
+                  {% endif %}
                   <td class="text-end d-print-none">
-                    {% if form_dict.status != "complete" %}
+                    {% if form_dict.status == "complete" %}
+                      {% if form_dict.view_link %}
+                        <span class="rdrf-modules-panel__readonly">
+                          <span class="rdrf-modules-panel__lock" title="{% trans 'Read-only' %}">
+                            <span class="fa fa-lock" aria-hidden="true"></span>
+                            <span class="visually-hidden">{% trans "Read-only" %}</span>
+                          </span>
+                          <a href="{{ form_dict.view_link }}" class="btn btn-sm btn-outline-secondary rdrf-modules-panel__view" aria-label="{% blocktrans with form_name=form.nice_name %}View {{ form_name }} (read-only){% endblocktrans %}">{% trans "View" %}</a>
+                        </span>
+                      {% endif %}
+                    {% else %}
                       <a href="{{ form_dict.link }}" class="btn btn-sm btn-outline-primary">{% if form_dict.status == "not-started" or form_dict.status == "due-now" %}{% trans "Start" %}{% else %}{% trans "Edit" %}{% endif %}</a>
                     {% endif %}
                   </td>

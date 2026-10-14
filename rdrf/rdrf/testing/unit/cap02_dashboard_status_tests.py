@@ -4,7 +4,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from django.template.loader import get_template
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, override_settings
 
 from rdrf.helpers.dashboard_status import (
     STATUS_COMPLETE,
@@ -144,9 +144,11 @@ class DashboardModuleStatusTest(SimpleTestCase):
         self.assertIn('href="/continue"', content)
         self.assertIn("Start", content)
         self.assertIn("Continue", content)
-        self.assertIn('href="/completed"', content)
+        self.assertNotIn('href="/completed"', content)
         self.assertIn("Edit", content)
-        self.assertNotIn('href="/completed-scheduled"', content)
+        self.assertIn('href="/completed-scheduled"', content)
+        self.assertNotIn("mailto:", content)
+        self.assertNotIn("fa-lock", content)
 
     def test_due_now_module_actions_start_the_module(self):
         Form = namedtuple("Form", "nice_name")
@@ -190,3 +192,79 @@ class DashboardModuleStatusTest(SimpleTestCase):
         self.assertIn('href="/start-longitudinal"', content)
         self.assertIn('href="/continue"', content)
         self.assertIn("Continue", content)
+
+    @override_settings(CURATOR_EMAIL="curator@example.org")
+    def test_completed_one_off_module_has_contact_and_read_only_actions(self):
+        Form = namedtuple("Form", "nice_name")
+        dashboard = SimpleNamespace(
+            patient_status=SimpleNamespace(
+                module_progress={
+                    "fixed": {
+                        "cfg": {
+                            Form("History of Diagnosis"): {
+                                "status": STATUS_COMPLETE,
+                                "link": "/diagnosis/edit",
+                                "view_link": "/diagnosis/view",
+                            },
+                            Form("Another one-off module"): {
+                                "status": STATUS_COMPLETE,
+                                "link": "/another/edit",
+                                "view_link": "/another/view",
+                            },
+                        },
+                    },
+                    "multi": {},
+                }
+            )
+        )
+
+        content = get_template("dashboard/widget/module_progress.html").render(
+            {"dashboard": dashboard}
+        )
+
+        self.assertIn('href="mailto:curator@example.org"', content)
+        self.assertIn("Contact curator for changes", content)
+        self.assertIn('colspan="2"', content)
+        self.assertIn('href="/diagnosis/view"', content)
+        self.assertIn('href="/another/view"', content)
+        self.assertEqual(content.count('href="mailto:curator@example.org"'), 2)
+        self.assertIn("btn-outline-secondary rdrf-modules-panel__view", content)
+        self.assertIn('fa fa-lock" aria-hidden="true"', content)
+        self.assertIn("Read-only", content)
+        self.assertIn('aria-label="View History of Diagnosis (read-only)"', content)
+        self.assertNotIn('href="/diagnosis/edit"', content)
+        self.assertNotIn('href="/another/edit"', content)
+
+    def test_incomplete_one_off_modules_keep_editable_actions(self):
+        Form = namedtuple("Form", "nice_name")
+        for status, label in (
+            (STATUS_NOT_STARTED, "Start"),
+            (STATUS_DUE_NOW, "Start"),
+            (STATUS_IN_PROGRESS, "Edit"),
+        ):
+            with self.subTest(status=status):
+                dashboard = SimpleNamespace(
+                    patient_status=SimpleNamespace(
+                        module_progress={
+                            "fixed": {
+                                "cfg": {
+                                    Form("History of Diagnosis"): {
+                                        "status": status,
+                                        "link": "/diagnosis/edit",
+                                    },
+                                },
+                            },
+                            "multi": {},
+                        }
+                    )
+                )
+
+                content = get_template(
+                    "dashboard/widget/module_progress.html"
+                ).render({"dashboard": dashboard})
+
+                self.assertIn('href="/diagnosis/edit"', content)
+                self.assertIn(f">{label}</a>", content)
+                self.assertNotIn("mailto:", content)
+                self.assertNotIn("fa-lock", content)
+                self.assertNotIn("rdrf-modules-panel__view", content)

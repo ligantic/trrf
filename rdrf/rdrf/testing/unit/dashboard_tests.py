@@ -7,6 +7,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
 from django.test import TestCase
 from django.test.utils import override_settings
+from django.urls import reverse
 from registry.groups import GROUPS as RDRF_GROUPS
 from registry.groups.models import CustomUser
 from registry.patients.models import ConsentValue, ParentGuardian, Patient
@@ -642,6 +643,17 @@ class ParentDashboardTest(RDRFTestCase):
 
             progress_by_form[first_form.name] = 100
             second_module_due = parent_dashboard._get_module_progress()
+            self.assertEqual(
+                second_module_due["fixed"][fixed_cfg][first_form]["view_link"],
+                reverse(
+                    "registry_form_view",
+                    args=(self.registry.code, first_form.pk, patient.pk, 900),
+                ),
+            )
+            self.assertNotIn(
+                "view_link",
+                second_module_due["fixed"][fixed_cfg][second_form],
+            )
             self.assertEqual(
                 second_module_due["fixed"][fixed_cfg][second_form]["status"],
                 "due-now",
