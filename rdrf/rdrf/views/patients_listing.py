@@ -216,17 +216,18 @@ class PatientsListingView(View):
         return filters
 
     def _sort_fields(self):
-        if self.sort_field and self.sort_direction:
+        if not self.sort_field or not self.sort_direction:
+            return []
 
-            def sort_field_with_direction(field):
-                return "-" + field if self.sort_direction == "desc" else field
+        def sort_field_with_direction(field):
+            return "-" + field if self.sort_direction == "desc" else field
 
-            return [
-                sort_field_with_direction(sort_field)
-                for col in self.columns
-                for sort_field in col.sort_fields
-                if col.field == self.sort_field
-            ]
+        return [
+            sort_field_with_direction(sort_field)
+            for col in self.columns
+            for sort_field in col.sort_fields
+            if col.field == self.sort_field
+        ]
 
     def _query_all_patients(
         self,

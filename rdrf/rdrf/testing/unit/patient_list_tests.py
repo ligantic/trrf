@@ -14,6 +14,65 @@ from rdrf.views.patients_listing import PatientsListingView
 
 
 class PatientListingQueryTests(SimpleTestCase):
+    def test_missing_ordering_returns_empty_sort_fields(self):
+        for sort_field, sort_direction in [
+            (None, None),
+            ("full_name", None),
+            (None, "asc"),
+        ]:
+            with self.subTest(
+                sort_field=sort_field, sort_direction=sort_direction
+            ):
+                view = PatientsListingView()
+                view.sort_field = sort_field
+                view.sort_direction = sort_direction
+
+                self.assertEqual(view._sort_fields(), [])
+
+    def test_explicit_ordering_is_preserved(self):
+        view = PatientsListingView()
+        view.columns = [ColumnFullName("Patient", None)]
+        view.sort_field = "full_name"
+
+        for direction, expected in [
+            ("asc", ["family_name", "given_names"]),
+            ("desc", ["-family_name", "-given_names"]),
+        ]:
+            with self.subTest(direction=direction):
+                view.sort_direction = direction
+                self.assertEqual(view._sort_fields(), expected)
+
+    @patch("rdrf.views.patients_listing.Patient.objects.filter")
+    def test_results_without_ordering_preserve_counts(self, filter_patients):
+        view = PatientsListingView()
+        view.registry_model = SimpleNamespace(code="ang")
+        view.selected_filters = {}
+        view.search_term = ""
+        view.start = 0
+        view.length = 10
+        request = SimpleNamespace()
+        filter_patients.return_value.order_by.return_value = []
+
+        with (
+            patch.object(view, "_check_security", return_value=True),
+            patch.object(
+                view,
+                "_query_all_patients",
+                return_value=(61, {"patients": [], "total": 0}),
+            ) as query_patients,
+        ):
+            self.assertEqual(view._get_results(request), (61, 0, []))
+
+        query_patients.assert_called_once_with(
+            request,
+            view.registry_model,
+            {"consentChecks": False},
+            ["id"],
+            [],
+            {"offset": 0, "limit": 10},
+        )
+        filter_patients.return_value.order_by.assert_called_once_with()
+
     def _query(self):
         return PatientsListingView()._query_all_patients(
             SimpleNamespace(),
