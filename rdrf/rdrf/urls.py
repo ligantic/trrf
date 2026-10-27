@@ -55,7 +55,11 @@ from rdrf.views.handler_views import (
     handler_application_error,
     handler_exceptions,
 )
-from rdrf.views.health_check import health_check, liveness_check, readiness_check
+from rdrf.views.health_check import (
+    health_check,
+    liveness_check,
+    readiness_check,
+)
 from rdrf.views.mailbox_view import (
     MailboxEmptyView,
     MailboxSendLongitudinalFollowups,
