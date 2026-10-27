@@ -5,8 +5,11 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.decorators import method_decorator
 from django.views import View
+from django.views.decorators.cache import never_cache
 from rdrf.models.definition.models import ContextFormGroup, Registry
+from rdrf.patients.query_data import GraphQLResultError
 from rdrf.security.mixins import SuperuserRequiredMixin
 
 from report.forms import ReportDesignerForm
@@ -69,6 +72,45 @@ class ReportDownloadView(ReportDownloadAccessCheckMixin, View):
         response = StreamingHttpResponse(content, content_type=content_type)
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
         return response
+
+
+@method_decorator(never_cache, name="dispatch")
+class ReportPreviewView(ReportDownloadAccessCheckMixin, View):
+    def get(self, request, report_id):
+        report_design = get_object_or_404(ReportDesign, pk=report_id)
+        report = ReportBuilder(report_design=report_design)
+
+        is_valid, errors = report.validate_query(request)
+        if is_valid:
+            is_valid, errors = report.validate_for_csv_export()
+        if not is_valid:
+            logger.error(errors)
+            return render(
+                request, "report_download_errors.html", {"errors": errors}
+            )
+
+        try:
+            headers, rows = report.build_preview(request)
+        except GraphQLResultError as ex:
+            logger.exception(
+                "Error generating preview for report %s", report_id
+            )
+            return render(
+                request,
+                "report_download_errors.html",
+                {"errors": {"query_structure": str(ex)}},
+            )
+
+        return render(
+            request,
+            "report_preview.html",
+            {
+                "report": report_design,
+                "headers": headers,
+                "rows": rows,
+                "preview_limit": report.PREVIEW_LIMIT,
+            },
+        )
 
 
 class ReportDesignView(SuperuserRequiredMixin, View):

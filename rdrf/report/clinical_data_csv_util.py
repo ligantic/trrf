@@ -289,6 +289,9 @@ class ClinicalDataCsvUtil:
 
         # Step 1 - Summarise all clinical data
         patient_filters = PatientFilterType()
+        patient_filters.exclude_working_groups = [
+            wg.id for wg in report_design.exclude_working_groups.all()
+        ]
         patient_filters.working_groups = [
             wg.id for wg in report_design.filter_working_groups.all()
         ]

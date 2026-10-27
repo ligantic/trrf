@@ -72,6 +72,7 @@
                     <td>
                         <a href="{% url 'report:report_download' report.id 'csv' %}" class="btn btn-sm btn-outline-secondary">csv <i class="fa fa-file-text-o"></i> </a>
                         <a href="{% url 'report:report_download' report.id 'json' %}" class="btn btn-sm btn-outline-secondary">json <i class="fa fa-file-text"></i> </a>
+                        <a href="{% url 'report:report_preview' report.id %}" class="btn btn-sm btn-outline-secondary">{% trans "Preview" %} <i class="fa fa-table" aria-hidden="true"></i></a>
                     </td>
                     {% if request.user.is_superuser  %}
                     <td>

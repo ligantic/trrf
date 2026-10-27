@@ -652,6 +652,9 @@ class Exporter:
                 "filter_working_groups": [
                     wg.name for wg in r.filter_working_groups.all()
                 ],
+                "exclude_working_groups": [
+                    wg.name for wg in r.exclude_working_groups.all()
+                ],
                 "filter_consents": [
                     {"section": c.section.code, "code": c.code}
                     for c in r.filter_consents.all()
@@ -680,6 +683,7 @@ class Exporter:
                 .prefetch_related(
                     "access_groups",
                     "filter_working_groups",
+                    "exclude_working_groups",
                     "filter_consents",
                     "reportclinicaldatafield_set",
                     "reportdemographicfield_set",

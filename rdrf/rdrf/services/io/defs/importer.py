@@ -1344,6 +1344,12 @@ class Importer(object):
                 WorkingGroup.objects.filter(
                     name__in=d["filter_working_groups"])
             )
+            report.exclude_working_groups.set(
+                WorkingGroup.objects.filter(
+                    registry=registry,
+                    name__in=d.get("exclude_working_groups", []),
+                )
+            )
             report.filter_consents.set(
                 [
                     ConsentQuestion.objects.get(

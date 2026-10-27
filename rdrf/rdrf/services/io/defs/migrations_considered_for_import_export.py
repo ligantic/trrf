@@ -288,5 +288,6 @@ MIGRATIONS_CONSIDERED_FOR_IMPORT_EXPORT = {
         "0002_reportclinicaldatafield_context_form_group",
         "0003_reportdesign_cde_include_form_timestamp",
         "0004_alter_reportdesign_options",
+        "0005_reportdesign_exclude_working_groups",
     },
 }

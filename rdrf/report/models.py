@@ -61,6 +61,9 @@ class ReportDesign(models.Model):
     filter_working_groups = models.ManyToManyField(
         WorkingGroup, related_name="filter_working_groups", blank=True
     )
+    exclude_working_groups = models.ManyToManyField(
+        WorkingGroup, related_name="exclude_working_groups", blank=True
+    )
     filter_consents = models.ManyToManyField(ConsentQuestion, blank=True)
     cde_heading_format = models.CharField(
         max_length=30,

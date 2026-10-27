@@ -11,6 +11,7 @@ from gql_query_builder import GqlQuery
 from rdrf.forms.dsl.parse_utils import prefetch_form_data
 from rdrf.helpers.utils import BadKeyError, models_from_mongo_key
 from rdrf.patients.query_data import (
+    GraphQLResultError,
     build_all_patients_query,
     build_data_summary_query,
     build_patient_filters,
@@ -34,6 +35,8 @@ logger = logging.getLogger(__name__)
 
 
 class ReportBuilder:
+    PREVIEW_LIMIT = 100
+
     def __init__(self, report_design):
         self.report_design = report_design
         self.report_config = load_report_configuration()["demographic_model"]
@@ -65,6 +68,14 @@ class ReportBuilder:
             "workingGroups": get_patient_working_group_filters(),
             "consentQuestions": get_patient_consent_question_filters(),
         }
+        excluded_groups = [
+            str(wg.id)
+            for wg in self.report_design.exclude_working_groups.all().order_by(
+                "id"
+            )
+        ]
+        if excluded_groups:
+            filters["excludeWorkingGroups"] = excluded_groups
 
         return build_patient_filters(filters)
 
@@ -542,18 +553,50 @@ class ReportBuilder:
             if num_patients < limit:
                 break
 
+    def _get_csv_headers(self, request):
+        headers = OrderedDict()
+        headers.update(self._get_demographic_headers(request))
+        headers.update(
+            ClinicalDataCsvUtil().csv_headers(request.user, self.report_design)
+        )
+        return headers
+
+    def build_preview(self, request):
+        headers = self._get_csv_headers(request)
+        variables, query = self._get_graphql_query(
+            request, limit=self.PREVIEW_LIMIT
+        )
+        result = self.schema.execute(
+            query, variable_values=variables, context_value=request
+        )
+        if result.errors:
+            raise GraphQLResultError(
+                "\n".join(str(error) for error in result.errors)
+            )
+
+        patients = get_all_patients(result, self.report_design.registry)[
+            "patients"
+        ]
+        rows = []
+        for patient in patients:
+            flat_patient = flatten(patient)
+            rows.append(
+                [
+                    ""
+                    if flat_patient.get(key) is None
+                    else str(flat_patient[key])
+                    for key in headers
+                ]
+            )
+        return list(headers.values()), rows
+
     def export_to_csv(self, request):
         # Purpose of BOM:
         # - Required by MS Excel to correctly load content in UTF-8, otherwise encoding is ignored.
         # - Quick response back to browser to prevent cloudfront from timing out.
         yield codecs.BOM_UTF8
 
-        # Build Headers
-        headers = OrderedDict()
-        headers.update(self._get_demographic_headers(request))
-        headers.update(
-            ClinicalDataCsvUtil().csv_headers(request.user, self.report_design)
-        )
+        headers = self._get_csv_headers(request)
 
         output = io.StringIO()
         header_writer = csv.DictWriter(output, fieldnames=headers.values())

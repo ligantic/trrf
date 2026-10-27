@@ -165,6 +165,14 @@ class ReportDesignerForm(ModelForm):
     filter_by_working_groups = BooleanField(
         label=_("Filter patients by working group"), required=False
     )
+    exclude_by_working_groups = BooleanField(
+        label=_("Exclude patients by working group"), required=False
+    )
+    exclude_working_groups = MultipleChoiceField(
+        label=_("Excluded working groups"),
+        widget=SelectMultiple(attrs={"class": "form-select"}),
+        required=False,
+    )
     filter_working_groups = MultipleChoiceField(
         label=_("Working groups"),
         widget=SelectMultiple(attrs={"class": "form-select"}),
@@ -189,6 +197,9 @@ class ReportDesignerForm(ModelForm):
         self.fields[
             "filter_working_groups"
         ].choices = get_working_group_choices()
+        self.fields["exclude_working_groups"].choices = self.fields[
+            "filter_working_groups"
+        ].choices
 
         run_report_permission = Permission.objects.get(
             codename="can_run_reports",
@@ -245,6 +256,13 @@ class ReportDesignerForm(ModelForm):
                 get_working_group_field_value(wg)
                 for wg in self.instance.filter_working_groups.all()
             ]
+            self.fields[
+                "exclude_by_working_groups"
+            ].initial = self.instance.exclude_working_groups.exists()
+            self.fields["exclude_working_groups"].initial = [
+                get_working_group_field_value(wg)
+                for wg in self.instance.exclude_working_groups.all()
+            ]
 
     def clean(self):
         super(ReportDesignerForm, self).clean()
@@ -262,13 +280,15 @@ class ReportDesignerForm(ModelForm):
         return self.cleaned_data
 
     def clean_filter_working_groups(self):
-        def get_wg_from_field(field):
-            field_dict = json.loads(field)
-            return WorkingGroup.objects.get(id=field_dict["wg"])
+        return self._clean_working_groups("filter_working_groups")
 
+    def clean_exclude_working_groups(self):
+        return self._clean_working_groups("exclude_working_groups")
+
+    def _clean_working_groups(self, field_name):
         return [
-            get_wg_from_field(field)
-            for field in self.cleaned_data["filter_working_groups"]
+            WorkingGroup.objects.get(id=json.loads(field)["wg"])
+            for field in self.cleaned_data[field_name]
         ]
 
     def clean_filter_consents(self):
@@ -300,6 +320,13 @@ class ReportDesignerForm(ModelForm):
         )
 
         report_design.access_groups.set(clean_data["access_groups"])
+
+        if clean_data["exclude_by_working_groups"]:
+            report_design.exclude_working_groups.set(
+                clean_data["exclude_working_groups"]
+            )
+        else:
+            report_design.exclude_working_groups.set([])
 
         if clean_data["filter_by_working_groups"]:
             report_design.filter_working_groups.set(
