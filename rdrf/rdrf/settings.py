@@ -7,6 +7,7 @@ from ccg_django_utils.conf import EnvConfig
 
 # import message constants so we can use bootstrap style classes
 from django.contrib.messages import constants as message_constants
+from django.core.exceptions import ImproperlyConfigured
 
 import rdrf
 from rdrf.helpers.settings_helpers import get_csp, get_static_url_domain
@@ -124,6 +125,25 @@ DATABASES["clinical"] = {
     "HOST": env.get("clinical_dbserver", DATABASES["default"]["HOST"]),
     "PORT": env.get("clinical_dbport", DATABASES["default"]["PORT"]),
 }
+
+DB_CONNECT_TIMEOUT = env.get("db_connect_timeout", 5)
+DB_CONN_MAX_AGE = env.get("db_conn_max_age", 0)
+READINESS_AGGREGATED_ALERTS_ENABLED = env.get(
+    "readiness_aggregated_alerts_enabled", False
+)
+if DB_CONNECT_TIMEOUT < 1:
+    raise ImproperlyConfigured("DB_CONNECT_TIMEOUT must be at least 1 second")
+if DB_CONN_MAX_AGE < 0:
+    raise ImproperlyConfigured("DB_CONN_MAX_AGE must not be negative")
+
+for database in DATABASES.values():
+    database["CONN_MAX_AGE"] = DB_CONN_MAX_AGE
+    database["CONN_HEALTH_CHECKS"] = True
+    if database["ENGINE"] in (
+        "django.db.backends.postgresql",
+        "django.db.backends.postgresql_psycopg2",
+    ):
+        database["OPTIONS"] = {"connect_timeout": DB_CONNECT_TIMEOUT}
 
 DATABASE_ROUTERS = ["rdrf.db.db.RegistryRouter"]
 
@@ -490,6 +510,9 @@ LOGGING = {
         "simplest": {"format": "%(message)s"},
     },
     "filters": {
+        "readiness_email": {
+            "()": "rdrf.helpers.log.ReadinessEmailFilter",
+        },
         "require_debug_false": {
             "()": "django.utils.log.RequireDebugFalse",
         },
@@ -520,7 +543,7 @@ LOGGING = {
         },
         "mail_admins": {
             "level": "ERROR",
-            "filters": ["require_debug_false"],
+            "filters": ["require_debug_false", "readiness_email"],
             "class": "rdrf.helpers.log.AdminShortEmailHandler",
         },
     },
@@ -729,6 +752,8 @@ if DEBUG:
 # as django-stronghold cannot handle it otherwise
 STRONGHOLD_PUBLIC_NAMED_URLS = (
     "health_check",
+    "liveness_check",
+    "readiness_check",
     "landing",
     "registration_complete",
     "registration_failed",

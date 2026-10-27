@@ -354,6 +354,8 @@ SECURITY_WHITELISTED_URLS = (
     "file_upload",
     "form_add",
     "health_check",
+    "liveness_check",
+    "readiness_check",
     "import_registry",
     "javascript-catalog",
     "landing",

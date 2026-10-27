@@ -47,9 +47,11 @@ class Action:
                 patient_model = Patient.objects.get(id=patient_id)
                 if not is_authorised(self.user, patient_model):
                     logger.warning(
-                        f"action not authorised for user:{self.user.id} on patient:{patient_model}"
+                        "action not authorised for user:%s on patient_id:%s",
+                        self.user.id,
+                        patient_model.id,
                     )
-                    raise PermissionError
+                    raise PermissionDenied
                 else:
                     return patient_model
 

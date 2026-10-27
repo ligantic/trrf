@@ -35,6 +35,32 @@ the debugger stays attached to one process. Stop the service with the **Django:
 Stop debug server** task when debugging is complete; the databases and dev
 container remain running.
 
+### Database connections and availability checks
+
+PostgreSQL connections use `DB_CONNECT_TIMEOUT=5` seconds per connection
+attempt, for both the default and clinical databases. The timeout must be
+positive. This bounds connection establishment, not SQL execution or the total
+request duration. There is no automatic replay of requests or transactions.
+
+Connection reuse remains disabled by default (`DB_CONN_MAX_AGE=0`). QA can
+trial `DB_CONN_MAX_AGE=60`; reused connections are health-checked before use.
+Keep the number of workers, threads, replicas, and database aliases in mind
+when budgeting persistent connections. Negative connection ages are rejected.
+
+- `/live`: unauthenticated, uncached process liveness; does not query databases.
+- `/ready`: unauthenticated, uncached database readiness; checks both aliases,
+  returning `{"success": true}` (200) or `{"success": false}` (503) for
+  connection failures. Error details are not exposed. Each check logs its
+  outcome for availability monitoring.
+- `/health-check`: existing registry-count response, retained for compatibility.
+
+Keep Front Door database-aware by probing `/ready`, not `/live`. Enable a
+stateful consecutive-failure availability alert before suppressing individual
+readiness notification emails with `READINESS_AGGREGATED_ALERTS_ENABLED=True`.
+The default is false: emails remain enabled until that external alert is in
+place. The filter only suppresses readiness 503 emails, not console logs,
+other endpoints, unexpected exceptions, or any 500 response.
+
 ### Restoring QA data
 
 Replace both local databases from plain SQL PostgreSQL dumps with:
@@ -63,4 +89,3 @@ Matthew Bellgard, Christophe Beroud, Kay Parkinson, Tess Harris, Segolene Ayme, 
 Rodrigues M, Hammond-Tooke G, Kidd A, Love D, Patel R, Dawkins H, Bellgard M, Roxburgh R, The New Zealand Neuromuscular Disease Registry. J Clin Neurosci, 2012. 19(12): p. 1749-50.
 
 Bellgard MI, Macgregor A, Janon F, Harvey A, O'leary P, Hunter A and Dawkins H, A modular approach to disease registry design: successful adoption of an internet-based rare disease registry. Hum Mutat 33: E2356-2366.
-
