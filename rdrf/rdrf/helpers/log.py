@@ -1,6 +1,19 @@
-from logging import StreamHandler
+from logging import Filter, StreamHandler
 
+from django.conf import settings
 from django.utils.log import AdminEmailHandler
+
+
+class ReadinessEmailFilter(Filter):
+    def filter(self, record):
+        if not settings.READINESS_AGGREGATED_ALERTS_ENABLED:
+            return True
+        request = getattr(record, "request", None)
+        match = getattr(request, "resolver_match", None)
+        return not (
+            getattr(record, "status_code", None) == 503
+            and getattr(match, "url_name", None) == "readiness_check"
+        )
 
 
 # An AdminEmainHandler that removes potentially sensitive information from the Error emails

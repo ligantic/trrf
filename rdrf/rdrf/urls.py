@@ -55,7 +55,7 @@ from rdrf.views.handler_views import (
     handler_application_error,
     handler_exceptions,
 )
-from rdrf.views.health_check import health_check
+from rdrf.views.health_check import health_check, liveness_check, readiness_check
 from rdrf.views.mailbox_view import (
     MailboxEmptyView,
     MailboxSendLongitudinalFollowups,
@@ -462,6 +462,8 @@ patterns += [
         include(("django.conf.urls.i18n", "django_conf_urls"), namespace=None),
     ),
     re_path(r"^health-check/?$", health_check, name="health_check"),
+    path("live", liveness_check, name="liveness_check"),
+    path("ready", readiness_check, name="readiness_check"),
     re_path(r"^session-refresh/?$", session_refresh, name="session_refresh"),
 ]
 
