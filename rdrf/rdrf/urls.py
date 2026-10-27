@@ -81,6 +81,8 @@ logger = logging.getLogger(__name__)
 admin.autodiscover()
 
 patterns = [
+    path("live", liveness_check, name="liveness_check"),
+    path("ready", readiness_check, name="readiness_check"),
     path("favicon.ico", favicon_view.redirect_to_static, name="favicon"),
     path(
         "robots.txt",
@@ -512,8 +514,6 @@ patterns += [
         include(("django.conf.urls.i18n", "django_conf_urls"), namespace=None),
     ),
     re_path(r"^health-check/?$", health_check, name="health_check"),
-    path("live", liveness_check, name="liveness_check"),
-    path("ready", readiness_check, name="readiness_check"),
     re_path(r"^session-refresh/?$", session_refresh, name="session_refresh"),
 ]
 

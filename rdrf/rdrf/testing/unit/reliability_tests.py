@@ -13,7 +13,7 @@ from django.core.handlers.exception import convert_exception_to_response
 from django.db import InterfaceError, OperationalError, ProgrammingError
 from django.http import HttpResponseRedirect
 from django.test import RequestFactory, SimpleTestCase, override_settings
-from django.urls import path
+from django.urls import path, resolve
 
 from rdrf.helpers.log import ReadinessEmailFilter
 from rdrf.views.actions import ActionExecutorView
@@ -271,3 +271,14 @@ class ReadinessEmailFilterTests(SimpleTestCase):
         self.assertTrue(email_filter.filter(self.record(status=500)))
         self.assertTrue(email_filter.filter(self.record(name="landing")))
         self.assertTrue(email_filter.filter(logging.makeLogRecord({})))
+
+
+class ApplicationHealthRoutesTests(SimpleTestCase):
+    def test_real_application_routes_are_not_intercepted_by_registry_routes(self):
+        self.assertIs(resolve("/live").func, liveness_check)
+        self.assertIs(resolve("/ready").func, readiness_check)
+
+    def test_real_application_liveness_is_public_without_database_queries(self):
+        response = self.client.get("/live")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"success": True})
