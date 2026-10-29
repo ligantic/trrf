@@ -1,6 +1,5 @@
 import uuid
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 from unittest.mock import patch
 
 from django.contrib.contenttypes.models import ContentType
@@ -12,6 +11,8 @@ from registry.groups import GROUPS as RDRF_GROUPS
 from registry.groups.models import CustomUser
 from registry.patients.models import ConsentValue, ParentGuardian, Patient
 
+from rdrf.db.contexts_api import RDRFContextManager
+from rdrf.helpers.registry_features import RegistryFeatures
 from rdrf.models.definition.models import (
     ClinicalData,
     CommonDataElement,
@@ -287,6 +288,147 @@ class ParentDashboardTest(RDRFTestCase):
             parent_dashboard._get_form_link(cfg2, form2),
             "/TEST/forms/32/12/add",
         )
+
+    def test_missing_fixed_contexts_are_initialised_for_existing_patient(self):
+        self.registry.add_feature(RegistryFeatures.CONTEXTS)
+        self.registry.save()
+        existing_group = ContextFormGroup.objects.create(
+            registry=self.registry, code="EXISTING", context_type="F"
+        )
+        patient = create_valid_patient(registry=self.registry)
+        existing_context = patient.context_models[0]
+        existing_context.display_name = "Preserve existing context"
+        existing_context.save()
+        multiple_group = ContextFormGroup.objects.create(
+            registry=self.registry, code="MULTIPLE", context_type="M"
+        )
+        default_group = ContextFormGroup.objects.create(
+            registry=self.registry,
+            code="NEW_DEFAULT",
+            context_type="F",
+            is_default=True,
+        )
+        other_fixed_group = ContextFormGroup.objects.create(
+            registry=self.registry, code="NEW_FIXED", context_type="F"
+        )
+        cde = CommonDataElement.objects.create(
+            code="NEW_CDE", abbreviated_name="New CDE"
+        )
+        Section.objects.create(
+            code="NEW_SECTION",
+            abbreviated_name="New section",
+            elements=cde.code,
+        )
+        form = RegistryForm.objects.create(
+            registry=self.registry,
+            name="NewForm",
+            abbreviated_name="New form",
+            sections="NEW_SECTION",
+        )
+        form.complete_form_cdes.add(cde)
+        other_fixed_group.items.create(registry_form=form)
+        dashboard = ParentDashboard(self._request(), self.dashboard, patient)
+
+        with patch(
+            "rdrf.views.dashboard_view.FormProgress.get_form_progress",
+            return_value=0,
+        ) as get_progress:
+            modules = dashboard._get_module_progress()
+
+        default_context = patient.default_context(self.registry)
+        form_context = dashboard._get_patient_context(other_fixed_group)
+        self.assertEqual(default_context.context_form_group, default_group)
+        self.assertEqual(form_context.context_form_group, other_fixed_group)
+        self.assertNotEqual(form_context.pk, default_context.pk)
+        get_progress.assert_called_once_with(form, patient, form_context)
+        self.assertEqual(
+            modules["fixed"][other_fixed_group][form]["link"],
+            form.get_link(patient, form_context),
+        )
+        self.assertEqual(
+            modules["fixed"][other_fixed_group][form]["progress"], 0
+        )
+        self.assertIsNone(dashboard._get_patient_context(multiple_group))
+        existing_context.refresh_from_db()
+        self.assertEqual(
+            existing_context.display_name, "Preserve existing context"
+        )
+        self.assertEqual(
+            dashboard._get_patient_context(existing_group), existing_context
+        )
+        context_ids = set(
+            RDRFContext.objects.get_for_patient(patient, self.registry)
+            .values_list("pk", flat=True)
+        )
+        repeated_dashboard = ParentDashboard(
+            self._request(), self.dashboard, patient
+        )
+        repeated_dashboard._get_module_progress()
+        self.assertEqual(
+            set(
+                RDRFContext.objects.get_for_patient(patient, self.registry)
+                .values_list("pk", flat=True)
+            ),
+            context_ids,
+        )
+
+    def test_fixed_context_initialisation_preserves_duplicates_and_data(self):
+        self.registry.add_feature(RegistryFeatures.CONTEXTS)
+        self.registry.save()
+        group = ContextFormGroup.objects.create(
+            registry=self.registry,
+            code="DUPLICATE_FIXED",
+            context_type="F",
+            is_default=True,
+        )
+        patient = create_valid_patient(registry=self.registry)
+        first_context = patient.default_context(self.registry)
+        duplicate = self._create_patient_context(patient, group)
+        duplicate.display_name = "Preserve duplicate context"
+        duplicate.save()
+        saved_data = ClinicalData.objects.create(
+            registry_code=self.registry.code,
+            django_id=patient.pk,
+            django_model="Patient",
+            collection="cdes",
+            context_id=duplicate.pk,
+            data={"saved": "must be preserved"},
+        )
+
+        context = RDRFContextManager(
+            self.registry
+        ).create_fixed_contexts_for_patient(patient)
+
+        self.assertEqual(context, first_context)
+        self.assertTrue(RDRFContext.objects.filter(pk=duplicate.pk).exists())
+        duplicate.refresh_from_db()
+        self.assertEqual(
+            duplicate.display_name, "Preserve duplicate context"
+        )
+        saved_data.refresh_from_db()
+        self.assertEqual(saved_data.context_id, duplicate.pk)
+        self.assertEqual(saved_data.data, {"saved": "must be preserved"})
+
+    def test_missing_fixed_group_does_not_reuse_another_groups_default(self):
+        self.registry.add_feature(RegistryFeatures.CONTEXTS)
+        self.registry.save()
+        ContextFormGroup.objects.create(
+            registry=self.registry,
+            code="DEFAULT_FIXED",
+            context_type="F",
+            is_default=True,
+        )
+        patient = create_valid_patient(registry=self.registry)
+        default_context = patient.default_context(self.registry)
+        new_group = ContextFormGroup.objects.create(
+            registry=self.registry, code="NEW_FIXED", context_type="F"
+        )
+        dashboard = ParentDashboard(self._request(), self.dashboard, patient)
+
+        context = dashboard._get_patient_context(new_group)
+
+        self.assertEqual(context.context_form_group, new_group)
+        self.assertNotEqual(context.pk, default_context.pk)
 
     def test_get_pro_instruments(self):
         patient = create_valid_patient(registry=self.registry)

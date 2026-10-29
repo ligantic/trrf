@@ -9,9 +9,9 @@ from django.core.paginator import Paginator
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from django.utils.module_loading import import_string
-from django.utils.dateparse import parse_datetime
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
+from django.utils.module_loading import import_string
 from django.utils.translation import gettext as _
 from django.views import View
 from registry.patients.models import (
@@ -23,6 +23,7 @@ from registry.patients.models import (
 )
 from report.utils import get_graphql_result_value
 
+from rdrf.db.contexts_api import RDRFContextManager
 from rdrf.forms.progress.form_progress import FormProgress
 from rdrf.helpers.dashboard_status import (
     STATUS_COMPLETE,
@@ -184,6 +185,19 @@ class ParentDashboard(object):
             return context
 
         if context_form_group.is_fixed:
+            if self.registry.has_feature(RegistryFeatures.CONTEXTS):
+                logger.warning(
+                    "Initialising missing fixed contexts for patient %s, "
+                    "registry %s, group %s",
+                    self.patient.pk,
+                    self.registry.code,
+                    context_form_group.code,
+                )
+                RDRFContextManager(
+                    self.registry
+                ).create_fixed_contexts_for_patient(self.patient)
+                self._contexts = self._load_contexts()
+                return self._contexts[context_form_group]
             return self.patient.default_context(self.registry)
 
         return None
@@ -311,7 +325,7 @@ class ParentDashboard(object):
                         cfg, form, context=form_context
                     )
                     progress_dict["progress"] = form_progress.get_form_progress(
-                        form, self.patient, context
+                        form, self.patient, form_context
                     )
                     progress_dict["status"] = module_status(
                         progress=progress_dict["progress"],

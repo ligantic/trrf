@@ -91,13 +91,19 @@ class RDRFContextManager:
                 except RDRFContext.MultipleObjectsReturned:
                     # create_args above don't have a DB level unique constraint, so multiple objects
                     # might get created by parallel execution. See: https://bit.ly/3MSchTq
-                    # Handling this corner case by always keeping the first context
-                    contexts = list(
-                        RDRFContext.objects.filter(**create_args).order_by("pk")
+                    fixed_context = (
+                        RDRFContext.objects.filter(**create_args)
+                        .order_by("pk")
+                    )[0]
+                    created = False
+                    logger.warning(
+                        "Multiple fixed contexts for patient %s, registry %s, "
+                        "group %s; using context %s without deleting duplicates",
+                        patient_model.pk,
+                        self.registry_model.code,
+                        context_form_group.code,
+                        fixed_context.pk,
                     )
-                    fixed_context, created = contexts[0], True
-                    for redundant_context in contexts[1:]:
-                        redundant_context.delete()
                 if created:
                     fixed_context.display_name = (
                         context_form_group.get_default_name(patient_model)
