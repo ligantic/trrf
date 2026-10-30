@@ -1720,7 +1720,7 @@ class ParentGuardian(models.Model):
         blank=True, null=True, verbose_name=_("Date of migration")
     )
     gender = models.CharField(
-        max_length=1, choices=GENDER_CHOICES, verbose_name=_("Gender")
+        max_length=1, choices=GENDER_CHOICES, blank=True, verbose_name=_("Gender")
     )
     address = models.TextField(verbose_name=_("Address"))
     suburb = models.CharField(max_length=50, verbose_name=_("Suburb/Town"))

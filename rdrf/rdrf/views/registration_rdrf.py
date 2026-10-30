@@ -91,8 +91,8 @@ class RdrfRegistrationView(RegistrationView):
     def form_valid(self, form):
         failure_url = reverse("registration_failed")
         username = None
-        with transaction.atomic():
-            try:
+        try:
+            with transaction.atomic():
                 new_user = self.register(form)
                 logger.debug(
                     "RdrfRegistrationView form_valid - new_user registered"
@@ -101,11 +101,11 @@ class RdrfRegistrationView(RegistrationView):
                     self.registration_class.process(new_user)
                 username = new_user.username
                 success_url = self.get_success_url(new_user)
-            except Exception:
-                logger.exception(
-                    "Unhandled error in registration for user %s", username
-                )
-                return redirect(failure_url)
+        except Exception:
+            logger.exception(
+                "Unhandled error in registration for user %s", username
+            )
+            return redirect(failure_url)
 
         try:
             to, args, kwargs = success_url

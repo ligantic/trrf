@@ -2,12 +2,13 @@ from unittest.mock import patch
 
 from django.core import mail
 from django.core.management import call_command
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from registry.patients.constants import PatientState
 from registry.patients.models import Patient, PatientStage, PatientStageRule
 
 from rdrf.events.events import EventType
+from rdrf.forms.registration_forms import PatientRegistrationForm
 from rdrf.models.definition.models import (
     ConsentQuestion,
     ConsentSection,
@@ -17,6 +18,10 @@ from rdrf.models.definition.models import (
 )
 
 
+@override_settings(
+    REGISTRATION_FORM="rdrf.forms.registration_forms.PatientRegistrationForm",
+    REGISTRATION_CLASS="registry.groups.registration.patient.PatientRegistration",
+)
 class RegistrationTest(TestCase):
     databases = ["default", "clinical"]
     # fixtures = ['testing_auth', 'users', 'testing_rdrf']
@@ -53,6 +58,12 @@ class RegistrationTest(TestCase):
 
     def setUp(self):
         super().setUp()
+        self.enterContext(
+            patch(
+                "rdrf.views.registration_rdrf.RdrfRegistrationView.form_class",
+                PatientRegistrationForm,
+            )
+        )
         self.registry = Registry.objects.get(code="reg4")
         template = EmailTemplate.objects.create(
             language="en",
@@ -128,7 +139,11 @@ class RegistrationTest(TestCase):
                 ),
                 post_data,
             )
-            self.assertEqual(response.status_code, 302)
+            self.assertEqual(
+                response.status_code,
+                302,
+                [template.name for template in response.templates],
+            )
             return Patient.objects.filter(email=self.PATIENT_EMAIL).first()
 
     def consent_post_data(self, patient):

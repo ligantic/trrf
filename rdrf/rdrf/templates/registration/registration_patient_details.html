@@ -28,5 +28,12 @@
                <div class="form-text">{% trans 'Indeterminate also refers to Intersex/Unspecified' %}</div>
            </fieldset>
       </div>
+      {% for field in contact_fields %}
+          <div class="col-12">
+              <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+              {{ field.errors }}
+          </div>
+      {% endfor %}
   </div>
 </fieldset>
