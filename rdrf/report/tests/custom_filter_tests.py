@@ -376,6 +376,41 @@ class CustomReportFilterTests(TestCase):
         self.design.refresh_from_db()
         self.assertEqual(self.design.custom_filters, {})
 
+    @override_settings(
+        REGISTRY_REPORT_FILTER_PROVIDERS={
+            "filters": {
+                "wrapper.target": (
+                    "report.tests.custom_filter_tests.TargetIdFilterProvider"
+                )
+            }
+        }
+    )
+    def test_designer_parameter_validation_is_conditional_on_filter(self):
+        data = {
+            "title": self.design.title,
+            "registry": self.registry.code,
+            "cde_heading_format": ReportCdeHeadingFormat.CODE.value,
+            "demographic_fields": [
+                get_demographic_field_value("patient", "id")
+            ],
+        }
+        form = ReportDesignerForm(data=data, instance=self.design)
+        parameter_form = form.custom_filter_groups[0]["filters"][0][
+            "parameter_form"
+        ]
+        self.assertTrue(parameter_form.fields["patient_id"].required)
+        self.assertNotIn(" required", str(parameter_form["patient_id"]))
+        self.assertTrue(form.is_valid(), form.errors)
+
+        data["custom_filter_enabled_0"] = "on"
+        enabled = ReportDesignerForm(data=data, instance=self.design)
+        self.assertFalse(enabled.is_valid())
+        self.assertIn("patient_id", str(enabled.non_field_errors()))
+
+        data["custom_filter_0-patient_id"] = "123"
+        valid = ReportDesignerForm(data=data, instance=self.design)
+        self.assertTrue(valid.is_valid(), valid.errors)
+
     @override_settings(REGISTRY_REPORT_FILTER_PROVIDERS=PROVIDER_SETTINGS)
     def test_saved_unknown_filter_requires_explicit_removal(self):
         self.design.custom_filters = {

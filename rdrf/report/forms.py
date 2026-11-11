@@ -280,6 +280,8 @@ class ReportDesignerForm(ModelForm):
                     data=self.data if self.is_bound else None,
                     initial=initial_parameters,
                     prefix=prefix,
+                    # Parameters are validated only for enabled filters.
+                    use_required_attribute=False,
                 )
                 item = {
                     "key": filter_key,
