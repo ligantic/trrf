@@ -240,10 +240,13 @@ class ReportDesignerForm(ModelForm):
         self.custom_filter_groups = []
         self._custom_filter_fields = {}
         field_index = 0
+        instance_registry_code = getattr(
+            getattr(self.instance, "registry", None), "code", None
+        )
         selected_registry_code = (
             self.data.get("registry")
             if self.is_bound
-            else getattr(self.instance.registry, "code", None)
+            else instance_registry_code
         )
 
         for registry in Registry.objects.all().order_by("code"):
@@ -262,8 +265,7 @@ class ReportDesignerForm(ModelForm):
             for filter_key, provider in sorted(providers.items()):
                 saved = (
                     stored_filters.get(filter_key, {})
-                    if registry.code
-                    == getattr(self.instance.registry, "code", None)
+                    if registry.code == instance_registry_code
                     else {}
                 )
                 enabled_name = f"custom_filter_enabled_{field_index}"
@@ -310,7 +312,7 @@ class ReportDesignerForm(ModelForm):
             self.has_existing_custom_filters
             and selected_registry_code
             and selected_registry_code
-            != getattr(self.instance.registry, "code", None)
+            != instance_registry_code
         )
         self.custom_filter_configuration_error = (
             self._stored_custom_filter_error
