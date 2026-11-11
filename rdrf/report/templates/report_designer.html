@@ -62,6 +62,17 @@
         $filter.toggleClass('d-none', $filterToggle.is(':not(:checked)'));
     }
 
+    function update_custom_filter_registry(registry) {
+        $('.custom-filter-registry').each(function() {
+            $(this).toggleClass('d-none', $(this).data('registry') != registry);
+        });
+    }
+
+    function toggle_custom_filter_parameters($filterToggle) {
+        const parameterSelector = '[data-enabled-field="' + $filterToggle.attr('name') + '"]';
+        $(parameterSelector).toggleClass('d-none', !$filterToggle.is(':checked'));
+    }
+
     $(document).ready(function() {
         ui = {
             selectRegistry: $('#id_registry'),
@@ -74,6 +85,7 @@
 
         ui.selectRegistry.change(function() {
             update_components_by_registry($(this).val(), true);
+            update_custom_filter_registry($(this).val());
         });
 
         ui.chkFilterToggle.on('click', function() {
@@ -92,6 +104,13 @@
         ui.chkFilterToggle.each(function() {
            toggle_report_filter($(this));
         });
+
+        update_custom_filter_registry(ui.selectRegistry.val());
+        $('.custom-filter-enabled').each(function() {
+            toggle_custom_filter_parameters($(this));
+        }).on('change', function() {
+            toggle_custom_filter_parameters($(this));
+        });
     });
 </script>
 <h1>
@@ -104,6 +123,11 @@
 
 <form name='query-form' id='query-form' class="form mt-3" method='post'>
 {% csrf_token %}
+    {% if form.non_field_errors %}
+    <div class="alert alert-danger" role="alert">
+        {{ form.non_field_errors }}
+    </div>
+    {% endif %}
     <fieldset>
         <legend>{% trans "Description" %}</legend>
         <div class="row">
@@ -248,6 +272,55 @@
                             </div>
                         </div>
                     </li>
+                    {% if form.custom_filter_registry_changed or form.custom_filter_configuration_error %}
+                    <li class="list-group-item">
+                        <div class="alert alert-warning mb-2">
+                            {% if form.custom_filter_registry_changed %}
+                            {% trans "Changing the registry requires explicitly removing the saved custom filters." %}
+                            {% else %}
+                            {% blocktrans with error=form.custom_filter_configuration_error %}The saved filter configuration is unavailable or invalid: {{ error }}. Remove it explicitly or restore a compatible provider.{% endblocktrans %}
+                            {% endif %}
+                        </div>
+                        <div class="form-check">
+                            {{ form.remove_existing_custom_filters|add_attr:"class,form-check-input" }}
+                            <label class="form-check-label" for="id_remove_existing_custom_filters">
+                                {{ form.remove_existing_custom_filters.label }}
+                            </label>
+                        </div>
+                    </li>
+                    {% endif %}
+                    {% for group in form.custom_filter_groups %}
+                        {% if group.error %}
+                            <li class="list-group-item text-danger custom-filter-registry"
+                                data-registry="{{ group.registry.code }}" role="alert">{{ group.error }}</li>
+                        {% endif %}
+                            {% for filter in group.filters %}
+                            <li class="list-group-item custom-filter-registry"
+                                data-registry="{{ group.registry.code }}">
+                            <div class="form-check">
+                                {{ filter.enabled_field|add_attr:"class,form-check-input custom-filter-enabled" }}
+                                <label class="form-check-label" for="{{ filter.enabled_field.id_for_label }}">
+                                    {{ filter.provider.label }}
+                                </label>
+                            </div>
+                            <div class="custom-filter-parameters mt-2 {% if not filter.enabled_field.value %}d-none{% endif %}"
+                                 data-enabled-field="{{ filter.enabled_name }}">
+                                {% for parameter in filter.parameter_form %}
+                                <div class="mb-2">
+                                    <label class="form-label" for="{{ parameter.id_for_label }}">{{ parameter.label }}</label>
+                                    {{ parameter }}
+                                    {% if parameter.errors %}
+                                    <div class="invalid-feedback d-block">{{ parameter.errors }}</div>
+                                    {% endif %}
+                                    {% if parameter.help_text %}
+                                    <div class="form-text">{{ parameter.help_text }}</div>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </li>
+                        {% endfor %}
+                    {% endfor %}
                 </ul>
             </div>
         </div>

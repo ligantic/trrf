@@ -280,7 +280,7 @@ class ClinicalDataCsvUtil:
         ).values("context_form_group")
         return ContextFormGroup.objects.filter(id__in=report_cfg_ids)
 
-    def csv_headers(self, user, report_design):
+    def csv_headers(self, user, report_design, matching_patient_ids=None):
         cde_keys = list(
             report_design.reportclinicaldatafield_set.order_by(
                 "id"
@@ -298,6 +298,8 @@ class ClinicalDataCsvUtil:
         patient_filters.consent_questions = [
             cq.id for cq in report_design.filter_consents.all()
         ]
+        if matching_patient_ids is not None:
+            patient_filters.patient_ids = matching_patient_ids
 
         patient_ids = list(
             list_patients_query(

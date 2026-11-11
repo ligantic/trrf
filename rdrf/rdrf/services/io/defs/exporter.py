@@ -659,6 +659,7 @@ class Exporter:
                     {"section": c.section.code, "code": c.code}
                     for c in r.filter_consents.all()
                 ],
+                "custom_filters": r.custom_filters,
                 "cde_heading_format": r.cde_heading_format,
                 "cde_include_form_timestamp": r.cde_include_form_timestamp,
                 "clinical_data_fields": [

@@ -71,6 +71,7 @@ class ReportDesign(models.Model):
         default=ReportCdeHeadingFormat.LABEL.value,
     )
     cde_include_form_timestamp = models.BooleanField(default=False)
+    custom_filters = models.JSONField(default=dict, blank=True)
 
     objects = ReportDesignManager()
 

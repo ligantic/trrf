@@ -3,6 +3,8 @@ import logging
 
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ImproperlyConfigured, ValidationError
+from django.db import transaction
 from django.forms import (
     BooleanField,
     CheckboxSelectMultiple,
@@ -24,6 +26,11 @@ from rdrf.models.definition.models import (
 from registry.groups.forms import working_group_optgroup_choices
 from registry.groups.models import WorkingGroup
 
+from report.filter_providers import (
+    get_report_filter_providers,
+    validate_custom_filter_configuration,
+    validate_report_filter_parameters,
+)
 from report.models import (
     ReportClinicalDataField,
     ReportDemographicField,
@@ -200,6 +207,9 @@ class ReportDesignerForm(ModelForm):
         self.fields["exclude_working_groups"].choices = self.fields[
             "filter_working_groups"
         ].choices
+        self.fields["remove_existing_custom_filters"] = BooleanField(
+            label=_("Remove existing custom filters"), required=False
+        )
 
         run_report_permission = Permission.objects.get(
             codename="can_run_reports",
@@ -208,6 +218,103 @@ class ReportDesignerForm(ModelForm):
         self.fields["access_groups"].queryset = Group.objects.filter(
             permissions=run_report_permission
         ).order_by("name")
+        self._init_custom_filter_forms()
+
+    def _init_custom_filter_forms(self):
+        stored_configuration = {}
+        self._stored_custom_filter_error = None
+        if self.instance.pk and self.instance.custom_filters:
+            try:
+                stored_configuration = validate_custom_filter_configuration(
+                    self.instance.registry, self.instance.custom_filters
+                )
+            except (
+                ValidationError,
+                ImproperlyConfigured,
+                ImportError,
+                AttributeError,
+            ) as error:
+                self._stored_custom_filter_error = str(error)
+
+        stored_filters = stored_configuration.get("filters", {})
+        self.custom_filter_groups = []
+        self._custom_filter_fields = {}
+        field_index = 0
+        selected_registry_code = (
+            self.data.get("registry")
+            if self.is_bound
+            else getattr(self.instance.registry, "code", None)
+        )
+
+        for registry in Registry.objects.all().order_by("code"):
+            try:
+                providers = get_report_filter_providers(registry)
+                registry_error = None
+            except (
+                ImproperlyConfigured,
+                ImportError,
+                AttributeError,
+            ) as error:
+                providers = {}
+                registry_error = str(error)
+
+            filters = []
+            for filter_key, provider in sorted(providers.items()):
+                saved = (
+                    stored_filters.get(filter_key, {})
+                    if registry.code
+                    == getattr(self.instance.registry, "code", None)
+                    else {}
+                )
+                enabled_name = f"custom_filter_enabled_{field_index}"
+                prefix = f"custom_filter_{field_index}"
+                initial_parameters = saved.get("parameters", {})
+                self.fields[enabled_name] = BooleanField(
+                    label=provider.label,
+                    required=False,
+                    initial=bool(saved),
+                )
+                parameter_form = provider.parameter_form_class(
+                    data=self.data if self.is_bound else None,
+                    initial=initial_parameters,
+                    prefix=prefix,
+                )
+                item = {
+                    "key": filter_key,
+                    "provider": provider,
+                    "enabled_field": self[enabled_name],
+                    "parameter_form": parameter_form,
+                    "enabled_name": enabled_name,
+                    "prefix": prefix,
+                }
+                filters.append(item)
+                self._custom_filter_fields[(registry.code, filter_key)] = (
+                    enabled_name,
+                    parameter_form,
+                    provider,
+                )
+                field_index += 1
+
+            self.custom_filter_groups.append(
+                {
+                    "registry": registry,
+                    "filters": filters,
+                    "error": registry_error,
+                }
+            )
+
+        self.has_existing_custom_filters = bool(
+            self.instance.pk and self.instance.custom_filters
+        )
+        self.custom_filter_registry_changed = bool(
+            self.has_existing_custom_filters
+            and selected_registry_code
+            and selected_registry_code
+            != getattr(self.instance.registry, "code", None)
+        )
+        self.custom_filter_configuration_error = (
+            self._stored_custom_filter_error
+        )
 
     class Meta:
         model = ReportDesign
@@ -266,16 +373,110 @@ class ReportDesignerForm(ModelForm):
 
     def clean(self):
         super(ReportDesignerForm, self).clean()
+        registry = self.cleaned_data.get("registry")
+        remove_existing = self.cleaned_data.get(
+            "remove_existing_custom_filters", False
+        )
+
+        if (
+            self.has_existing_custom_filters
+            and not remove_existing
+            and self._stored_custom_filter_error
+        ):
+            self.add_error(
+                None,
+                _(
+                    "The saved custom filter configuration is unavailable "
+                    "or invalid: %(error)s. Remove it explicitly or restore "
+                    "a compatible provider."
+                )
+                % {"error": self._stored_custom_filter_error},
+            )
+        elif (
+            self.has_existing_custom_filters
+            and not remove_existing
+            and registry
+            and registry.pk != self.instance.registry_id
+        ):
+            self.add_error(
+                None,
+                _(
+                    "Remove the saved custom filters explicitly before "
+                    "changing this report's registry."
+                ),
+            )
+
+        selected_filters = {}
+        if registry and not remove_existing:
+            selected_registry_group = next(
+                (
+                    group
+                    for group in self.custom_filter_groups
+                    if group["registry"].code == registry.code
+                ),
+                None,
+            )
+            if selected_registry_group and selected_registry_group["error"]:
+                self.add_error(None, selected_registry_group["error"])
+            for (provider_registry_code, filter_key), (
+                enabled_name,
+                parameter_form,
+                provider,
+            ) in self._custom_filter_fields.items():
+                if provider_registry_code != registry.code:
+                    continue
+                if not self.cleaned_data.get(enabled_name, False):
+                    continue
+                if not parameter_form.is_valid():
+                    self.add_error(
+                        None,
+                        _(
+                            "Invalid parameters for custom filter "
+                            "'%(filter_key)s': %(errors)s"
+                        )
+                        % {
+                            "filter_key": filter_key,
+                            "errors": parameter_form.errors.as_text(),
+                        },
+                    )
+                    continue
+                try:
+                    parameters = validate_report_filter_parameters(
+                        provider, parameter_form.cleaned_data
+                    )
+                except ValidationError as error:
+                    self.add_error(None, error)
+                    continue
+                selected_filters[filter_key] = {
+                    "version": provider.configuration_version,
+                    "parameters": parameters,
+                }
+
+        self.cleaned_data["custom_filters"] = (
+            {
+                "schema_version": 1,
+                "filters": selected_filters,
+            }
+            if selected_filters
+            else {}
+        )
+
         cleaned_title = self.cleaned_data.get("title", "")
-        if not self.instance.id or self.instance.title != cleaned_title:
+        if registry and (
+            not self.instance.id
+            or self.instance.title != cleaned_title
+            or self.instance.registry_id != registry.pk
+        ):
             if ReportDesign.objects.filter(
-                registry=self.cleaned_data["registry"], title=cleaned_title
+                registry=registry, title=cleaned_title
             ).first():
                 self.add_error(
                     "title",
                     _(
-                        f'A report in this registry with the title "{cleaned_title}" already exists.'
-                    ),
+                        'A report in this registry with the title "%s" '
+                        "already exists."
+                    )
+                    % cleaned_title,
                 )
         return self.cleaned_data
 
@@ -303,6 +504,7 @@ class ReportDesignerForm(ModelForm):
             for field in self.cleaned_data["filter_consents"]
         ]
 
+    @transaction.atomic
     def save_to_model(self):
         clean_data = self.cleaned_data
 
@@ -316,6 +518,7 @@ class ReportDesignerForm(ModelForm):
                 "cde_include_form_timestamp": clean_data[
                     "cde_include_form_timestamp"
                 ],
+                "custom_filters": clean_data["custom_filters"],
             },
         )
 

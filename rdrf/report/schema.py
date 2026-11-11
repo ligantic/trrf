@@ -906,6 +906,9 @@ def list_patients_query(user, registry, filter_args=None):
         .prefetch_related("registered_clinicians")
     )
 
+    if filter_args.patient_ids is not None:
+        patient_query = patient_query.filter(id__in=filter_args.patient_ids)
+
     if filter_args.exclude_working_groups:
         patient_query = patient_query.exclude(
             working_groups__id__in=filter_args.exclude_working_groups
@@ -1031,6 +1034,7 @@ class SearchType(InputObjectType):
 
 class PatientFilterType(InputObjectType):
     search = graphene.List(SearchType)
+    patient_ids = graphene.List(graphene.ID)
     exclude_working_groups = graphene.List(graphene.String)
     working_groups = graphene.List(graphene.String)
     consent_questions = graphene.List(graphene.String)
@@ -1039,6 +1043,7 @@ class PatientFilterType(InputObjectType):
 
     def __init__(self):
         self.search = []
+        self.patient_ids = None
         self.exclude_working_groups = []
         self.working_groups = []
         self.consent_questions = []

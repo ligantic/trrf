@@ -289,5 +289,6 @@ MIGRATIONS_CONSIDERED_FOR_IMPORT_EXPORT = {
         "0003_reportdesign_cde_include_form_timestamp",
         "0004_alter_reportdesign_options",
         "0005_reportdesign_exclude_working_groups",
+        "0006_reportdesign_custom_filters",
     },
 }

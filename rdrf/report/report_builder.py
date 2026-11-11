@@ -5,7 +5,9 @@ import itertools
 import json
 import logging
 from collections import OrderedDict
+from itertools import islice
 
+from django.core.exceptions import ImproperlyConfigured, ValidationError
 from flatten_json import flatten
 from gql_query_builder import GqlQuery
 from rdrf.forms.dsl.parse_utils import prefetch_form_data
@@ -20,10 +22,16 @@ from rdrf.patients.query_data import (
 )
 
 from report.clinical_data_csv_util import ClinicalDataCsvUtil
+from report.filter_providers import (
+    get_report_filter_providers,
+    validate_custom_filter_configuration,
+)
 from report.models import ReportCdeHeadingFormat
 from report.schema import (
+    PatientFilterType,
     create_dynamic_schema,
     get_schema_field_name,
+    list_patients_query,
 )
 from report.utils import (
     get_flattened_json_path,
@@ -32,6 +40,12 @@ from report.utils import (
 )
 
 logger = logging.getLogger(__name__)
+
+CUSTOM_FILTER_BATCH_SIZE = 200
+
+
+class ReportFilterExecutionError(Exception):
+    pass
 
 
 class ReportBuilder:
@@ -42,6 +56,8 @@ class ReportBuilder:
         self.report_config = load_report_configuration()["demographic_model"]
         self.report_fields_lookup = self.__init_report_fields_lookup()
         self.patient_filters = self.__init_patient_filters()
+        self.matching_patient_ids = None
+        self._custom_filter_cohort_resolved = False
         self.schema = create_dynamic_schema()
 
     def __init_report_fields_lookup(self):
@@ -78,6 +94,92 @@ class ReportBuilder:
             filters["excludeWorkingGroups"] = excluded_groups
 
         return build_patient_filters(filters)
+
+    def _eligible_patient_query(self, user):
+        patient_filters = PatientFilterType()
+        patient_filters.exclude_working_groups = list(
+            self.report_design.exclude_working_groups.values_list(
+                "id", flat=True
+            )
+        )
+        patient_filters.working_groups = list(
+            self.report_design.filter_working_groups.values_list(
+                "id", flat=True
+            )
+        )
+        patient_filters.consent_questions = list(
+            self.report_design.filter_consents.values_list("id", flat=True)
+        )
+        return list_patients_query(
+            user, self.report_design.registry, patient_filters
+        )
+
+    def _resolve_custom_filter_cohort(self, request):
+        if self._custom_filter_cohort_resolved:
+            return
+
+        configuration = validate_custom_filter_configuration(
+            self.report_design.registry, self.report_design.custom_filters
+        )
+        selected_filters = configuration.get("filters", {})
+        if not selected_filters:
+            self._custom_filter_cohort_resolved = True
+            return
+
+        providers = get_report_filter_providers(self.report_design.registry)
+        patient_ids = set()
+        patient_id_iterator = iter(
+            self._eligible_patient_query(request.user)
+            .order_by("id")
+            .values_list("id", flat=True)
+            .iterator(chunk_size=CUSTOM_FILTER_BATCH_SIZE)
+        )
+
+        while batch := list(
+            islice(patient_id_iterator, CUSTOM_FILTER_BATCH_SIZE)
+        ):
+            batch_ids = set(batch)
+            matching_batch_ids = set(batch_ids)
+            for filter_key, filter_configuration in selected_filters.items():
+                provider = providers[filter_key]
+                try:
+                    provider_matches = provider.get_matching_patient_ids(
+                        self.report_design.registry,
+                        tuple(batch),
+                        filter_configuration["parameters"],
+                    )
+                    if isinstance(provider_matches, (str, bytes)):
+                        raise TypeError(
+                            "Provider results must be an iterable of IDs."
+                        )
+                    provider_matches = set(provider_matches)
+                except Exception as error:
+                    logger.exception(
+                        "Report filter provider '%s' failed for report %s",
+                        filter_key,
+                        self.report_design.pk,
+                    )
+                    raise ReportFilterExecutionError(
+                        f"Unable to evaluate report filter '{filter_key}': "
+                        f"{error}"
+                    ) from error
+
+                unexpected_ids = provider_matches - batch_ids
+                if unexpected_ids:
+                    raise ReportFilterExecutionError(
+                        f"Report filter '{filter_key}' returned patient IDs "
+                        "outside its eligible input batch."
+                    )
+                matching_batch_ids.intersection_update(provider_matches)
+
+            patient_ids.update(matching_batch_ids)
+
+        self.matching_patient_ids = sorted(patient_ids)
+        variables = self.patient_filters[2]
+        variables["filterArgs"]["patientIds"] = [
+            str(patient_id) for patient_id in self.matching_patient_ids
+        ]
+        self._custom_filter_cohort_resolved = True
 
     def __get_variants(self, lookup_key, request):
         query_data_summary = build_data_summary_query([lookup_key])
@@ -153,6 +255,7 @@ class ReportBuilder:
         return queries
 
     def _get_graphql_query(self, request, offset=None, limit=None):
+        self._resolve_custom_filter_cohort(request)
         # Build Pagination filters
         pagination_args = {}
         if offset:
@@ -471,6 +574,7 @@ class ReportBuilder:
 
     def validate_query(self, request):
         try:
+            self._resolve_custom_filter_cohort(request)
             variables, query = self._get_graphql_query(
                 request, offset=1, limit=1
             )
@@ -479,6 +583,24 @@ class ReportBuilder:
             )
         except BadKeyError as ex:
             return False, {"query_bad_key_error": str(ex)}
+        except (
+            ValidationError,
+            ImproperlyConfigured,
+            ImportError,
+            AttributeError,
+            ReportFilterExecutionError,
+        ) as ex:
+            logger.exception(
+                "Unable to prepare custom filters for report %s",
+                self.report_design.pk,
+            )
+            return False, {"custom_filters": str(ex)}
+        except Exception as ex:
+            logger.exception(
+                "Unexpected error validating report %s",
+                self.report_design.pk,
+            )
+            return False, {"report_validation": str(ex)}
 
         if result.errors:
             return False, {"query_structure": result.errors}
@@ -530,6 +652,7 @@ class ReportBuilder:
         }
 
     def export_to_json(self, request):
+        self._resolve_custom_filter_cohort(request)
         limit = 20
         offset = 0
 
@@ -540,6 +663,10 @@ class ReportBuilder:
             result = self.schema.execute(
                 query, variable_values=variables, context_value=request
             )
+            if result.errors:
+                raise GraphQLResultError(
+                    "\n".join(str(error) for error in result.errors)
+                )
             all_patients = get_all_patients(
                 result, self.report_design.registry
             ).get("patients")
@@ -557,11 +684,16 @@ class ReportBuilder:
         headers = OrderedDict()
         headers.update(self._get_demographic_headers(request))
         headers.update(
-            ClinicalDataCsvUtil().csv_headers(request.user, self.report_design)
+            ClinicalDataCsvUtil().csv_headers(
+                request.user,
+                self.report_design,
+                matching_patient_ids=self.matching_patient_ids,
+            )
         )
         return headers
 
     def build_preview(self, request):
+        self._resolve_custom_filter_cohort(request)
         headers = self._get_csv_headers(request)
         variables, query = self._get_graphql_query(
             request, limit=self.PREVIEW_LIMIT
@@ -591,6 +723,7 @@ class ReportBuilder:
         return list(headers.values()), rows
 
     def export_to_csv(self, request):
+        self._resolve_custom_filter_cohort(request)
         # Purpose of BOM:
         # - Required by MS Excel to correctly load content in UTF-8, otherwise encoding is ignored.
         # - Quick response back to browser to prevent cloudfront from timing out.
@@ -616,6 +749,10 @@ class ReportBuilder:
             result = self.schema.execute(
                 query, variable_values=variables, context_value=request
             )
+            if result.errors:
+                raise GraphQLResultError(
+                    "\n".join(str(error) for error in result.errors)
+                )
             flat_patient_data = [
                 flatten(p)
                 for p in get_all_patients(

@@ -5,6 +5,7 @@ from datetime import timedelta
 import yaml
 from django.contrib.auth.models import Group
 from django.core.exceptions import MultipleObjectsReturned, ValidationError
+from django.db import transaction
 from registry.groups.models import (
     WorkingGroup,
     WorkingGroupType,
@@ -16,6 +17,7 @@ from registry.patients.models import (
     PatientStage,
     PatientStageRule,
 )
+from report.filter_providers import validate_custom_filter_configuration
 from report.models import (
     ReportClinicalDataField,
     ReportDemographicField,
@@ -1328,14 +1330,19 @@ class Importer(object):
                 )
             form.save()
 
+    @transaction.atomic
     def _create_reports(self, data):
         for d in data:
             registry = Registry.objects.get(code=d["registry"])
+            custom_filters = validate_custom_filter_configuration(
+                registry, d.get("custom_filters", {})
+            )
             report, created = ReportDesign.objects.get_or_create(
                 registry=registry, title=d["title"]
             )
 
             report.description = d["description"]
+            report.custom_filters = custom_filters
 
             report.access_groups.set(
                 Group.objects.filter(name__in=d["access_groups"])
